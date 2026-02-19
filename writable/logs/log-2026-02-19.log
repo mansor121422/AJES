@@ -1,0 +1,454 @@
+ERROR - 2026-02-19 13:25:13 --> Error connecting to the database: mysqli_sql_exception: Access denied for user ''@'localhost' (using password: NO) in F:\xammp\htdocs\AJES\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 F:\xammp\htdocs\AJES\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', '', Object(SensitiveParameterValue), '', 3306, '', 0)
+#1 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(1565): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#4 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(1585): CodeIgniter\Database\BaseConnection->listTables()
+#5 F:\xammp\htdocs\AJES\system\Database\MigrationRunner.php(821): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#6 F:\xammp\htdocs\AJES\system\Database\MigrationRunner.php(173): CodeIgniter\Database\MigrationRunner->ensureTable()
+#7 F:\xammp\htdocs\AJES\system\Commands\Database\Migrate.php(89): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#8 F:\xammp\htdocs\AJES\system\CLI\SignalTrait.php(245): CodeIgniter\Commands\Database\Migrate::CodeIgniter\Commands\Database\{closure}()
+#9 F:\xammp\htdocs\AJES\system\Commands\Database\Migrate.php(88): CodeIgniter\Commands\Database\Migrate->withSignalsBlocked(Object(Closure))
+#10 F:\xammp\htdocs\AJES\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#11 F:\xammp\htdocs\AJES\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('migrate', Array)
+#12 F:\xammp\htdocs\AJES\system\Boot.php(442): CodeIgniter\CLI\Console->run()
+#13 F:\xammp\htdocs\AJES\system\Boot.php(166): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#14 F:\xammp\htdocs\AJES\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#15 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user ''@'localhost' (using password: NO) in F:\xammp\htdocs\AJES\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(1565): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#3 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(1585): CodeIgniter\Database\BaseConnection->listTables()
+#4 F:\xammp\htdocs\AJES\system\Database\MigrationRunner.php(821): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#5 F:\xammp\htdocs\AJES\system\Database\MigrationRunner.php(173): CodeIgniter\Database\MigrationRunner->ensureTable()
+#6 F:\xammp\htdocs\AJES\system\Commands\Database\Migrate.php(89): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#7 F:\xammp\htdocs\AJES\system\CLI\SignalTrait.php(245): CodeIgniter\Commands\Database\Migrate::CodeIgniter\Commands\Database\{closure}()
+#8 F:\xammp\htdocs\AJES\system\Commands\Database\Migrate.php(88): CodeIgniter\Commands\Database\Migrate->withSignalsBlocked(Object(Closure))
+#9 F:\xammp\htdocs\AJES\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#10 F:\xammp\htdocs\AJES\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('migrate', Array)
+#11 F:\xammp\htdocs\AJES\system\Boot.php(442): CodeIgniter\CLI\Console->run()
+#12 F:\xammp\htdocs\AJES\system\Boot.php(166): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#13 F:\xammp\htdocs\AJES\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#14 {main}
+ERROR - 2026-02-19 13:26:58 --> Duplicate key name 'email'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('CREATE TABLE `users` (
+	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL,
+	`email` VARCHAR(191) NOT NULL UNIQUE,
+	`username` VARCHAR(50) NOT NULL UNIQUE,
+	`password_hash` VARCHAR(255) NOT NULL,
+	`role` VARCHAR(20) NOT NULL,
+	`section_id` INT(11) UNSIGNED NULL,
+	`guidance_flag` TINYINT(1) NOT NULL DEFAULT 0,
+	`is_active` TINYINT(1) NOT NULL DEFAULT 1,
+	`failed_attempts` INT(11) NOT NULL DEFAULT 0,
+	`last_failed_at` DATETIME NULL,
+	`created_at` DATETIME NULL,
+	`updated_at` DATETIME NULL,
+	`deleted_at` DATETIME NULL,
+	CONSTRAINT `pk_users` PRIMARY KEY(`id`),
+	KEY `email` (`email`),
+	KEY `username` (`username`)
+) DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('CREATE TABLE `users` (
+	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL,
+	`email` VARCHAR(191) NOT NULL UNIQUE,
+	`username` VARCHAR(50) NOT NULL UNIQUE,
+	`password_hash` VARCHAR(255) NOT NULL,
+	`role` VARCHAR(20) NOT NULL,
+	`section_id` INT(11) UNSIGNED NULL,
+	`guidance_flag` TINYINT(1) NOT NULL DEFAULT 0,
+	`is_active` TINYINT(1) NOT NULL DEFAULT 1,
+	`failed_attempts` INT(11) NOT NULL DEFAULT 0,
+	`last_failed_at` DATETIME NULL,
+	`created_at` DATETIME NULL,
+	`updated_at` DATETIME NULL,
+	`deleted_at` DATETIME NULL,
+	CONSTRAINT `pk_users` PRIMARY KEY(`id`),
+	KEY `email` (`email`),
+	KEY `username` (`username`)
+) DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('CREATE TABLE `users` (
+	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL,
+	`email` VARCHAR(191) NOT NULL UNIQUE,
+	`username` VARCHAR(50) NOT NULL UNIQUE,
+	`password_hash` VARCHAR(255) NOT NULL,
+	`role` VARCHAR(20) NOT NULL,
+	`section_id` INT(11) UNSIGNED NULL,
+	`guidance_flag` TINYINT(1) NOT NULL DEFAULT 0,
+	`is_active` TINYINT(1) NOT NULL DEFAULT 1,
+	`failed_attempts` INT(11) NOT NULL DEFAULT 0,
+	`last_failed_at` DATETIME NULL,
+	`created_at` DATETIME NULL,
+	`updated_at` DATETIME NULL,
+	`deleted_at` DATETIME NULL,
+	CONSTRAINT `pk_users` PRIMARY KEY(`id`),
+	KEY `email` (`email`),
+	KEY `username` (`username`)
+) DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci')
+ 4 SYSTEMPATH\Database\Forge.php(570): CodeIgniter\Database\BaseConnection->query('CREATE TABLE `users` (
+	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL,
+	`email` VARCHAR(191) NOT NULL UNIQUE,
+	`username` VARCHAR(50) NOT NULL UNIQUE,
+	`password_hash` VARCHAR(255) NOT NULL,
+	`role` VARCHAR(20) NOT NULL,
+	`section_id` INT(11) UNSIGNED NULL,
+	`guidance_flag` TINYINT(1) NOT NULL DEFAULT 0,
+	`is_active` TINYINT(1) NOT NULL DEFAULT 1,
+	`failed_attempts` INT(11) NOT NULL DEFAULT 0,
+	`last_failed_at` DATETIME NULL,
+	`created_at` DATETIME NULL,
+	`updated_at` DATETIME NULL,
+	`deleted_at` DATETIME NULL,
+	CONSTRAINT `pk_users` PRIMARY KEY(`id`),
+	KEY `email` (`email`),
+	KEY `username` (`username`)
+) DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci')
+ 5 APPPATH\Database\Migrations\2026-02-19-000001_CreateCoreTables.php(31): CodeIgniter\Database\Forge->createTable('users', true)
+ 6 SYSTEMPATH\Database\MigrationRunner.php(1014): App\Database\Migrations\CreateCoreTables->up()
+ 7 SYSTEMPATH\Database\MigrationRunner.php(202): CodeIgniter\Database\MigrationRunner->migrate('up', Object(stdClass))
+ 8 SYSTEMPATH\Commands\Database\Migrate.php(89): CodeIgniter\Database\MigrationRunner->latest(null)
+ 9 SYSTEMPATH\CLI\SignalTrait.php(245): CodeIgniter\Commands\Database\Migrate::CodeIgniter\Commands\Database\{closure}()
+10 SYSTEMPATH\Commands\Database\Migrate.php(88): CodeIgniter\Commands\Database\Migrate->withSignalsBlocked(Object(Closure))
+11 SYSTEMPATH\CLI\Commands.php(74): CodeIgniter\Commands\Database\Migrate->run([])
+12 SYSTEMPATH\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('migrate', [])
+13 SYSTEMPATH\Boot.php(442): CodeIgniter\CLI\Console->run()
+14 SYSTEMPATH\Boot.php(166): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+15 ROOTPATH\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+ERROR - 2026-02-19 13:44:07 --> Duplicate entry 'admin@ajes.local' for key 'email'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `users` (`name`, `email`, `username`, `password_hash`, `role`, `is_active`) VALUES (\'System Administrator\', \'admin@ajes.local\', \'admin\', \'$2y$10$Fr7OSVRSYZzR85aigfTQEeBHOojAkZGHFKdklFHUVAGIqT2KoB.ua\', \'ADMIN\', 1)', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `users` (`name`, `email`, `username`, `password_hash`, `role`, `is_active`) VALUES (\'System Administrator\', \'admin@ajes.local\', \'admin\', \'$2y$10$Fr7OSVRSYZzR85aigfTQEeBHOojAkZGHFKdklFHUVAGIqT2KoB.ua\', \'ADMIN\', 1)')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `users` (`name`, `email`, `username`, `password_hash`, `role`, `is_active`) VALUES (\'System Administrator\', \'admin@ajes.local\', \'admin\', \'$2y$10$Fr7OSVRSYZzR85aigfTQEeBHOojAkZGHFKdklFHUVAGIqT2KoB.ua\', \'ADMIN\', 1)')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `users` (`name`, `email`, `username`, `password_hash`, `role`, `is_active`) VALUES (:name:, :email:, :username:, :password_hash:, :role:, :is_active:)', [...], false)
+ 5 APPPATH\Database\Seeds\UserSeeder.php(50): CodeIgniter\Database\BaseBuilder->insert([...])
+ 6 SYSTEMPATH\Database\Seeder.php(155): App\Database\Seeds\UserSeeder->run()
+ 7 APPPATH\Database\Seeds\DatabaseSeeder.php(12): CodeIgniter\Database\Seeder->call('App\\Database\\Seeds\\UserSeeder')
+ 8 SYSTEMPATH\Database\Seeder.php(155): App\Database\Seeds\DatabaseSeeder->run()
+ 9 SYSTEMPATH\Commands\Database\Seed.php(79): CodeIgniter\Database\Seeder->call('App\\Database\\Seeds\\DatabaseSeeder')
+10 SYSTEMPATH\CLI\Commands.php(74): CodeIgniter\Commands\Database\Seed->run([])
+11 SYSTEMPATH\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('db:seed', [...])
+12 SYSTEMPATH\Boot.php(442): CodeIgniter\CLI\Console->run()
+13 SYSTEMPATH\Boot.php(166): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+14 ROOTPATH\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+ERROR - 2026-02-19 16:25:03 --> Error connecting to the database: mysqli_sql_exception: Unknown database 'ajesdb' in F:\xammp\htdocs\AJES\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 F:\xammp\htdocs\AJES\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', 'root', Object(SensitiveParameterValue), 'AjesDB', 3306, '', 0)
+#1 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 F:\xammp\htdocs\AJES\system\Database\BaseBuilder.php(1733): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 F:\xammp\htdocs\AJES\system\Model.php(524): CodeIgniter\Database\BaseBuilder->countAllResults(false)
+#5 F:\xammp\htdocs\AJES\system\BaseModel.php(1312): CodeIgniter\Model->countAllResults(false)
+#6 F:\xammp\htdocs\AJES\app\Controllers\Records.php(34): CodeIgniter\BaseModel->paginate(10, 'default', 1)
+#7 F:\xammp\htdocs\AJES\system\CodeIgniter.php(951): App\Controllers\Records->index()
+#8 F:\xammp\htdocs\AJES\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Records))
+#9 F:\xammp\htdocs\AJES\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#10 F:\xammp\htdocs\AJES\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#11 F:\xammp\htdocs\AJES\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#12 F:\xammp\htdocs\AJES\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#13 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Unknown database 'ajesdb' in F:\xammp\htdocs\AJES\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 F:\xammp\htdocs\AJES\system\Database\BaseBuilder.php(1733): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#3 F:\xammp\htdocs\AJES\system\Model.php(524): CodeIgniter\Database\BaseBuilder->countAllResults(false)
+#4 F:\xammp\htdocs\AJES\system\BaseModel.php(1312): CodeIgniter\Model->countAllResults(false)
+#5 F:\xammp\htdocs\AJES\app\Controllers\Records.php(34): CodeIgniter\BaseModel->paginate(10, 'default', 1)
+#6 F:\xammp\htdocs\AJES\system\CodeIgniter.php(951): App\Controllers\Records->index()
+#7 F:\xammp\htdocs\AJES\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Records))
+#8 F:\xammp\htdocs\AJES\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 F:\xammp\htdocs\AJES\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#10 F:\xammp\htdocs\AJES\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 F:\xammp\htdocs\AJES\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 {main}
+CRITICAL - 2026-02-19 16:25:03 --> CodeIgniter\Database\Exceptions\DatabaseException: Unable to connect to the database.
+Main connection [MySQLi]: Unknown database 'ajesdb'
+[Method: GET, Route: records]
+in SYSTEMPATH\Database\BaseConnection.php on line 465.
+ 1 SYSTEMPATH\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH\Database\BaseBuilder.php(1733): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*) AS `numrows`
+FROM `records`
+WHERE `records`.`deleted_at` IS NULL', [], false)
+ 3 SYSTEMPATH\Model.php(524): CodeIgniter\Database\BaseBuilder->countAllResults(false)
+ 4 SYSTEMPATH\BaseModel.php(1312): CodeIgniter\Model->countAllResults(false)
+ 5 APPPATH\Controllers\Records.php(34): CodeIgniter\BaseModel->paginate(10, 'default', 1)
+ 6 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Records->index()
+ 7 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Records))
+ 8 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-02-19 16:25:05 --> Error connecting to the database: mysqli_sql_exception: Unknown database 'ajesdb' in F:\xammp\htdocs\AJES\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 F:\xammp\htdocs\AJES\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', 'root', Object(SensitiveParameterValue), 'AjesDB', 3306, '', 0)
+#1 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 F:\xammp\htdocs\AJES\system\Database\BaseBuilder.php(1733): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 F:\xammp\htdocs\AJES\system\Model.php(524): CodeIgniter\Database\BaseBuilder->countAllResults(false)
+#5 F:\xammp\htdocs\AJES\system\BaseModel.php(1312): CodeIgniter\Model->countAllResults(false)
+#6 F:\xammp\htdocs\AJES\app\Controllers\Records.php(34): CodeIgniter\BaseModel->paginate(10, 'default', 1)
+#7 F:\xammp\htdocs\AJES\system\CodeIgniter.php(951): App\Controllers\Records->index()
+#8 F:\xammp\htdocs\AJES\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Records))
+#9 F:\xammp\htdocs\AJES\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#10 F:\xammp\htdocs\AJES\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#11 F:\xammp\htdocs\AJES\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#12 F:\xammp\htdocs\AJES\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#13 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Unknown database 'ajesdb' in F:\xammp\htdocs\AJES\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 F:\xammp\htdocs\AJES\system\Database\BaseBuilder.php(1733): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#3 F:\xammp\htdocs\AJES\system\Model.php(524): CodeIgniter\Database\BaseBuilder->countAllResults(false)
+#4 F:\xammp\htdocs\AJES\system\BaseModel.php(1312): CodeIgniter\Model->countAllResults(false)
+#5 F:\xammp\htdocs\AJES\app\Controllers\Records.php(34): CodeIgniter\BaseModel->paginate(10, 'default', 1)
+#6 F:\xammp\htdocs\AJES\system\CodeIgniter.php(951): App\Controllers\Records->index()
+#7 F:\xammp\htdocs\AJES\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Records))
+#8 F:\xammp\htdocs\AJES\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 F:\xammp\htdocs\AJES\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#10 F:\xammp\htdocs\AJES\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 F:\xammp\htdocs\AJES\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 {main}
+CRITICAL - 2026-02-19 16:25:05 --> CodeIgniter\Database\Exceptions\DatabaseException: Unable to connect to the database.
+Main connection [MySQLi]: Unknown database 'ajesdb'
+[Method: GET, Route: records]
+in SYSTEMPATH\Database\BaseConnection.php on line 465.
+ 1 SYSTEMPATH\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH\Database\BaseBuilder.php(1733): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*) AS `numrows`
+FROM `records`
+WHERE `records`.`deleted_at` IS NULL', [], false)
+ 3 SYSTEMPATH\Model.php(524): CodeIgniter\Database\BaseBuilder->countAllResults(false)
+ 4 SYSTEMPATH\BaseModel.php(1312): CodeIgniter\Model->countAllResults(false)
+ 5 APPPATH\Controllers\Records.php(34): CodeIgniter\BaseModel->paginate(10, 'default', 1)
+ 6 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Records->index()
+ 7 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Records))
+ 8 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-02-19 16:25:09 --> Error connecting to the database: mysqli_sql_exception: Unknown database 'ajesdb' in F:\xammp\htdocs\AJES\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 F:\xammp\htdocs\AJES\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', 'root', Object(SensitiveParameterValue), 'AjesDB', 3306, '', 0)
+#1 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 F:\xammp\htdocs\AJES\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 F:\xammp\htdocs\AJES\system\Model.php(296): CodeIgniter\Database\BaseBuilder->get()
+#5 F:\xammp\htdocs\AJES\system\BaseModel.php(713): CodeIgniter\Model->doFirst()
+#6 F:\xammp\htdocs\AJES\app\Models\UserModel.php(41): CodeIgniter\BaseModel->first()
+#7 F:\xammp\htdocs\AJES\app\Controllers\Auth.php(31): App\Models\UserModel->findByLogin('admin')
+#8 F:\xammp\htdocs\AJES\system\CodeIgniter.php(951): App\Controllers\Auth->login()
+#9 F:\xammp\htdocs\AJES\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#10 F:\xammp\htdocs\AJES\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 F:\xammp\htdocs\AJES\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#12 F:\xammp\htdocs\AJES\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 F:\xammp\htdocs\AJES\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Unknown database 'ajesdb' in F:\xammp\htdocs\AJES\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 F:\xammp\htdocs\AJES\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 F:\xammp\htdocs\AJES\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#3 F:\xammp\htdocs\AJES\system\Model.php(296): CodeIgniter\Database\BaseBuilder->get()
+#4 F:\xammp\htdocs\AJES\system\BaseModel.php(713): CodeIgniter\Model->doFirst()
+#5 F:\xammp\htdocs\AJES\app\Models\UserModel.php(41): CodeIgniter\BaseModel->first()
+#6 F:\xammp\htdocs\AJES\app\Controllers\Auth.php(31): App\Models\UserModel->findByLogin('admin')
+#7 F:\xammp\htdocs\AJES\system\CodeIgniter.php(951): App\Controllers\Auth->login()
+#8 F:\xammp\htdocs\AJES\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#9 F:\xammp\htdocs\AJES\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#10 F:\xammp\htdocs\AJES\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#11 F:\xammp\htdocs\AJES\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#12 F:\xammp\htdocs\AJES\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#13 {main}
+CRITICAL - 2026-02-19 16:25:09 --> CodeIgniter\Database\Exceptions\DatabaseException: Unable to connect to the database.
+Main connection [MySQLi]: Unknown database 'ajesdb'
+[Method: POST, Route: auth/login]
+in SYSTEMPATH\Database\BaseConnection.php on line 465.
+ 1 SYSTEMPATH\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `users`
+WHERE   (
+`email` = :email:
+OR `username` = :username:
+ )
+AND `is_active` = :is_active:
+AND `users`.`deleted_at` IS NULL
+ LIMIT 1', [...], false)
+ 3 SYSTEMPATH\Model.php(296): CodeIgniter\Database\BaseBuilder->get()
+ 4 SYSTEMPATH\BaseModel.php(713): CodeIgniter\Model->doFirst()
+ 5 APPPATH\Models\UserModel.php(41): CodeIgniter\BaseModel->first()
+ 6 APPPATH\Controllers\Auth.php(31): App\Models\UserModel->findByLogin('admin')
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Auth->login()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-02-19 16:25:20 --> Table 'ajesdb.users' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT *
+FROM `users`
+WHERE   (
+`email` = \'admin\'
+OR `username` = \'admin\'
+ )
+AND `is_active` = 1
+AND `users`.`deleted_at` IS NULL
+ LIMIT 1', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
+FROM `users`
+WHERE   (
+`email` = \'admin\'
+OR `username` = \'admin\'
+ )
+AND `is_active` = 1
+AND `users`.`deleted_at` IS NULL
+ LIMIT 1')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
+FROM `users`
+WHERE   (
+`email` = \'admin\'
+OR `username` = \'admin\'
+ )
+AND `is_active` = 1
+AND `users`.`deleted_at` IS NULL
+ LIMIT 1')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `users`
+WHERE   (
+`email` = :email:
+OR `username` = :username:
+ )
+AND `is_active` = :is_active:
+AND `users`.`deleted_at` IS NULL
+ LIMIT 1', [...], false)
+ 5 SYSTEMPATH\Model.php(296): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\BaseModel.php(713): CodeIgniter\Model->doFirst()
+ 7 APPPATH\Models\UserModel.php(41): CodeIgniter\BaseModel->first()
+ 8 APPPATH\Controllers\Auth.php(31): App\Models\UserModel->findByLogin('admin')
+ 9 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Auth->login()
+10 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+11 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-19 16:25:20 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.users' doesn't exist
+[Method: POST, Route: auth/login]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `users`
+WHERE   (
+`email` = :email:
+OR `username` = :username:
+ )
+AND `is_active` = :is_active:
+AND `users`.`deleted_at` IS NULL
+ LIMIT 1', [...], false)
+ 2 SYSTEMPATH\Model.php(296): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\BaseModel.php(713): CodeIgniter\Model->doFirst()
+ 4 APPPATH\Models\UserModel.php(41): CodeIgniter\BaseModel->first()
+ 5 APPPATH\Controllers\Auth.php(31): App\Models\UserModel->findByLogin('admin')
+ 6 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Auth->login()
+ 7 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+ 8 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-19 16:25:20 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.users' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
+FROM `users`
+WHERE   (
+`email` = \'admin\'
+OR `username` = \'admin\'
+ )
+AND `is_active` = 1
+AND `users`.`deleted_at` IS NULL
+ LIMIT 1')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
+FROM `users`
+WHERE   (
+`email` = \'admin\'
+OR `username` = \'admin\'
+ )
+AND `is_active` = 1
+AND `users`.`deleted_at` IS NULL
+ LIMIT 1')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `users`
+WHERE   (
+`email` = :email:
+OR `username` = :username:
+ )
+AND `is_active` = :is_active:
+AND `users`.`deleted_at` IS NULL
+ LIMIT 1', [...], false)
+ 4 SYSTEMPATH\Model.php(296): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\BaseModel.php(713): CodeIgniter\Model->doFirst()
+ 6 APPPATH\Models\UserModel.php(41): CodeIgniter\BaseModel->first()
+ 7 APPPATH\Controllers\Auth.php(31): App\Models\UserModel->findByLogin('admin')
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Auth->login()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-19 16:25:20 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.users' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT *
+FROM `users`
+WHERE   (
+`email` = \'admin\'
+OR `username` = \'admin\'
+ )
+AND `is_active` = 1
+AND `users`.`deleted_at` IS NULL
+ LIMIT 1', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
+FROM `users`
+WHERE   (
+`email` = \'admin\'
+OR `username` = \'admin\'
+ )
+AND `is_active` = 1
+AND `users`.`deleted_at` IS NULL
+ LIMIT 1')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
+FROM `users`
+WHERE   (
+`email` = \'admin\'
+OR `username` = \'admin\'
+ )
+AND `is_active` = 1
+AND `users`.`deleted_at` IS NULL
+ LIMIT 1')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `users`
+WHERE   (
+`email` = :email:
+OR `username` = :username:
+ )
+AND `is_active` = :is_active:
+AND `users`.`deleted_at` IS NULL
+ LIMIT 1', [...], false)
+ 5 SYSTEMPATH\Model.php(296): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\BaseModel.php(713): CodeIgniter\Model->doFirst()
+ 7 APPPATH\Models\UserModel.php(41): CodeIgniter\BaseModel->first()
+ 8 APPPATH\Controllers\Auth.php(31): App\Models\UserModel->findByLogin('admin')
+ 9 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Auth->login()
+10 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+11 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
