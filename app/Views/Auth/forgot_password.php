@@ -3,15 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Forgot Password - AJES</title>
+    <?php include(APPPATH . 'Views/template.php'); ?>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        .container { max-width: 400px; margin: 0 auto; }
-        label { display: block; margin-bottom: 6px; }
-        input[type="email"] { width: 100%; padding: 8px; margin-bottom: 12px; }
-        button { padding: 8px 16px; }
-        .message { margin-bottom: 12px; color: red; }
-        .success { color: green; }
-        a { text-decoration: none; }
+        body { margin: 40px; }
+        label { margin-bottom: 6px; }
+        input[type="email"] { padding: 8px; margin-bottom: 12px; }
     </style>
     </head>
 <body>

@@ -1,0 +1,1 @@
+__ci_last_regenerate|i:1771701579;_ci_old_input|a:2:{s:3:"get";a:0:{}s:4:"post";a:3:{s:14:"csrf_test_name";s:32:"c735279afe7782f8ceb5018952cc9b65";s:8:"username";s:16:"admin@ajes.local";s:8:"password";s:9:"$password";}}__ci_vars|a:2:{s:13:"_ci_old_input";s:3:"old";s:5:"error";s:3:"old";}error|s:20:"Invalid credentials.";

@@ -8,6 +8,7 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 
 // Authentication
+$routes->get('auth/login', 'Home::index'); // Show login page
 $routes->post('auth/login', 'Auth::login');
 $routes->get('auth/logout', 'Auth::logout');
 $routes->get('auth/forgot-password', 'Auth::showForgotPassword');

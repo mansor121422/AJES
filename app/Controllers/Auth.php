@@ -68,7 +68,7 @@ class Auth extends BaseController
         $session = session();
         $session->destroy();
 
-        return redirect()->to('/');
+        return redirect()->to(base_url('/'));
     }
 
     public function showForgotPassword(): string
@@ -166,13 +166,13 @@ class Auth extends BaseController
     protected function redirectForRole(string $role): string
     {
         return match ($role) {
-            'ADMIN'      => '/dashboard/admin',
-            'PRINCIPAL'  => '/dashboard/principal',
-            'ANNOUNCER'  => '/dashboard/announcer',
-            'TEACHER'    => '/dashboard/teacher',
-            'GUIDANCE'   => '/dashboard/guidance',
-            'STUDENT'    => '/dashboard/student',
-            default      => '/dashboard',
+            'ADMIN'      => base_url('dashboard/admin'),
+            'PRINCIPAL'  => base_url('dashboard/principal'),
+            'ANNOUNCER'  => base_url('dashboard/announcer'),
+            'TEACHER'    => base_url('dashboard/teacher'),
+            'GUIDANCE'   => base_url('dashboard/guidance'),
+            'STUDENT'    => base_url('dashboard/student'),
+            default      => base_url('dashboard'),
         };
     }
 }

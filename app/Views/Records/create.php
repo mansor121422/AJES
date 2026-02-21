@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Create Record - AJES</title>
+    <?php include(APPPATH . 'Views/template.php'); ?>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        label { display: block; margin-bottom: 6px; }
-        input[type="number"], input[type="text"], textarea { width: 100%; padding: 8px; margin-bottom: 12px; }
-        button { padding: 8px 16px; }
+        body { margin: 20px; }
+        label { margin-bottom: 6px; }
+        input[type="number"], input[type="text"], textarea { padding: 8px; margin-bottom: 12px; }
         .message { margin-bottom: 10px; color: red; }
     </style>
 </head>
