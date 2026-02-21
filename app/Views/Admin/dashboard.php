@@ -1,6 +1,6 @@
 <?php
     $role = 'ADMIN';
-    $name = session()->get('name') ?? 'User';
+    $name = session()->get('name') ?? 'Administrator';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -10,34 +10,7 @@
     <?php include(APPPATH . 'Views/template.php'); ?>
 </head>
 <body>
-    <div class="topbar" aria-label="AJES admin dashboard top navigation">
-        <div class="topbar-left">
-            AJES CRIER
-        </div>
-        <div class="topbar-right">
-            <div class="icon-button" aria-label="Notifications">
-                🔔
-                <span class="icon-badge">3</span>
-            </div>
-            <div>
-                <?= esc($name) ?> <span class="badge"><?= esc($role) ?></span>
-            </div>
-            <a href="<?= base_url('auth/logout') ?>" style="color: #ffffff; text-decoration: none;">Logout</a>
-        </div>
-    </div>
-
-    <div class="layout">
-        <div class="sidebar" aria-label="Sidebar navigation">
-            <div class="menu">
-                <a href="<?= base_url('dashboard/admin') ?>">Dashboard Home</a>
-                <a href="<?= base_url('announcements') ?>">Announcements</a>
-                <a href="<?= base_url('chat') ?>">Chat</a>
-                <a href="<?= base_url('records') ?>">Records</a>
-                <a href="<?= base_url('admin/users') ?>">User Management</a>
-            </div>
-        </div>
-
-        <div class="content">
+    <?php include(APPPATH . 'Views/template/index.php'); ?>
             <div class="card">
                 <div class="card-title">
                     Welcome back, <?= esc($name) ?>!
@@ -51,7 +24,7 @@
                 <div class="card-title">System Overview</div>
                 <p style="font-size: 13px; color: #555;">Here you can manage users, review logs, and access announcements, chat, and records modules.</p>
             </div>
-        </div>
     </div>
+</div>
 </body>
 </html>
