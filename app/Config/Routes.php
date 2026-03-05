@@ -27,6 +27,26 @@ $routes->group('dashboard', ['filter' => 'auth'], static function (RouteCollecti
     $routes->get('student', 'Dashboard::student', ['filter' => 'role:STUDENT']);
 });
 
+// Admin: Sections CRUD and invite teachers
+$routes->group('admin', ['filter' => 'auth'], static function (RouteCollection $routes): void {
+    $routes->get('sections', 'Sections::index', ['filter' => 'role:ADMIN']);
+    $routes->get('sections/create', 'Sections::create', ['filter' => 'role:ADMIN']);
+    $routes->post('sections/store', 'Sections::store', ['filter' => 'role:ADMIN']);
+    $routes->get('sections/edit/(:num)', 'Sections::edit/$1', ['filter' => 'role:ADMIN']);
+    $routes->post('sections/update/(:num)', 'Sections::update/$1', ['filter' => 'role:ADMIN']);
+    $routes->get('sections/delete/(:num)', 'Sections::delete/$1', ['filter' => 'role:ADMIN']);
+    $routes->get('sections/(:num)/teachers', 'Sections::sectionTeachers/$1', ['filter' => 'role:ADMIN']);
+    $routes->post('sections/invite', 'Sections::invite', ['filter' => 'role:ADMIN']);
+});
+
+// Teacher: accept section invite, my sections, add students
+$routes->group('teacher', ['filter' => 'auth'], static function (RouteCollection $routes): void {
+    $routes->get('sections', 'TeacherSections::index', ['filter' => 'role:TEACHER']);
+    $routes->get('sections/accept/(:num)', 'TeacherSections::accept/$1', ['filter' => 'role:TEACHER']);
+    $routes->get('sections/(:num)/students', 'TeacherSections::sectionStudents/$1', ['filter' => 'role:TEACHER']);
+    $routes->post('sections/add-student', 'TeacherSections::addStudent', ['filter' => 'role:TEACHER']);
+});
+
 // Records module (restricted to GUIDANCE and ADMIN for now)
 $routes->group('records', ['filter' => 'auth'], static function (RouteCollection $routes): void {
     $routes->get('/', 'Records::index', ['filter' => 'role:GUIDANCE,ADMIN']);

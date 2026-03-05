@@ -22,6 +22,14 @@
     <div class="right-panel">
         <div class="login-container">
             <h1>Account Login</h1>
+
+            <?php if (session()->getFlashdata('error')): ?>
+                <div class="message"><?= esc(session()->getFlashdata('error')) ?></div>
+            <?php endif; ?>
+            <?php if (session()->getFlashdata('success')): ?>
+                <div class="message success"><?= esc(session()->getFlashdata('success')) ?></div>
+            <?php endif; ?>
+
             <form action="<?= base_url('auth/login') ?>" method="post">
                 <?= csrf_field() ?>
                 

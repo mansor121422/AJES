@@ -3,23 +3,31 @@
 namespace App\Controllers;
 
 use App\Models\RecordModel;
+use App\Models\UserModel;
 use CodeIgniter\HTTP\RedirectResponse;
 
 class Records extends BaseController
 {
     protected RecordModel $records;
+    protected UserModel $users;
 
     public function __construct()
     {
         $this->records = new RecordModel();
-        helper(['url', 'form']);
+        $this->users   = new UserModel();
+        helper(['url', 'form', 'text']);
     }
 
     public function index(): string
     {
-        $page     = max(1, (int) (service('request')->getGet('page') ?? 1));
-        $perPage  = 10;
-        $keyword  = trim((string) service('request')->getGet('q'));
+        $page       = max(1, (int) (service('request')->getGet('page') ?? 1));
+        $perPage    = 10;
+        $keyword    = trim((string) service('request')->getGet('q'));
+        $typeFilter = trim((string) service('request')->getGet('type'));
+
+        $db         = \Config\Database::connect();
+        $typeRows   = $db->table('records')->select('type')->distinct()->orderBy('type')->get()->getResultArray();
+        $typeList   = array_column($typeRows, 'type');
 
         $builder = $this->records;
 
@@ -30,18 +38,39 @@ class Records extends BaseController
                 ->groupEnd();
         }
 
-        $data = [
-            'records' => $builder->orderBy('created_at', 'DESC')->paginate($perPage, 'default', $page),
-            'pager'   => $builder->pager,
-            'keyword' => $keyword,
-        ];
+        if ($typeFilter !== '') {
+            $builder = $builder->where('type', $typeFilter);
+        }
 
+        $data = [
+            'records'     => $builder->orderBy('created_at', 'DESC')->paginate($perPage, 'default', $page),
+            'pager'       => $builder->pager,
+            'keyword'     => $keyword,
+            'typeFilter'  => $typeFilter,
+            'typeList'    => $typeList,
+            'recordTypes' => $this->recordTypes(),
+            'role'        => session()->get('role') ?? 'ADMIN',
+            'name'        => session()->get('name') ?? 'User',
+        ];
         return view('Records/index', $data);
+    }
+
+    /** Record types for counseling/session notes (used in forms). */
+    protected function recordTypes(): array
+    {
+        return ['Session', 'Note', 'Referral', 'Other'];
     }
 
     public function create(): string
     {
-        return view('Records/create');
+        $students = $this->users->where('role', 'STUDENT')->orderBy('name')->findAll();
+        $data = [
+            'students'    => $students,
+            'recordTypes' => $this->recordTypes(),
+            'role'        => session()->get('role') ?? 'ADMIN',
+            'name'        => session()->get('name') ?? 'User',
+        ];
+        return view('Records/create', $data);
     }
 
     public function store(): RedirectResponse
@@ -55,6 +84,12 @@ class Records extends BaseController
 
         if ($studentId <= 0 || $type === '' || $details === '') {
             return redirect()->back()->withInput()->with('error', 'All fields are required.');
+        }
+        if (strlen($type) > 50) {
+            return redirect()->back()->withInput()->with('error', 'Type must be at most 50 characters.');
+        }
+        if (strlen($details) > 10000) {
+            return redirect()->back()->withInput()->with('error', 'Details must be at most 10,000 characters.');
         }
 
         $this->records->insert([
@@ -75,7 +110,15 @@ class Records extends BaseController
             return redirect()->to('records')->with('error', 'Record not found.');
         }
 
-        return view('Records/edit', ['record' => $record]);
+        $students = $this->users->where('role', 'STUDENT')->orderBy('name')->findAll();
+        $data = [
+            'record'      => $record,
+            'students'    => $students,
+            'recordTypes' => $this->recordTypes(),
+            'role'        => session()->get('role') ?? 'ADMIN',
+            'name'        => session()->get('name') ?? 'User',
+        ];
+        return view('Records/edit', $data);
     }
 
     public function update(int $id): RedirectResponse
@@ -88,6 +131,12 @@ class Records extends BaseController
 
         if ($studentId <= 0 || $type === '' || $details === '') {
             return redirect()->back()->withInput()->with('error', 'All fields are required.');
+        }
+        if (strlen($type) > 50) {
+            return redirect()->back()->withInput()->with('error', 'Type must be at most 50 characters.');
+        }
+        if (strlen($details) > 10000) {
+            return redirect()->back()->withInput()->with('error', 'Details must be at most 10,000 characters.');
         }
 
         $this->records->update($id, [

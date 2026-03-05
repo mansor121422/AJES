@@ -1,4 +1,50 @@
-# CodeIgniter 4 Framework
+# AJES Crier — Ano Jay Elementary School Announcement System
+
+School announcement and communication system built with **CodeIgniter 4**.  
+**Laboratory Exercise 3** covers: **Login**, **Dashboard**, and **Records** modules.
+
+---
+
+## Quick setup (AJES)
+
+1. **Requirements:** PHP 8.2+, MySQL, Composer.
+2. **Clone and install:**
+   ```bash
+   cd AJES
+   composer install
+   ```
+3. **Environment:** Copy `env` to `.env`, set `CI_ENVIRONMENT = development` and database:
+   ```ini
+   database.default.hostname = localhost
+   database.default.database = AjesDB
+   database.default.username = root
+   database.default.password =
+   ```
+4. **Database:** Create MySQL database `AjesDB`, then run migrations and seed:
+   ```bash
+   php spark migrate
+   php spark db:seed
+   ```
+5. **Run:** Point the document root to the `public` folder (e.g. `http://localhost/AJES/public/` or use `php spark serve` and visit `http://localhost:8080`).
+
+**Default logins (after seeding):**  
+`admin` / `123123`, `guidance` / `123123`, `principal` / `123123`, `teacher1` / `123123`, `student1` / `123123`, `announcer` / `123123`.
+
+---
+
+## Module descriptions (Lab 3)
+
+| Module | Description |
+|--------|-------------|
+| **Login** | Session-based authentication; credentials validated against DB; password hashing; error handling and lockout after 5 failed attempts; forgot password and reset password (email + token). |
+| **Dashboard** | Role-based dashboards (Admin, Principal, Teacher, Guidance, Announcer, Student); sidebar navigation; KPIs and recent activity per role; responsive layout; access controlled by role. |
+| **Records** | CRUD for guidance/student records; search by keyword; filter by type; pagination; restricted to **GUIDANCE** and **ADMIN**; data validation and CSRF on forms. |
+
+**Lab 3 documentation:** See [docs/LAB3_SYSTEM_DEVELOPMENT.md](docs/LAB3_SYSTEM_DEVELOPMENT.md) for answers to the lab questions, flowchart (login → dashboard → records), output/results, and conclusion.
+
+---
+
+## CodeIgniter 4 Framework
 
 ## What is CodeIgniter?
 

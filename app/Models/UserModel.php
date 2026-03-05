@@ -15,6 +15,12 @@ class UserModel extends Model
 
     protected $allowedFields = [
         'name',
+        'surname',
+        'first_name',
+        'middle_initial',
+        'name_suffix',
+        'gender',
+        'grade_level',
         'email',
         'username',
         'password_hash',
@@ -25,6 +31,19 @@ class UserModel extends Model
         'failed_attempts',
         'last_failed_at',
     ];
+
+    /** Full name: Surname, First name MI Suffix (or name if not set). */
+    public static function fullName(array $user): string
+    {
+        $s = trim($user['surname'] ?? '');
+        $f = trim($user['first_name'] ?? '');
+        $m = trim($user['middle_initial'] ?? '');
+        $x = trim($user['name_suffix'] ?? '');
+        if ($s !== '' || $f !== '') {
+            return $s . ($f !== '' ? ', ' . $f : '') . ($m !== '' ? ' ' . $m : '') . ($x !== '' ? ' ' . $x : '');
+        }
+        return $user['name'] ?? $user['username'] ?? '—';
+    }
 
     protected $useTimestamps = true;
     protected $createdField  = 'created_at';

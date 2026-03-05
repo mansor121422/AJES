@@ -10,6 +10,7 @@ switch ($role) {
     case 'ADMIN':
         $menuItems = [
             ['url' => 'dashboard/admin', 'label' => 'Dashboard Home', 'icon' => '📊'],
+            ['url' => 'admin/sections', 'label' => 'Sections', 'icon' => '📂'],
             ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'],
             ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'],
             ['url' => 'records', 'label' => 'Records', 'icon' => '📁'],
@@ -27,7 +28,7 @@ switch ($role) {
         $menuItems = [
             ['url' => 'dashboard/teacher', 'label' => 'Dashboard Home', 'icon' => '📊'],
             ['url' => 'announcements', 'label' => 'Create Announcement', 'icon' => '📢'],
-            ['url' => 'dashboard/teacher', 'label' => 'My Sections', 'icon' => '📂'],
+            ['url' => 'teacher/sections', 'label' => 'My Sections', 'icon' => '📂'],
             ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'],
             ['url' => 'records', 'label' => 'Records', 'icon' => '📁'],
         ];
