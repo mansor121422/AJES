@@ -27,6 +27,17 @@ $routes->group('dashboard', ['filter' => 'auth'], static function (RouteCollecti
     $routes->get('student', 'Dashboard::student', ['filter' => 'role:STUDENT']);
 });
 
+// Announcements
+$routes->get('announcements', 'Announcements::index', ['filter' => 'auth']);
+$routes->get('announcements/create', 'Announcements::create', ['filter' => 'auth']);
+$routes->post('announcements/store', 'Announcements::store', ['filter' => 'auth']);
+$routes->get('announcements/edit/(:num)', 'Announcements::edit/$1', ['filter' => 'auth']);
+$routes->post('announcements/update/(:num)', 'Announcements::update/$1', ['filter' => 'auth']);
+$routes->get('announcements/delete/(:num)', 'Announcements::delete/$1', ['filter' => 'auth']);
+
+// Chat (all authenticated roles)
+$routes->get('chat', 'Chat::index', ['filter' => 'auth']);
+
 // Admin: Sections CRUD and invite teachers
 $routes->group('admin', ['filter' => 'auth'], static function (RouteCollection $routes): void {
     $routes->get('sections', 'Sections::index', ['filter' => 'role:ADMIN']);
@@ -37,6 +48,12 @@ $routes->group('admin', ['filter' => 'auth'], static function (RouteCollection $
     $routes->get('sections/delete/(:num)', 'Sections::delete/$1', ['filter' => 'role:ADMIN']);
     $routes->get('sections/(:num)/teachers', 'Sections::sectionTeachers/$1', ['filter' => 'role:ADMIN']);
     $routes->post('sections/invite', 'Sections::invite', ['filter' => 'role:ADMIN']);
+    $routes->get('users', 'Users::index', ['filter' => 'role:ADMIN']);
+    $routes->get('users/create', 'Users::create', ['filter' => 'role:ADMIN']);
+    $routes->post('users/store', 'Users::store', ['filter' => 'role:ADMIN']);
+    $routes->get('users/edit/(:num)', 'Users::edit/$1', ['filter' => 'role:ADMIN']);
+    $routes->post('users/update/(:num)', 'Users::update/$1', ['filter' => 'role:ADMIN']);
+    $routes->get('users/delete/(:num)', 'Users::delete/$1', ['filter' => 'role:ADMIN']);
 });
 
 // Teacher: accept section invite, my sections, add students

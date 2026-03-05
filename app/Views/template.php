@@ -279,6 +279,51 @@
         border-bottom: 1px solid #e8f5e9;
     }
 
+    /* Admin feature cards (clickable grid) */
+    .admin-features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 16px;
+    }
+
+    .admin-feature-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 16px;
+        background: #f1f8e9;
+        border: 2px solid #c8e6c9;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #1b5e20;
+        transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    }
+
+    .admin-feature-card:hover {
+        background: #e8f5e9;
+        border-color: #81c784;
+        transform: translateY(-2px);
+    }
+
+    .admin-feature-icon {
+        font-size: 2rem;
+        margin-bottom: 8px;
+    }
+
+    .admin-feature-label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-align: center;
+    }
+
+    .admin-feature-desc {
+        font-size: 0.8rem;
+        color: #558b2f;
+        text-align: center;
+        margin-top: 4px;
+    }
+
     /* Recent table (announcements, activity) */
     .recent-table {
         width: 100%;
