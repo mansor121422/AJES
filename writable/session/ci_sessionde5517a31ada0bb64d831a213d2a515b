@@ -1,0 +1,1 @@
+__ci_last_regenerate|i:1772716442;_ci_old_input|a:2:{s:3:"get";a:0:{}s:4:"post";a:3:{s:14:"csrf_test_name";s:32:"3a19445da49a7a848831f9660fa500b1";s:8:"username";s:5:"admin";s:8:"password";s:6:"123123";}}__ci_vars|a:2:{s:13:"_ci_old_input";s:3:"old";s:5:"error";s:3:"old";}error|s:20:"Invalid credentials.";
