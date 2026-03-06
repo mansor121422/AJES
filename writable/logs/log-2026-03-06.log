@@ -2062,3 +2062,42 @@ WHERE `user_id` = :user_id:', [...], false)
 11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
 12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
 13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 07:05:54 --> ParseError: syntax error, unexpected single-quoted string "iyot", expecting "]"
+[Method: POST, Route: chat/send]
+in APPPATH\Config\BadWords.php on line 21.
+ 1 SYSTEMPATH\Autoloader\Autoloader.php(295): CodeIgniter\Autoloader\Autoloader->includeFile('C:\\xampp\\htdocs\\AJES\\app\\Config\\BadWords.php')
+ 2 SYSTEMPATH\Autoloader\Autoloader.php(271): CodeIgniter\Autoloader\Autoloader->loadInNamespace('Config\\BadWords')
+ 3 APPPATH\Controllers\Chat.php(210): CodeIgniter\Autoloader\Autoloader->loadClass('Config\\BadWords')
+ 4 APPPATH\Controllers\Chat.php(99): App\Controllers\Chat->censorMessage('sex')
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->send()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 07:05:56 --> ParseError: syntax error, unexpected single-quoted string "iyot", expecting "]"
+[Method: POST, Route: chat/send]
+in APPPATH\Config\BadWords.php on line 21.
+ 1 SYSTEMPATH\Autoloader\Autoloader.php(295): CodeIgniter\Autoloader\Autoloader->includeFile('C:\\xampp\\htdocs\\AJES\\app\\Config\\BadWords.php')
+ 2 SYSTEMPATH\Autoloader\Autoloader.php(271): CodeIgniter\Autoloader\Autoloader->loadInNamespace('Config\\BadWords')
+ 3 APPPATH\Controllers\Chat.php(210): CodeIgniter\Autoloader\Autoloader->loadClass('Config\\BadWords')
+ 4 APPPATH\Controllers\Chat.php(99): App\Controllers\Chat->censorMessage('sex')
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->send()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 07:05:58 --> ParseError: syntax error, unexpected single-quoted string "iyot", expecting "]"
+[Method: POST, Route: chat/send]
+in APPPATH\Config\BadWords.php on line 21.
+ 1 SYSTEMPATH\Autoloader\Autoloader.php(295): CodeIgniter\Autoloader\Autoloader->includeFile('C:\\xampp\\htdocs\\AJES\\app\\Config\\BadWords.php')
+ 2 SYSTEMPATH\Autoloader\Autoloader.php(271): CodeIgniter\Autoloader\Autoloader->loadInNamespace('Config\\BadWords')
+ 3 APPPATH\Controllers\Chat.php(210): CodeIgniter\Autoloader\Autoloader->loadClass('Config\\BadWords')
+ 4 APPPATH\Controllers\Chat.php(99): App\Controllers\Chat->censorMessage('sex')
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->send()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))

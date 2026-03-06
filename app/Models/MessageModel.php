@@ -20,6 +20,7 @@ class MessageModel extends Model
         'sender_id',
         'receiver_id',
         'content',
+        'content_original',
         'status',
         'is_bot',
     ];
@@ -31,7 +32,7 @@ class MessageModel extends Model
     public function getConversation(int $userId, int $otherUserId, int $limit = 100): array
     {
         $hiddenIds = $this->getHiddenMessageIdsForUser($userId);
-        $builder = $this->groupStart()
+        $builder = $this->withDeleted()->groupStart()
             ->groupStart()
                 ->where('sender_id', $userId)->where('receiver_id', $otherUserId)
             ->groupEnd()
@@ -70,6 +71,17 @@ class MessageModel extends Model
             'user_id'    => $userId,
             'created_at' => date('Y-m-d H:i:s'),
         ]);
+    }
+
+    /**
+     * Get all messages for admin chat logs (includes soft-deleted / unsent for everyone).
+     * Ordered newest first.
+     */
+    public function getAllForAdmin(int $limit = 500): array
+    {
+        return $this->withDeleted()
+            ->orderBy('created_at', 'DESC')
+            ->findAll($limit);
     }
 
     /**

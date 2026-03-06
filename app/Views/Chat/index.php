@@ -36,6 +36,8 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
         .chat-msg-dots:hover { background: rgba(0,0,0,0.08); color: #1b5e20; }
         .chat-msg.theirs .chat-msg-dots { color: #666; }
         .chat-msg.theirs .chat-msg-dots:hover { color: #333; }
+        .chat-msg-unsent .chat-msg-body { font-style: italic; }
+        .chat-msg-unsent-text { color: #888; font-size: 0.9rem; }
         .chat-msg-dropdown { display: none; position: absolute; right: 0; top: 100%; margin-top: 2px; min-width: 160px; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10; overflow: hidden; }
         .chat-msg-dropdown.open { display: block; }
         .chat-msg-dropdown form { display: block; border-bottom: 1px solid #eee; }
@@ -81,13 +83,21 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                 <div class="chat-header"><?= esc($with_user['name']) ?> <span style="font-weight: normal; color: #558b2f;">(<?= esc($with_user['role']) ?>)</span></div>
                 <div class="chat-messages" id="chat-messages">
                     <?php foreach ($conversation as $msg): ?>
-                        <?php $isMine = (int) $msg['sender_id'] === $current_id; ?>
-                        <div class="chat-msg <?= $isMine ? 'mine' : 'theirs' ?>" data-message-id="<?= (int) $msg['id'] ?>" data-is-mine="<?= $isMine ? '1' : '0' ?>">
+                        <?php
+                        $isMine = (int) $msg['sender_id'] === $current_id;
+                        $unsentForAll = ! empty($msg['deleted_at']);
+                        ?>
+                        <div class="chat-msg <?= $isMine ? 'mine' : 'theirs' ?> <?= $unsentForAll ? 'chat-msg-unsent' : '' ?>" data-message-id="<?= (int) $msg['id'] ?>" data-is-mine="<?= $isMine ? '1' : '0' ?>">
                             <div class="chat-msg-inner">
                                 <div class="chat-msg-body">
+                                    <?php if ($unsentForAll): ?>
+                                    <div class="chat-msg-unsent-text">The message was unsent for everyone.</div>
+                                    <?php else: ?>
                                     <div><?= nl2br(esc($msg['content'])) ?></div>
+                                    <?php endif; ?>
                                     <div class="chat-msg-time"><?= esc($msg['created_at'] ?? '') ?></div>
                                 </div>
+                                <?php if (! $unsentForAll): ?>
                                 <div class="chat-msg-menu">
                                     <button type="button" class="chat-msg-dots" aria-label="Message options">&#8942;</button>
                                     <div class="chat-msg-dropdown">
@@ -109,6 +119,7 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                                         <?php endif; ?>
                                     </div>
                                 </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -189,16 +200,24 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
             fetch('<?= base_url('chat/messages') ?>?with=' + withId, { credentials: 'same-origin' })
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
-                    if (data.messages && data.messages.length !== lastCount) {
+                    if (data.messages) {
                         lastCount = data.messages.length;
                         var html = '';
                         data.messages.forEach(function(m) {
                             var cls = m.is_mine ? 'mine' : 'theirs';
+                            var unsent = m.unsent_for_all;
+                            if (unsent) cls += ' chat-msg-unsent';
                             html += '<div class="chat-msg ' + cls + '" data-message-id="' + m.id + '" data-is-mine="' + (m.is_mine ? '1' : '0') + '">';
                             html += '<div class="chat-msg-inner"><div class="chat-msg-body">';
-                            html += '<div>' + escapeHtml(m.content).replace(/\n/g, '<br>') + '</div>';
+                            if (unsent) {
+                                html += '<div class="chat-msg-unsent-text">The message was unsent for everyone.</div>';
+                            } else {
+                                html += '<div>' + escapeHtml(m.content).replace(/\n/g, '<br>') + '</div>';
+                            }
                             html += '<div class="chat-msg-time">' + escapeHtml(m.created_at) + '</div>';
-                            html += '</div>' + unsendMenuHtml(m.id, m.is_mine) + '</div></div>';
+                            html += '</div>';
+                            if (!unsent) html += unsendMenuHtml(m.id, m.is_mine);
+                            html += '</div></div>';
                         });
                         messagesEl.innerHTML = html;
                         messagesEl.scrollTop = messagesEl.scrollHeight;

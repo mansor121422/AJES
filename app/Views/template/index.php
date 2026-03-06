@@ -13,6 +13,7 @@ switch ($role) {
             ['url' => 'admin/sections', 'label' => 'Sections', 'icon' => '📂'],
             ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'],
             ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'],
+            ['url' => 'admin/chat-logs', 'label' => 'Chat Logs', 'icon' => '📋'],
             ['url' => 'records', 'label' => 'Records', 'icon' => '📁'],
             ['url' => 'admin/users', 'label' => 'User Management', 'icon' => '👥'],
         ];
@@ -30,7 +31,6 @@ switch ($role) {
             ['url' => 'announcements', 'label' => 'Create Announcement', 'icon' => '📢'],
             ['url' => 'teacher/sections', 'label' => 'My Sections', 'icon' => '📂'],
             ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'],
-            ['url' => 'records', 'label' => 'Records', 'icon' => '📁'],
         ];
         break;
     case 'PRINCIPAL':
