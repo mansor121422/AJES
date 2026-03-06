@@ -103,12 +103,41 @@ class Auth extends BaseController
         ]);
 
         $resetLink = base_url('auth/reset-password/' . $token);
+        $logoUrl    = rtrim(config('App')->baseURL, '/') . 'public/assets/images/ajes-logo.png';
+
+        $htmlMessage = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0; padding:0; font-family: \'Segoe UI\', system-ui, sans-serif; background:#e8f5e9;">'
+            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#e8f5e9; padding: 32px 16px;">'
+            . '<tr><td align="center">'
+            . '<table role="presentation" cellspacing="0" cellpadding="0" style="max-width: 420px; width:100%; background:#fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(27,94,32,0.15); overflow: hidden;">'
+            . '<tr><td style="padding: 32px 24px; text-align: center; background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);">'
+            . '<img src="' . esc($logoUrl) . '" alt="AJES" style="max-width: 100px; height: auto; display: inline-block;" />'
+            . '<p style="margin: 12px 0 0 0; color: #fff; font-size: 18px; font-weight: 700;">AJES CRIER</p>'
+            . '<p style="margin: 4px 0 0 0; color: #c8e6c9; font-size: 13px;">Password Reset</p>'
+            . '</td></tr>'
+            . '<tr><td style="padding: 28px 24px;">'
+            . '<p style="margin: 0 0 16px 0; color: #333; font-size: 15px; line-height: 1.5;">Hello,</p>'
+            . '<p style="margin: 0 0 20px 0; color: #555; font-size: 14px; line-height: 1.5;">You requested to reset your password. Click the button below to set a new password. This link expires in 1 hour.</p>'
+            . '<p style="margin: 0 0 24px 0; text-align: center;">'
+            . '<a href="' . esc($resetLink) . '" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); color: #fff; text-decoration: none; font-weight: 600; font-size: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(27,94,32,0.3);">Reset Password</a>'
+            . '</p>'
+            . '<p style="margin: 0; color: #888; font-size: 12px; line-height: 1.5;">If you didn\'t request this, you can ignore this email.</p>'
+            . '<p style="margin: 16px 0 0 0; color: #999; font-size: 11px;">If the button doesn\'t work, copy and paste this link into your browser:<br/><a href="' . esc($resetLink) . '" style="color: #2e7d32; word-break: break-all;">' . esc($resetLink) . '</a></p>'
+            . '</td></tr>'
+            . '<tr><td style="padding: 16px 24px; background: #f1f8e9; border-top: 1px solid #c8e6c9; text-align: center;">'
+            . '<p style="margin: 0; color: #558b2f; font-size: 12px;">Ano Jay Elementary School · AJES Philippines</p>'
+            . '</td></tr></table></td></tr></table></body></html>';
 
         $emailService = service('email');
         $emailService->setTo($email);
         $emailService->setSubject('AJES Password Reset');
-        $emailService->setMessage("To reset your password, click this link:\n\n" . $resetLink);
-        $emailService->send();
+        $emailService->setMailType('html');
+        $emailService->setMessage($htmlMessage);
+        $sent = $emailService->send();
+
+        if (! $sent) {
+            log_message('error', 'Forgot password email failed: ' . strip_tags($emailService->printDebugger([])));
+            return redirect()->back()->withInput()->with('error', 'Email could not be sent. Use a file named .env (with a dot) in the project root with SMTP_HOST, SMTP_USER, SMTP_PASS. See docs/GMAIL_FORGOT_PASSWORD_SETUP.md and writable/logs.');
+        }
 
         $session->setFlashdata('success', 'If that email exists, a reset link has been sent.');
 

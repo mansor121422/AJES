@@ -10,6 +10,20 @@
             display: flex;
             height: 100vh;
         }
+        .login-container .message {
+            color: #fff;
+            background: rgba(0,0,0,0.25);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .login-container .message.success {
+            color: #fff;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
     </style>
 </head>
 <body>

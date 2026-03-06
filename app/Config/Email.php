@@ -70,6 +70,32 @@ class Email extends BaseConfig
     public string $SMTPCrypto = 'tls';
 
     /**
+     * Load Gmail/SMTP settings from environment when set (e.g. .env).
+     * Used for Forgot Password to send reset link via Gmail.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+        $from = env('EMAIL_FROM', '');
+        $fromName = env('EMAIL_FROM_NAME', '');
+        $smtpHost = env('SMTP_HOST', '');
+        if ($from !== '') {
+            $this->fromEmail = $from;
+        }
+        if ($fromName !== '') {
+            $this->fromName = $fromName;
+        }
+        if ($smtpHost !== '') {
+            $this->protocol   = env('EMAIL_PROTOCOL', 'smtp') ?: 'smtp';
+            $this->SMTPHost   = $smtpHost;
+            $this->SMTPUser   = (string) env('SMTP_USER', '');
+            $this->SMTPPass   = (string) env('SMTP_PASS', '');
+            $this->SMTPPort   = (int) (env('SMTP_PORT', 587) ?: 587);
+            $this->SMTPCrypto = (string) (env('SMTP_CRYPTO', 'tls') ?: 'tls');
+        }
+    }
+
+    /**
      * Enable word-wrap
      */
     public bool $wordWrap = true;

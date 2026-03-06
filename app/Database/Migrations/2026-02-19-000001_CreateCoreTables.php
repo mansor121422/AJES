@@ -127,10 +127,41 @@ class CreateCoreTables extends Migration
         $this->forge->addKey('id', true);
         $this->forge->addKey('user_id');
         $this->forge->createTable('notifications', true);
+
+        // Foreign keys (all tables exist now)
+        $prefix = $this->db->getPrefix();
+        $this->db->query("ALTER TABLE `{$prefix}users` ADD CONSTRAINT `fk_users_section` FOREIGN KEY (`section_id`) REFERENCES `{$prefix}sections` (`id`) ON DELETE SET NULL ON UPDATE CASCADE");
+        $this->db->query("ALTER TABLE `{$prefix}teacher_sections` ADD CONSTRAINT `fk_teacher_sections_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `{$prefix}users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+        $this->db->query("ALTER TABLE `{$prefix}teacher_sections` ADD CONSTRAINT `fk_teacher_sections_section` FOREIGN KEY (`section_id`) REFERENCES `{$prefix}sections` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+        $this->db->query("ALTER TABLE `{$prefix}announcements` ADD CONSTRAINT `fk_announcements_created_by` FOREIGN KEY (`created_by`) REFERENCES `{$prefix}users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE");
+        $this->db->query("ALTER TABLE `{$prefix}announcements` ADD CONSTRAINT `fk_announcements_section` FOREIGN KEY (`section_id`) REFERENCES `{$prefix}sections` (`id`) ON DELETE SET NULL ON UPDATE CASCADE");
+        $this->db->query("ALTER TABLE `{$prefix}messages` ADD CONSTRAINT `fk_messages_sender` FOREIGN KEY (`sender_id`) REFERENCES `{$prefix}users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE");
+        $this->db->query("ALTER TABLE `{$prefix}messages` ADD CONSTRAINT `fk_messages_receiver` FOREIGN KEY (`receiver_id`) REFERENCES `{$prefix}users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE");
+        $this->db->query("ALTER TABLE `{$prefix}records` ADD CONSTRAINT `fk_records_student` FOREIGN KEY (`student_id`) REFERENCES `{$prefix}users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE");
+        $this->db->query("ALTER TABLE `{$prefix}records` ADD CONSTRAINT `fk_records_created_by` FOREIGN KEY (`created_by`) REFERENCES `{$prefix}users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE");
+        $this->db->query("ALTER TABLE `{$prefix}logs` ADD CONSTRAINT `fk_logs_user` FOREIGN KEY (`user_id`) REFERENCES `{$prefix}users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE");
+        $this->db->query("ALTER TABLE `{$prefix}notifications` ADD CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `{$prefix}users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
     }
 
     public function down(): void
     {
+        $prefix = $this->db->getPrefix();
+        $drops = [
+            "ALTER TABLE `{$prefix}notifications` DROP FOREIGN KEY `fk_notifications_user`",
+            "ALTER TABLE `{$prefix}logs` DROP FOREIGN KEY `fk_logs_user`",
+            "ALTER TABLE `{$prefix}records` DROP FOREIGN KEY `fk_records_student`",
+            "ALTER TABLE `{$prefix}records` DROP FOREIGN KEY `fk_records_created_by`",
+            "ALTER TABLE `{$prefix}messages` DROP FOREIGN KEY `fk_messages_sender`",
+            "ALTER TABLE `{$prefix}messages` DROP FOREIGN KEY `fk_messages_receiver`",
+            "ALTER TABLE `{$prefix}announcements` DROP FOREIGN KEY `fk_announcements_created_by`",
+            "ALTER TABLE `{$prefix}announcements` DROP FOREIGN KEY `fk_announcements_section`",
+            "ALTER TABLE `{$prefix}teacher_sections` DROP FOREIGN KEY `fk_teacher_sections_teacher`",
+            "ALTER TABLE `{$prefix}teacher_sections` DROP FOREIGN KEY `fk_teacher_sections_section`",
+            "ALTER TABLE `{$prefix}users` DROP FOREIGN KEY `fk_users_section`",
+        ];
+        foreach ($drops as $sql) {
+            $this->db->query($sql);
+        }
         $this->forge->dropTable('notifications', true);
         $this->forge->dropTable('logs', true);
         $this->forge->dropTable('records', true);
