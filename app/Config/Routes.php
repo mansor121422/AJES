@@ -37,6 +37,9 @@ $routes->get('announcements/delete/(:num)', 'Announcements::delete/$1', ['filter
 
 // Chat (all authenticated roles)
 $routes->get('chat', 'Chat::index', ['filter' => 'auth']);
+$routes->post('chat/send', 'Chat::send', ['filter' => 'auth']);
+$routes->post('chat/unsend', 'Chat::unsend', ['filter' => 'auth']);
+$routes->get('chat/messages', 'Chat::getMessages', ['filter' => 'auth']);
 
 // Admin: Sections CRUD and invite teachers
 $routes->group('admin', ['filter' => 'auth'], static function (RouteCollection $routes): void {

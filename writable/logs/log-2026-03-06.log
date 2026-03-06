@@ -37,3 +37,2028 @@ CodeIgniter\CLI\InputOutput::input(): Return value must be of type string, bool 
 [Method: CLI, Route: db:seed]
 in SYSTEMPATH\CLI\InputOutput.php on line 78.
  1 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+ERROR - 2026-03-06 06:50:42 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:42 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:42 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:42 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:50:46 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:46 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:46 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:46 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:50:50 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:50 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:50 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:50 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:50:54 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:54 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:54 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:54 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(86): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:50:58 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:58 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:58 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:50:58 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:02 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:02 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:02 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:02 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:06 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:06 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:06 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:06 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:10 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:10 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:10 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:10 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:14 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:14 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:14 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:14 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:18 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:18 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:18 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:18 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:22 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:22 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:22 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:22 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:26 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:26 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:26 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:26 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:30 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:30 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:30 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:30 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:34 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:34 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:34 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:34 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:38 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:38 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:38 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:38 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:42 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:42 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:42 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:42 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(55): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:46 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:46 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:46 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:46 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:50 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:50 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:50 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:50 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:54 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:54 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:54 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:54 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:51:58 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:58 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:58 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:51:58 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:52:02 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:02 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:02 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:02 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:52:06 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:06 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:06 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:06 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:52:10 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:10 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:10 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:10 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:52:14 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:14 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:14 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:14 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-03-06 06:52:18 --> Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:18 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+[Method: GET, Route: chat/messages]
+in SYSTEMPATH\Database\BaseConnection.php on line 724.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 2 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 4 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:18 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 2 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 4 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 6 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-06 06:52:18 --> [Caused by] mysqli_sql_exception: Table 'ajesdb.message_hides' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(769): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 3 SYSTEMPATH\Database\BaseConnection.php(686): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = 2')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `message_id`
+FROM `message_hides`
+WHERE `user_id` = :user_id:', [...], false)
+ 5 APPPATH\Models\MessageModel.php(54): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Models\MessageModel.php(33): App\Models\MessageModel->getHiddenMessageIdsForUser(2)
+ 7 APPPATH\Controllers\Chat.php(127): App\Models\MessageModel->getConversation(2, 1)
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Chat->getMessages()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Chat))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
