@@ -54,6 +54,7 @@ $routes->group('admin', ['filter' => 'auth'], static function (RouteCollection $
     $routes->get('users/edit/(:num)', 'Users::edit/$1', ['filter' => 'role:ADMIN']);
     $routes->post('users/update/(:num)', 'Users::update/$1', ['filter' => 'role:ADMIN']);
     $routes->get('users/delete/(:num)', 'Users::delete/$1', ['filter' => 'role:ADMIN']);
+    $routes->get('users/restore/(:num)', 'Users::restore/$1', ['filter' => 'role:ADMIN']);
 });
 
 // Teacher: accept section invite, my sections, add students

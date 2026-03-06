@@ -20,11 +20,20 @@ class Users extends BaseController
 
     public function index(): string
     {
-        $list = $this->users->orderBy('role')->orderBy('name')->findAll();
+        $showDeleted = (bool) $this->request->getGet('deleted');
+        if ($showDeleted) {
+            $list = $this->users->onlyDeleted()->orderBy('role')->orderBy('name')->findAll();
+            $deletedCount = count($list);
+        } else {
+            $list = $this->users->orderBy('role')->orderBy('name')->findAll();
+            $deletedCount = $this->users->onlyDeleted()->countAllResults();
+        }
         $data = [
-            'users' => $list,
-            'role'  => session()->get('role') ?? 'ADMIN',
-            'name'  => session()->get('name') ?? 'User',
+            'users'        => $list,
+            'show_deleted' => $showDeleted,
+            'deleted_count' => $deletedCount,
+            'role'         => session()->get('role') ?? 'ADMIN',
+            'name'         => session()->get('name') ?? 'User',
         ];
         return view('Admin/Users/index', $data);
     }
@@ -52,6 +61,12 @@ class Users extends BaseController
 
         if ($name === '' || $email === '' || $username === '' || $password === '' || $role === '') {
             return redirect()->back()->withInput()->with('error', 'Name, email, username, password and role are required.');
+        }
+        if (! preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
+            return redirect()->back()->withInput()->with('error', 'Username: letters, numbers, and underscore only. No special characters.');
+        }
+        if (! preg_match('/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $email)) {
+            return redirect()->back()->withInput()->with('error', 'Email: invalid format. Only letters, numbers, and @ are allowed (e.g. user@domain.com).');
         }
         if (strlen($password) < 6) {
             return redirect()->back()->withInput()->with('error', 'Password must be at least 6 characters.');
@@ -84,12 +99,16 @@ class Users extends BaseController
         if (! $user) {
             return redirect()->to(base_url('admin/users'))->with('error', 'User not found.');
         }
+        $currentRole = session()->get('role') ?? '';
+        $currentUserId = (int) session()->get('user_id');
+        $is_editing_self = ($currentRole === 'ADMIN' && $currentUserId === (int) $id);
         $sections = $this->sections->orderBy('grade_level')->orderBy('name')->findAll();
         $data = [
-            'user'     => $user,
-            'sections' => $sections,
-            'role'     => session()->get('role') ?? 'ADMIN',
-            'name'     => session()->get('name') ?? 'User',
+            'user'            => $user,
+            'sections'        => $sections,
+            'role'            => $currentRole ?: 'ADMIN',
+            'name'            => session()->get('name') ?? 'User',
+            'is_editing_self' => $is_editing_self,
         ];
         return view('Admin/Users/edit', $data);
     }
@@ -100,16 +119,26 @@ class Users extends BaseController
         if (! $user) {
             return redirect()->to(base_url('admin/users'))->with('error', 'User not found.');
         }
+        $currentRole = session()->get('role') ?? '';
+        $currentUserId = (int) session()->get('user_id');
+        $is_editing_self = ($currentRole === 'ADMIN' && $currentUserId === $id);
+
         $name     = trim((string) $this->request->getPost('name'));
         $email    = trim((string) $this->request->getPost('email'));
         $username = trim((string) $this->request->getPost('username'));
         $password = (string) $this->request->getPost('password');
-        $role     = trim((string) $this->request->getPost('role'));
+        $role     = $is_editing_self ? ($user['role'] ?? 'ADMIN') : trim((string) $this->request->getPost('role'));
         $sectionId = $this->request->getPost('section_id');
         $isActive  = (int) $this->request->getPost('is_active');
 
         if ($name === '' || $email === '' || $username === '' || $role === '') {
             return redirect()->back()->withInput()->with('error', 'Name, email, username and role are required.');
+        }
+        if (! preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
+            return redirect()->back()->withInput()->with('error', 'Username: letters, numbers, and underscore only. No special characters.');
+        }
+        if (! preg_match('/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $email)) {
+            return redirect()->back()->withInput()->with('error', 'Email: invalid format. Only letters, numbers, and @ are allowed (e.g. user@domain.com).');
         }
         $existing = $this->users->where('email', $email)->where('id !=', $id)->first();
         if ($existing) {
@@ -139,6 +168,12 @@ class Users extends BaseController
             $data['section_id'] = null;
         }
         $this->users->update($id, $data);
+
+        if ($password !== '' && $currentUserId === (int) $id) {
+            session()->destroy();
+            return redirect()->to(base_url('/?password_changed=1'));
+        }
+
         return redirect()->to(base_url('admin/users'))->with('success', 'User updated.');
     }
 
@@ -154,7 +189,18 @@ class Users extends BaseController
         if (($user['role'] ?? '') === 'ADMIN') {
             return redirect()->to(base_url('admin/users'))->with('error', 'Admin accounts cannot be deleted.');
         }
+        $this->users->update($id, ['is_active' => 0]);
         $this->users->delete($id);
-        return redirect()->to(base_url('admin/users'))->with('success', 'User deleted.');
+        return redirect()->to(base_url('admin/users'))->with('success', 'User archived. You can restore them from Deleted users.');
+    }
+
+    public function restore(int $id): RedirectResponse
+    {
+        $user = $this->users->onlyDeleted()->find($id);
+        if (! $user) {
+            return redirect()->to(base_url('admin/users'))->with('error', 'User not found or not deleted.');
+        }
+        $this->users->update($id, ['deleted_at' => null, 'is_active' => 1]);
+        return redirect()->to(base_url('admin/users'))->with('success', 'User restored.');
     }
 }

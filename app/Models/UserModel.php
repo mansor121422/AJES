@@ -30,6 +30,7 @@ class UserModel extends Model
         'is_active',
         'failed_attempts',
         'last_failed_at',
+        'deleted_at',
     ];
 
     /** Full name: Surname, First name MI Suffix (or name if not set). */

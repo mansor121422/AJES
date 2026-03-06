@@ -3,6 +3,8 @@ $user = $user ?? [];
 $sections = $sections ?? [];
 $role = $role ?? 'ADMIN';
 $name = $name ?? 'User';
+$is_editing_self = $is_editing_self ?? false;
+$roleReadonlyStyle = $is_editing_self ? ' background: #e0e0e0; color: #666; cursor: not-allowed;' : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,6 +24,9 @@ $name = $name ?? 'User';
 
     <div class="card">
         <div class="card-title">User #<?= esc($user['id']) ?></div>
+        <?php if ($is_editing_self): ?>
+        <p style="margin-bottom: 12px; color: #795548; background: #fff3e0; padding: 10px; border-radius: 8px;">You are editing your own admin profile. Role cannot be changed.</p>
+        <?php endif; ?>
         <form action="<?= base_url('admin/users/update/' . $user['id']) ?>" method="post">
             <?= csrf_field() ?>
             <div class="form-group">
@@ -30,11 +35,13 @@ $name = $name ?? 'User';
             </div>
             <div class="form-group">
                 <label for="email" style="color: #1b5e20;">Email</label>
-                <input type="email" id="email" name="email" required value="<?= esc(old('email', $user['email'])) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <input type="email" id="email" name="email" required value="<?= esc(old('email', $user['email'])) ?>" pattern="[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" title="Letters, numbers, and @ only (e.g. user@domain.com)" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <small style="color: #666;">Letters, numbers, at @ lang (hal. user@domain.com)</small>
             </div>
             <div class="form-group">
                 <label for="username" style="color: #1b5e20;">Username</label>
-                <input type="text" id="username" name="username" required value="<?= esc(old('username', $user['username'])) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <input type="text" id="username" name="username" required value="<?= esc(old('username', $user['username'])) ?>" pattern="[a-zA-Z0-9_]+" title="Letters, numbers, and underscore only. No special characters." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <small style="color: #666;">Letters, numbers, at underscore lang. Walang special characters.</small>
             </div>
             <div class="form-group">
                 <label for="password" style="color: #1b5e20;">Password (leave blank to keep)</label>
@@ -42,7 +49,7 @@ $name = $name ?? 'User';
             </div>
             <div class="form-group">
                 <label for="role" style="color: #1b5e20;">Role</label>
-                <select id="role" name="role" required style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <select id="role" name="role" <?= $is_editing_self ? 'disabled' : 'required' ?> style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;<?= $roleReadonlyStyle ?>">
                     <option value="ADMIN" <?= ($user['role'] ?? '') === 'ADMIN' ? 'selected' : '' ?>>ADMIN</option>
                     <option value="PRINCIPAL" <?= ($user['role'] ?? '') === 'PRINCIPAL' ? 'selected' : '' ?>>PRINCIPAL</option>
                     <option value="ANNOUNCER" <?= ($user['role'] ?? '') === 'ANNOUNCER' ? 'selected' : '' ?>>ANNOUNCER</option>
@@ -50,6 +57,9 @@ $name = $name ?? 'User';
                     <option value="GUIDANCE" <?= ($user['role'] ?? '') === 'GUIDANCE' ? 'selected' : '' ?>>GUIDANCE</option>
                     <option value="STUDENT" <?= ($user['role'] ?? '') === 'STUDENT' ? 'selected' : '' ?>>STUDENT</option>
                 </select>
+                <?php if ($is_editing_self): ?>
+                <input type="hidden" name="role" value="ADMIN">
+                <?php endif; ?>
             </div>
             <div class="form-group" id="section-group" style="display: none;">
                 <label for="section_id" style="color: #1b5e20;">Section</label>

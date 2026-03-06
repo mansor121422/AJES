@@ -1,0 +1,39 @@
+CRITICAL - 2026-03-06 05:54:55 --> TypeError: CodeIgniter\CLI\InputOutput::input(): Return value must be of type string, bool returned
+[Method: CLI, Route: db:seed]
+in SYSTEMPATH\CLI\InputOutput.php on line 46.
+ 1 SYSTEMPATH\CLI\CLI.php(260): CodeIgniter\CLI\InputOutput->input()
+ 2 SYSTEMPATH\Commands\Database\Seed.php(75): CodeIgniter\CLI\CLI::prompt('Seeder name', null, [...])
+ 3 SYSTEMPATH\CLI\Commands.php(74): CodeIgniter\Commands\Database\Seed->run([])
+ 4 SYSTEMPATH\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('db:seed', [])
+ 5 SYSTEMPATH\Boot.php(442): CodeIgniter\CLI\Console->run()
+ 6 SYSTEMPATH\Boot.php(166): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+ 7 ROOTPATH\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+CRITICAL - 2026-03-06 05:54:55 --> ErrorException: Uncaught ErrorException: fwrite(): Write of 13 bytes failed with errno=22 Invalid argument in C:\xampp\htdocs\AJES\system\CLI\InputOutput.php:78
+Stack trace:
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(8, 'fwrite(): Write...', 'C:\\xampp\\htdocs...', 78)
+#1 C:\xampp\htdocs\AJES\system\CLI\InputOutput.php(78): fwrite(Resource id #2, '[TypeError]\r\n')
+#2 C:\xampp\htdocs\AJES\system\CLI\CLI.php(1126): CodeIgniter\CLI\InputOutput->fwrite(Resource id #2, '[TypeError]\r\n')
+#3 C:\xampp\htdocs\AJES\system\CLI\CLI.php(465): CodeIgniter\CLI\CLI::fwrite(Resource id #2, '[TypeError]\r\n')
+#4 C:\xampp\htdocs\AJES\app\Views\errors\cli\error_exception.php(6): CodeIgniter\CLI\CLI::write('[TypeError]', 'light_gray', 'red')
+#5 C:\xampp\htdocs\AJES\app\Views\errors\cli\production.php(5): include('C:\\xampp\\htdocs...')
+#6 C:\xampp\htdocs\AJES\system\Debug\BaseExceptionHandler.php(270): include('C:\\xampp\\htdocs...')
+#7 C:\xampp\htdocs\AJES\system\Debug\BaseExceptionHandler.php(273): CodeIgniter\Debug\BaseExceptionHandler->CodeIgniter\Debug\{closure}()
+#8 C:\xampp\htdocs\AJES\system\Debug\ExceptionHandler.php(126): CodeIgniter\Debug\BaseExceptionHandler->render(Object(TypeError), 500, 'C:\\xampp\\htdocs...')
+#9 C:\xampp\htdocs\AJES\system\Debug\Exceptions.php(151): CodeIgniter\Debug\ExceptionHandler->handle(Object(TypeError), Object(CodeIgniter\HTTP\CLIRequest), Object(CodeIgniter\HTTP\Response), 500, 1)
+#10 [internal function]: CodeIgniter\Debug\Exceptions->exceptionHandler(Object(TypeError))
+#11 {main}
+  thrown
+【Previous Exception】
+TypeError
+CodeIgniter\CLI\InputOutput::input(): Return value must be of type string, bool returned
+#0 C:\xampp\htdocs\AJES\system\CLI\CLI.php(260): CodeIgniter\CLI\InputOutput->input()
+#1 C:\xampp\htdocs\AJES\system\Commands\Database\Seed.php(75): CodeIgniter\CLI\CLI::prompt('Seeder name', NULL, Array)
+#2 C:\xampp\htdocs\AJES\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Seed->run(Array)
+#3 C:\xampp\htdocs\AJES\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('db:seed', Array)
+#4 C:\xampp\htdocs\AJES\system\Boot.php(442): CodeIgniter\CLI\Console->run()
+#5 C:\xampp\htdocs\AJES\system\Boot.php(166): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#6 C:\xampp\htdocs\AJES\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#7 {main}
+[Method: CLI, Route: db:seed]
+in SYSTEMPATH\CLI\InputOutput.php on line 78.
+ 1 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()

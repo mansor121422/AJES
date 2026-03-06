@@ -29,11 +29,13 @@ $name = $name ?? 'User';
             </div>
             <div class="form-group">
                 <label for="email" style="color: #1b5e20;">Email</label>
-                <input type="email" id="email" name="email" required value="<?= esc(old('email')) ?>" placeholder="user@example.com" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <input type="email" id="email" name="email" required value="<?= esc(old('email')) ?>" placeholder="user@example.com" pattern="[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" title="Letters, numbers, and @ only (e.g. user@domain.com)" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <small style="color: #666;">Letters, numbers, at @ lang (hal. user@domain.com)</small>
             </div>
             <div class="form-group">
                 <label for="username" style="color: #1b5e20;">Username</label>
-                <input type="text" id="username" name="username" required value="<?= esc(old('username')) ?>" placeholder="username" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <input type="text" id="username" name="username" required value="<?= esc(old('username')) ?>" placeholder="letters, numbers, underscore only" pattern="[a-zA-Z0-9_]+" title="Letters, numbers, and underscore only. No special characters." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <small style="color: #666;">Letters, numbers, at underscore lang. Walang special characters.</small>
             </div>
             <div class="form-group">
                 <label for="password" style="color: #1b5e20;">Password</label>

@@ -160,7 +160,8 @@ class Auth extends BaseController
 
         $db->table('password_resets')->where('email', $row['email'])->delete();
 
-        return redirect()->to('/')->with('success', 'Password updated. You can now log in.');
+        session()->destroy();
+        return redirect()->to('/?password_changed=1');
     }
 
     protected function redirectForRole(string $role): string
