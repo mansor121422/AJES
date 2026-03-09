@@ -17,7 +17,7 @@ class Chat extends BaseController
     {
         $this->messages = new MessageModel();
         $this->users    = new UserModel();
-        helper(['url', 'form']);
+        helper(['url', 'form', 'text']);
     }
 
     /**
@@ -98,6 +98,7 @@ class Chat extends BaseController
         }
         $contentOriginal = $content;
         $content         = $this->censorMessage($content);
+        $wasCensored     = ($content !== $contentOriginal);
         $this->messages->insert([
             'sender_id'        => $userId,
             'receiver_id'      => $receiverId,
@@ -105,6 +106,28 @@ class Chat extends BaseController
             'content_original' => $contentOriginal,
             'status'           => 'SENT',
         ]);
+        $messageId = (int) $this->messages->getInsertID();
+
+        // Notify all admins when someone sends a censored message (for the ring/bell notification).
+        if ($wasCensored && $messageId > 0) {
+            $senderName = session()->get('name') ?? $this->users->find($userId)['name'] ?? $this->users->find($userId)['username'] ?? 'User #' . $userId;
+            $db         = \Config\Database::connect();
+            $admins     = $db->table('users')->select('id')->where('role', 'ADMIN')->where('is_active', 1)->get()->getResultArray();
+            $notifMsg   = 'Censored chat from ' . character_limiter($senderName, 30);
+            $now        = date('Y-m-d H:i:s');
+            foreach ($admins as $row) {
+                $db->table('notifications')->insert([
+                    'user_id'          => (int) $row['id'],
+                    'type'             => 'censored_chat',
+                    'reference_table'  => 'messages',
+                    'reference_id'     => $messageId,
+                    'message'          => $notifMsg,
+                    'is_read'          => 0,
+                    'created_at'       => $now,
+                ]);
+            }
+        }
+
         return redirect()->to(base_url('chat?with=' . $receiverId))->with('success', 'Message sent.');
     }
 

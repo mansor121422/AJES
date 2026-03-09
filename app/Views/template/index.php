@@ -68,12 +68,27 @@ $currentUri = uri_string();
 <div class="topbar" aria-label="AJES dashboard top navigation">
     <div class="topbar-left">AJES CRIER</div>
     <div class="topbar-right">
-        <div class="icon-button" aria-label="Notifications">🔔</div>
+        <a href="<?= base_url('notifications') ?>" class="icon-button" aria-label="Notifications" id="notif-bell">🔔<span class="icon-badge" id="notif-badge" style="display: none;">0</span></a>
         <span><?= esc($name ?? 'User') ?> <span class="badge"><?= esc($role) ?></span></span>
         <a href="<?= base_url('auth/logout') ?>" style="color: #fff; text-decoration: none; font-weight: 500;">Logout</a>
     </div>
 </div>
-
+<script>
+(function() {
+    var badge = document.getElementById('notif-badge');
+    if (!badge) return;
+    fetch('<?= base_url('notifications/count') ?>', { credentials: 'same-origin' })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            var n = (d && d.count) ? parseInt(d.count, 10) : 0;
+            if (n > 0) {
+                badge.textContent = n > 99 ? '99+' : n;
+                badge.style.display = 'inline-block';
+            }
+        })
+        .catch(function() {});
+})();
+</script>
 <div class="layout">
     <aside class="sidebar" aria-label="Sidebar navigation">
         <div class="sidebar-brand">

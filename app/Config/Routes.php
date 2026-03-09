@@ -41,6 +41,13 @@ $routes->post('chat/send', 'Chat::send', ['filter' => 'auth']);
 $routes->post('chat/unsend', 'Chat::unsend', ['filter' => 'auth']);
 $routes->get('chat/messages', 'Chat::getMessages', ['filter' => 'auth']);
 
+// Notifications (bell – count, list, mark read)
+$routes->get('notifications', 'Notifications::index', ['filter' => 'auth']);
+$routes->get('notifications/count', 'Notifications::count', ['filter' => 'auth']);
+$routes->get('notifications/mark-read/(:num)', 'Notifications::markReadGet/$1', ['filter' => 'auth']);
+$routes->post('notifications/mark-read', 'Notifications::markRead', ['filter' => 'auth']);
+$routes->get('notifications/mark-all-read', 'Notifications::markAllRead', ['filter' => 'auth']);
+
 // Admin: Sections CRUD and invite teachers
 $routes->group('admin', ['filter' => 'auth'], static function (RouteCollection $routes): void {
     $routes->get('sections', 'Sections::index', ['filter' => 'role:ADMIN']);
