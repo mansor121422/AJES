@@ -14,6 +14,7 @@ use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\AuthFilter;
 use App\Filters\RoleFilter;
+use App\Filters\ApiTokenAuthFilter;
 
 class Filters extends BaseFilters
 {
@@ -38,6 +39,7 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'auth'          => AuthFilter::class,
         'role'          => RoleFilter::class,
+        'api_token'     => ApiTokenAuthFilter::class,
     ];
 
     /**
@@ -55,7 +57,7 @@ class Filters extends BaseFilters
      */
     public array $required = [
         'before' => [
-            'forcehttps', // Force Global Secure Requests
+            // 'forcehttps', // Enable in production; leave off for localhost (XAMPP)
             'pagecache',  // Web Page Caching
         ],
         'after' => [

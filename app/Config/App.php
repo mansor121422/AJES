@@ -11,10 +11,8 @@ class App extends BaseConfig
      * Base Site URL
      * --------------------------------------------------------------------------
      *
-     * URL to your CodeIgniter root. Typically, this will be your base URL,
-     * WITH a trailing slash:
-     *
-     * E.g., http://example.com/
+     * URL to your CodeIgniter root. Use a fixed value here; override in .env with
+     * app.baseURL when needed (e.g. http://192.168.1.6/AJES/ for phone on same Wi‑Fi).
      */
     public string $baseURL = 'http://localhost/AJES/';
 

@@ -82,19 +82,27 @@ class Chat extends BaseController
     {
         $userId = (int) session()->get('user_id');
         if (! $userId) {
-            return redirect()->to(base_url('auth/login'));
+            return $this->isApiRequest()
+                ? $this->response->setStatusCode(401)->setJSON(['status' => 'error', 'message' => 'Not logged in.'])
+                : redirect()->to(base_url('auth/login'));
         }
         $receiverId = (int) $this->request->getPost('receiver_id');
         $content    = trim((string) $this->request->getPost('content'));
         if ($receiverId < 1 || $content === '') {
-            return redirect()->back()->with('error', 'Invalid message or recipient.');
+            return $this->isApiRequest()
+                ? $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'Invalid message or recipient.'])
+                : redirect()->back()->with('error', 'Invalid message or recipient.');
         }
         if ($receiverId === $userId) {
-            return redirect()->back()->with('error', 'You cannot send a message to yourself.');
+            return $this->isApiRequest()
+                ? $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'You cannot send a message to yourself.'])
+                : redirect()->back()->with('error', 'You cannot send a message to yourself.');
         }
         $receiver = $this->users->find($receiverId);
         if (! $receiver) {
-            return redirect()->back()->with('error', 'Recipient not found.');
+            return $this->isApiRequest()
+                ? $this->response->setStatusCode(404)->setJSON(['status' => 'error', 'message' => 'Recipient not found.'])
+                : redirect()->back()->with('error', 'Recipient not found.');
         }
         $senderName      = session()->get('name') ?? $this->users->find($userId)['name'] ?? $this->users->find($userId)['username'] ?? 'User #' . $userId;
         $contentOriginal = $content;
@@ -143,6 +151,10 @@ class Chat extends BaseController
             ]);
         }
 
+        // API client (e.g. Android app): return JSON instead of redirect (avoids HTTP 303)
+        if ($this->isApiRequest()) {
+            return $this->response->setStatusCode(200)->setJSON(['status' => 'success', 'message' => 'Message sent.']);
+        }
         return redirect()->to(base_url('chat?with=' . $receiverId))->with('success', 'Message sent.');
     }
 
@@ -153,38 +165,63 @@ class Chat extends BaseController
     {
         $userId = (int) session()->get('user_id');
         if (! $userId) {
-            return redirect()->to(base_url('auth/login'));
+            return $this->isApiRequest()
+                ? $this->response->setStatusCode(401)->setJSON(['status' => 'error', 'message' => 'Not logged in.'])
+                : redirect()->to(base_url('auth/login'));
         }
         $messageId = (int) $this->request->getPost('message_id');
         $scope     = trim((string) $this->request->getPost('scope'));
         $withId    = (int) $this->request->getPost('with_id');
 
         if ($messageId < 1 || ! in_array($scope, ['me', 'all'], true)) {
-            return redirect()->back()->with('error', 'Invalid request.');
+            return $this->isApiRequest()
+                ? $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'Invalid request.'])
+                : redirect()->back()->with('error', 'Invalid request.');
         }
 
         $msg = $this->messages->withDeleted()->find($messageId);
         if (! $msg) {
-            return redirect()->back()->with('error', 'Message not found.');
+            return $this->isApiRequest()
+                ? $this->response->setStatusCode(404)->setJSON(['status' => 'error', 'message' => 'Message not found.'])
+                : redirect()->back()->with('error', 'Message not found.');
         }
         $senderId = (int) $msg['sender_id'];
 
         if ($scope === 'me') {
             $this->messages->hideForUser($messageId, $userId);
+            if ($this->isApiRequest()) {
+                return $this->response->setStatusCode(200)->setJSON(['status' => 'success', 'message' => 'Message unsent for you.']);
+            }
             $redirectWith = $withId > 0 ? base_url('chat?with=' . $withId) : base_url('chat');
             return redirect()->to($redirectWith)->with('success', 'Message unsent for you.');
         }
 
         if ($scope === 'all') {
             if ($senderId !== $userId) {
-                return redirect()->back()->with('error', 'Only the sender can unsend for everyone.');
+                return $this->isApiRequest()
+                    ? $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'Only the sender can unsend for everyone.'])
+                    : redirect()->back()->with('error', 'Only the sender can unsend for everyone.');
             }
             $this->messages->delete($messageId);
+            if ($this->isApiRequest()) {
+                return $this->response->setStatusCode(200)->setJSON(['status' => 'success', 'message' => 'Message unsent for everyone.']);
+            }
             $redirectWith = $withId > 0 ? base_url('chat?with=' . $withId) : base_url('chat');
             return redirect()->to($redirectWith)->with('success', 'Message unsent for everyone.');
         }
 
-        return redirect()->back();
+        return $this->isApiRequest()
+            ? $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'Invalid request.'])
+            : redirect()->back();
+    }
+
+    /**
+     * True when request is from API client (e.g. Android with Bearer token).
+     */
+    private function isApiRequest(): bool
+    {
+        return $this->request->getHeaderLine('Authorization') !== ''
+            || str_contains($this->request->getHeaderLine('Accept'), 'application/json');
     }
 
     /**
@@ -213,6 +250,20 @@ class Chat extends BaseController
             ];
         }
         return $this->response->setJSON(['messages' => $out]);
+    }
+
+    /**
+     * GET api/chat/users – JSON list for Android app (same data as web chat list).
+     * Requires auth (session or Bearer token).
+     */
+    public function getChatUsersApi(): ResponseInterface
+    {
+        $userId = (int) session()->get('user_id');
+        if (! $userId) {
+            return $this->response->setStatusCode(401)->setJSON(['users' => []]);
+        }
+        $list = $this->getChatUserList($userId);
+        return $this->response->setJSON(['users' => $list]);
     }
 
     /**

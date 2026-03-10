@@ -16,6 +16,11 @@ $routes->post('auth/forgot-password', 'Auth::sendResetLink');
 $routes->get('auth/reset-password/(:segment)', 'Auth::showResetForm/$1');
 $routes->post('auth/reset-password/(:segment)', 'Auth::resetPassword/$1');
 
+// REST API for Android / mobile (token-based; web login unchanged)
+$routes->post('api/login', 'Api\Auth::login');
+$routes->post('api/logout', 'Api\Auth::logout');
+$routes->get('api/chat/users', 'Chat::getChatUsersApi', ['filter' => 'auth']);
+
 // Dashboards (protected with filters)
 $routes->group('dashboard', ['filter' => 'auth'], static function (RouteCollection $routes): void {
     $routes->get('/', 'Dashboard::index');
