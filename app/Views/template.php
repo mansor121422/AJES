@@ -21,6 +21,15 @@
         color: #1b5e20;
     }
 
+    /* React enhancement containers (optionally styled) */
+    [data-react-component="page"] {
+        /* Let React handle the visual animation; this block is just a hook. */
+    }
+
+    [data-react-component="cards"] {
+        /* When used, React will render animated cards inside this container. */
+    }
+
     /* ============================================
        DASHBOARD LAYOUT (reference-style)
        ============================================ */
@@ -70,6 +79,17 @@
         position: relative;
         cursor: pointer;
         padding: 6px;
+        border-radius: 8px;
+        transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .icon-button:hover {
+        transform: scale(1.15);
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .icon-button:active {
+        transform: scale(1.05);
     }
 
     .icon-badge {
@@ -127,12 +147,18 @@
         font-size: 14px;
         margin: 2px 8px;
         border-radius: 10px;
-        transition: background 0.2s, color 0.2s;
+        transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .menu a:hover {
         background-color: #e8f5e9;
         color: #1b5e20;
+        transform: translateX(4px) scale(1.02);
+        box-shadow: 0 2px 8px rgba(27, 94, 32, 0.15);
+    }
+
+    .menu a:active {
+        transform: translateX(2px) scale(0.98);
     }
 
     .menu a.active {
@@ -163,17 +189,29 @@
         text-decoration: none;
         font-size: 14px;
         border-radius: 8px;
+        transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .sidebar-footer a:hover {
         background-color: #e8f5e9;
+        transform: translateX(4px) scale(1.03);
+        box-shadow: 0 2px 8px rgba(27, 94, 32, 0.12);
     }
 
-    /* Content area */
+    .sidebar-footer a:active {
+        transform: translateX(2px) scale(0.98);
+    }
+
+    /* Content area – fade-in when page loads */
     .content {
         flex: 1;
         padding: 72px 24px 24px;
         min-width: 0;
+        animation: ajesContentFadeIn 0.45s ease-out;
+    }
+    @keyframes ajesContentFadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 
     .dashboard-header {
@@ -354,10 +392,31 @@
         color: #2e7d32;
         font-weight: 500;
         text-decoration: none;
+        padding: 4px 10px;
+        border-radius: 6px;
+        display: inline-block;
+        transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .recent-table .link-details:hover {
         text-decoration: underline;
+        background: #e8f5e9;
+        color: #1b5e20;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 6px rgba(27, 94, 32, 0.2);
+    }
+
+    .recent-table .link-details:active {
+        transform: translateY(0) scale(0.97);
+    }
+
+    /* Link-details used outside tables (Back, Mark as read, etc.) */
+    .content .link-details {
+        transition: color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+    }
+    .content .link-details:hover {
+        transform: translateX(2px);
+        opacity: 0.9;
     }
 
     /* Status badges */
@@ -601,10 +660,18 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
+        transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease, box-shadow 0.25s ease;
+        box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25);
     }
     .login-button:hover {
         background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%);
         color: #fff;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 8px 20px rgba(27, 94, 32, 0.35);
+    }
+    .login-button:active {
+        transform: translateY(-1px) scale(0.98);
+        box-shadow: 0 4px 12px rgba(27, 94, 32, 0.3);
     }
 
     /* ============================================
@@ -613,6 +680,57 @@
     .container { max-width: 400px; margin: 0 auto; }
     .message { margin-bottom: 12px; color: #c62828; }
     .message.success { color: #2e7d32; }
+
+    /* ============================================
+       GLOBAL BUTTON ANIMATIONS (all buttons / links that look like buttons)
+       ============================================ */
+    button,
+    input[type="submit"],
+    input[type="button"],
+    a.login-button {
+        transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease, border-color 0.2s ease;
+    }
+    button:hover,
+    input[type="submit"]:hover,
+    input[type="button"]:hover:not(:disabled),
+    a.login-button:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 6px 16px rgba(27, 94, 32, 0.25);
+    }
+    button:active,
+    input[type="submit"]:active,
+    input[type="button"]:active:not(:disabled),
+    a.login-button:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    /* Chat: Send button and message menu buttons */
+    .chat-form button {
+        transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+    }
+    .chat-form button:hover:not(:disabled) {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 6px 16px rgba(27, 94, 32, 0.35);
+    }
+    .chat-form button:active:not(:disabled) {
+        transform: translateY(0) scale(0.97);
+    }
+    .chat-msg-dots {
+        transition: transform 0.2s ease, background 0.2s ease;
+    }
+    .chat-msg-dots:hover {
+        transform: scale(1.2);
+    }
+    .chat-msg-dots:active {
+        transform: scale(1.05);
+    }
+    .chat-msg-dropdown button {
+        transition: background 0.2s ease, padding-left 0.2s ease;
+    }
+    .chat-msg-dropdown button:hover {
+        padding-left: 18px;
+    }
+
     button { padding: 8px 16px; cursor: pointer; border-radius: 8px; }
 
     /* ============================================

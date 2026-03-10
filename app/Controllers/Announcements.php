@@ -63,17 +63,19 @@ class Announcements extends BaseController
         ]);
 
         $id = $this->announcements->getInsertID();
-        $message = character_limiter($title, 80);
+        $titleShort = character_limiter($title, 60);
+        $notifMessage = 'Announce message for you: ' . $titleShort;
         $db = \Config\Database::connect();
         $userIds = $db->table('users')->select('id')->where('is_active', 1)->get()->getResultArray();
         foreach ($userIds as $row) {
             $db->table('notifications')->insert([
-                'user_id'         => (int) $row['id'],
-                'type'            => 'announcement',
-                'reference_table' => 'announcements',
-                'reference_id'   => $id,
-                'message'        => 'New announcement: ' . $message,
-                'is_read'        => 0,
+                'user_id'          => (int) $row['id'],
+                'type'             => 'announcement',
+                'reference_table'  => 'announcements',
+                'reference_id'     => $id,
+                'message'          => $notifMessage,
+                'is_read'          => 0,
+                'created_at'       => date('Y-m-d H:i:s'),
             ]);
         }
 

@@ -18,9 +18,12 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
         .chat-layout { display: flex; gap: 0; min-height: calc(100vh - 120px); border: 1px solid #c8e6c9; border-radius: 12px; overflow: hidden; background: #fff; }
         .chat-sidebar { width: 280px; flex-shrink: 0; background: #f1f8e9; border-right: 1px solid #c8e6c9; overflow-y: auto; }
         .chat-sidebar-title { padding: 16px; font-weight: 700; color: #1b5e20; background: #e8f5e9; border-bottom: 1px solid #c8e6c9; }
-        .chat-user-item { display: block; padding: 12px 16px; color: #333; text-decoration: none; border-bottom: 1px solid #e8f5e9; transition: background 0.15s; }
+        .chat-user-item { display: flex; flex-direction: column; padding: 12px 16px; color: #333; text-decoration: none; border-bottom: 1px solid #e8f5e9; transition: background 0.15s, transform 0.15s; position: relative; }
         .chat-user-item:hover { background: #e8f5e9; }
         .chat-user-item.active { background: #c8e6c9; color: #1b5e20; font-weight: 600; }
+        .chat-user-item.has-unread { background: #e8f5e9; font-weight: 600; }
+        .chat-user-item .chat-user-name { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .chat-user-item .chat-user-unread-dot { width: 8px; height: 8px; border-radius: 50%; background: #66bb6a; flex-shrink: 0; }
         .chat-user-item .chat-user-role { font-size: 0.8rem; color: #558b2f; margin-top: 2px; }
         .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         .chat-header { padding: 12px 20px; background: #e8f5e9; border-bottom: 1px solid #c8e6c9; color: #1b5e20; font-weight: 600; }
@@ -38,6 +41,26 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
         .chat-msg.theirs .chat-msg-dots:hover { color: #333; }
         .chat-msg-unsent .chat-msg-body { font-style: italic; }
         .chat-msg-unsent-text { color: #888; font-size: 0.9rem; }
+        .chat-msg-time { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        /* Status pill: SENT = light green (delivered), READ = gray (seen) */
+        .chat-msg-status {
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-left: 4px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: #e8f5e9;
+            color: #558b2f;
+        }
+        .chat-msg-status.chat-msg-status-sent {
+            background: #e8f5e9;
+            color: #66bb6a; /* light / delivered */
+        }
+        .chat-msg-status.chat-msg-status-read {
+            background: #eeeeee;
+            color: #757575; /* gray / seen */
+        }
+        .chat-msg.theirs .chat-msg-status { display: none; }
         .chat-msg-dropdown { display: none; position: absolute; right: 0; top: 100%; margin-top: 2px; min-width: 160px; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10; overflow: hidden; }
         .chat-msg-dropdown.open { display: block; }
         .chat-msg-dropdown form { display: block; border-bottom: 1px solid #eee; }
@@ -69,8 +92,19 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
         <aside class="chat-sidebar">
             <div class="chat-sidebar-title">💬 Message</div>
             <?php foreach ($chat_users as $u): ?>
-                <a href="<?= base_url('chat?with=' . (int) $u['id']) ?>" class="chat-user-item <?= $with_id === (int) $u['id'] ? 'active' : '' ?>">
-                    <span><?= esc($u['name']) ?></span>
+                <?php
+                $uid        = (int) $u['id'];
+                $isActive   = ($with_id === $uid);
+                $hasUnread  = ! empty($u['has_unread']);
+                $unreadCnt  = (int) ($u['unread'] ?? 0);
+                ?>
+                <a href="<?= base_url('chat?with=' . $uid) ?>" class="chat-user-item <?= $isActive ? 'active' : '' ?> <?= $hasUnread ? 'has-unread' : '' ?>">
+                    <div class="chat-user-name">
+                        <span><?= esc($u['name']) ?></span>
+                        <?php if ($hasUnread): ?>
+                            <span class="chat-user-unread-dot" title="<?= $unreadCnt === 1 ? '1 new message' : $unreadCnt . ' new messages' ?>"></span>
+                        <?php endif; ?>
+                    </div>
                     <div class="chat-user-role"><?= esc($u['role']) ?></div>
                 </a>
             <?php endforeach; ?>
@@ -95,7 +129,12 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                                     <?php else: ?>
                                     <div><?= nl2br(esc($msg['content'])) ?></div>
                                     <?php endif; ?>
-                                    <div class="chat-msg-time"><?= esc($msg['created_at'] ?? '') ?></div>
+                                    <div class="chat-msg-time">
+                                        <?= esc($msg['created_at'] ?? '') ?>
+                                        <?php if ($isMine && ! $unsentForAll): ?>
+                                        <span class="chat-msg-status chat-msg-status-<?= strtolower($msg['status'] ?? 'sent') ?>" title="<?= ($msg['status'] ?? 'SENT') === 'READ' ? 'Seen' : 'Delivered' ?>"><?= ($msg['status'] ?? 'SENT') === 'READ' ? 'Seen' : 'Delivered' ?></span>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
                                 <?php if (! $unsentForAll): ?>
                                 <div class="chat-msg-menu">
@@ -214,7 +253,9 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                             } else {
                                 html += '<div>' + escapeHtml(m.content).replace(/\n/g, '<br>') + '</div>';
                             }
-                            html += '<div class="chat-msg-time">' + escapeHtml(m.created_at) + '</div>';
+                            var statusLabel = (m.is_mine && !unsent && m.status) ? (m.status === 'READ' ? 'Seen' : 'Delivered') : '';
+                            var statusClass = (m.is_mine && !unsent && m.status) ? (' chat-msg-status chat-msg-status-' + (m.status || 'sent').toLowerCase()) : '';
+                            html += '<div class="chat-msg-time">' + escapeHtml(m.created_at) + (statusLabel ? ' <span class="chat-msg-status' + statusClass + '" title="' + escapeHtml(statusLabel) + '">' + escapeHtml(statusLabel) + '</span>' : '') + '</div>';
                             html += '</div>';
                             if (!unsent) html += unsendMenuHtml(m.id, m.is_mine);
                             html += '</div></div>';

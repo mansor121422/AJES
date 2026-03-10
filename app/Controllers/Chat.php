@@ -96,6 +96,7 @@ class Chat extends BaseController
         if (! $receiver) {
             return redirect()->back()->with('error', 'Recipient not found.');
         }
+        $senderName      = session()->get('name') ?? $this->users->find($userId)['name'] ?? $this->users->find($userId)['username'] ?? 'User #' . $userId;
         $contentOriginal = $content;
         $content         = $this->censorMessage($content);
         $wasCensored     = ($content !== $contentOriginal);
@@ -108,13 +109,13 @@ class Chat extends BaseController
         ]);
         $messageId = (int) $this->messages->getInsertID();
 
+        $db  = \Config\Database::connect();
+        $now = date('Y-m-d H:i:s');
+
         // Notify all admins when someone sends a censored message (for the ring/bell notification).
         if ($wasCensored && $messageId > 0) {
-            $senderName = session()->get('name') ?? $this->users->find($userId)['name'] ?? $this->users->find($userId)['username'] ?? 'User #' . $userId;
-            $db         = \Config\Database::connect();
             $admins     = $db->table('users')->select('id')->where('role', 'ADMIN')->where('is_active', 1)->get()->getResultArray();
-            $notifMsg   = 'Censored chat from ' . character_limiter($senderName, 30);
-            $now        = date('Y-m-d H:i:s');
+            $notifMsg   = 'Chat message for you (censored): from ' . character_limiter($senderName, 30);
             foreach ($admins as $row) {
                 $db->table('notifications')->insert([
                     'user_id'          => (int) $row['id'],
@@ -126,6 +127,20 @@ class Chat extends BaseController
                     'created_at'       => $now,
                 ]);
             }
+        }
+
+        // Notify the receiver about a new chat message (bell + notifications page).
+        if ($messageId > 0) {
+            $chatNotif = 'New chat message for you from ' . character_limiter($senderName, 30);
+            $db->table('notifications')->insert([
+                'user_id'          => $receiverId,
+                'type'             => 'chat',
+                'reference_table'  => 'messages',
+                'reference_id'     => $messageId,
+                'message'          => $chatNotif,
+                'is_read'          => 0,
+                'created_at'       => $now,
+            ]);
         }
 
         return redirect()->to(base_url('chat?with=' . $receiverId))->with('success', 'Message sent.');
@@ -194,6 +209,7 @@ class Chat extends BaseController
                 'created_at'      => $m['created_at'] ?? '',
                 'is_mine'         => (int) $m['sender_id'] === $userId,
                 'unsent_for_all'  => $deleted,
+                'status'          => $m['status'] ?? 'SENT',
             ];
         }
         return $this->response->setJSON(['messages' => $out]);
@@ -204,8 +220,24 @@ class Chat extends BaseController
      */
     private function getChatUserList(int $currentUserId): array
     {
-        $users = $this->users->orderBy('name')->findAll();
+        $users      = $this->users->orderBy('name')->findAll();
         $partnerIds = $this->messages->getConversationPartnerIds($currentUserId);
+
+        // Unread counts per sender (messages sent TO current user that are not READ yet).
+        $unreadRows = $this->messages
+            ->select('sender_id, COUNT(*) AS unread_count')
+            ->where('receiver_id', $currentUserId)
+            ->where('status !=', 'READ')
+            ->groupBy('sender_id')
+            ->findAll();
+        $unreadBySender = [];
+        foreach ($unreadRows as $row) {
+            $sid = (int) ($row['sender_id'] ?? 0);
+            if ($sid > 0) {
+                $unreadBySender[$sid] = (int) ($row['unread_count'] ?? 0);
+            }
+        }
+
         $list = [];
         foreach ($users as $u) {
             $id = (int) $u['id'];
@@ -213,10 +245,12 @@ class Chat extends BaseController
                 continue;
             }
             $list[] = [
-                'id'       => $id,
-                'name'     => $u['name'] ?? $u['username'] ?? 'User #' . $id,
-                'role'     => $u['role'] ?? '',
-                'has_chat' => in_array($id, $partnerIds, true),
+                'id'          => $id,
+                'name'        => $u['name'] ?? $u['username'] ?? 'User #' . $id,
+                'role'        => $u['role'] ?? '',
+                'has_chat'    => in_array($id, $partnerIds, true),
+                'unread'      => $unreadBySender[$id] ?? 0,
+                'has_unread'  => ($unreadBySender[$id] ?? 0) > 0,
             ];
         }
         return $list;

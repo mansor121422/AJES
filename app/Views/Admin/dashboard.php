@@ -58,6 +58,12 @@ $activity_chart       = $activity_chart ?? [];
         </div>
     </div>
 
+    <!-- React: animated cards (Framer Motion) -->
+    <div class="card" style="margin-bottom: 20px;">
+        <div class="card-title">Quick highlights</div>
+        <div data-react-component="cards"></div>
+    </div>
+
     <div class="dashboard-grid">
         <div>
             <div class="card">

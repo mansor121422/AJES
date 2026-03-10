@@ -44,7 +44,16 @@ $isAdmin       = (strtoupper($role) === 'ADMIN');
                 <?php foreach ($notifications as $n): ?>
                     <?php
                     $isRead = ! empty($n['is_read']);
-                    $url    = (($n['type'] ?? '') === 'censored_chat' && $isAdmin) ? base_url('admin/chat-logs') : base_url('notifications');
+                    $type   = $n['type'] ?? '';
+                    if ($type === 'censored_chat' && $isAdmin) {
+                        $url = base_url('admin/chat-logs');
+                    } elseif ($type === 'announcement') {
+                        $url = base_url('announcements');
+                    } elseif ($type === 'chat') {
+                        $url = base_url('chat');
+                    } else {
+                        $url = base_url('notifications');
+                    }
                     ?>
                     <li style="padding: 12px 0; border-bottom: 1px solid #e8f5e9; <?= $isRead ? '' : 'background: #f1f8e9; margin: 0 -20px; padding-left: 20px; padding-right: 20px;' ?>">
                         <a href="<?= $url ?>" style="color: #1b5e20; text-decoration: none; font-weight: <?= $isRead ? '400' : '600' ?>;">
