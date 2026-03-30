@@ -21,6 +21,11 @@ class MessageModel extends Model
         'receiver_id',
         'content',
         'content_original',
+        'attachment_type',
+        'attachment_url',
+        'attachment_name',
+        'attachment_mime',
+        'attachment_size',
         'status',
         'is_bot',
     ];

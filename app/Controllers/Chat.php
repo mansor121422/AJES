@@ -93,7 +93,12 @@ class Chat extends BaseController
         }
         $receiverId = (int) $this->request->getPost('receiver_id');
         $content    = trim((string) $this->request->getPost('content'));
-        if ($receiverId < 1 || $content === '') {
+        $attachment = $this->request->getFile('attachment');
+
+        $hasText        = $content !== '';
+        $hasAttachment = $attachment && $attachment->isValid() && $attachment->getSize() > 0;
+
+        if ($receiverId < 1 || (! $hasText && ! $hasAttachment)) {
             return $this->isApiRequest()
                 ? $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'Invalid message or recipient.'])
                 : redirect()->back()->with('error', 'Invalid message or recipient.');
@@ -109,15 +114,74 @@ class Chat extends BaseController
                 ? $this->response->setStatusCode(404)->setJSON(['status' => 'error', 'message' => 'Recipient not found.'])
                 : redirect()->back()->with('error', 'Recipient not found.');
         }
-        $senderName      = session()->get('name') ?? $this->users->find($userId)['name'] ?? $this->users->find($userId)['username'] ?? 'User #' . $userId;
-        $contentOriginal = $content;
-        $content         = $this->censorMessage($content);
-        $wasCensored     = ($content !== $contentOriginal);
+
+        $senderName = session()->get('name')
+            ?? $this->users->find($userId)['name']
+            ?? $this->users->find($userId)['username']
+            ?? 'User #' . $userId;
+
+        $attachmentType = null;
+        $attachmentUrl  = null;
+        $attachmentName = null;
+        $attachmentMime = null;
+        $attachmentSize = null;
+
+        // Handle optional file upload.
+        if ($hasAttachment) {
+            $maxBytes = 10 * 1024 * 1024; // 10MB
+            if ($attachment->getSize() > $maxBytes) {
+                return $this->isApiRequest()
+                    ? $this->response->setStatusCode(413)->setJSON(['status' => 'error', 'message' => 'Attachment too large (max 10MB).'])
+                    : redirect()->back()->with('error', 'Attachment too large (max 10MB).');
+            }
+
+            $attachmentMime = (string) ($attachment->getClientMimeType() ?? $attachment->getMimeType() ?? 'application/octet-stream');
+            $attachmentName = (string) ($attachment->getClientName() ?? 'attachment');
+            $attachmentSize = (int) $attachment->getSize();
+
+            if (str_starts_with($attachmentMime, 'image/')) {
+                $attachmentType = 'image';
+            } elseif (str_starts_with($attachmentMime, 'video/')) {
+                $attachmentType = 'video';
+            } else {
+                $attachmentType = 'file';
+            }
+
+            $ext = strtolower((string) ($attachment->getClientExtension() ?? ''));
+            $ext = preg_replace('/[^a-z0-9]/i', '', $ext);
+            if ($ext === '') {
+                $parts = explode('/', $attachmentMime);
+                $ext = isset($parts[1]) ? preg_replace('/[^a-z0-9]/i', '', $parts[1]) : '';
+            }
+            if ($ext === '') {
+                $ext = $attachmentType === 'image' ? 'jpg' : ($attachmentType === 'video' ? 'mp4' : 'bin');
+            }
+
+            $uploadDir = FCPATH . 'public/assets/chat_uploads';
+            if (! is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $fileName = bin2hex(random_bytes(16)) . '.' . $ext;
+            $attachment->move($uploadDir, $fileName);
+
+            $attachmentUrl = base_url('assets/chat_uploads/' . $fileName);
+        }
+
+        $contentOriginal = $hasText ? $content : null;
+        $contentCensored = $hasText ? $this->censorMessage($content) : '';
+        $wasCensored = $hasText && ($contentCensored !== $contentOriginal);
+
         $this->messages->insert([
             'sender_id'        => $userId,
             'receiver_id'      => $receiverId,
-            'content'          => $content,
+            'content'          => $contentCensored,
             'content_original' => $contentOriginal,
+            'attachment_type' => $attachmentType,
+            'attachment_url'  => $attachmentUrl,
+            'attachment_name' => $attachmentName,
+            'attachment_mime' => $attachmentMime,
+            'attachment_size' => $attachmentSize,
             'status'           => 'SENT',
         ]);
         $messageId = (int) $this->messages->getInsertID();
@@ -252,6 +316,11 @@ class Chat extends BaseController
                 'is_mine'         => (int) $m['sender_id'] === $userId,
                 'unsent_for_all'  => $deleted,
                 'status'          => $m['status'] ?? 'SENT',
+                'attachment_type' => $deleted ? null : ($m['attachment_type'] ?? null),
+                'attachment_url'  => $deleted ? null : ($m['attachment_url'] ?? null),
+                'attachment_name' => $deleted ? null : ($m['attachment_name'] ?? null),
+                'attachment_mime' => $deleted ? null : ($m['attachment_mime'] ?? null),
+                'attachment_size' => $deleted ? null : ($m['attachment_size'] ?? null),
             ];
         }
         return $this->response->setJSON(['messages' => $out]);

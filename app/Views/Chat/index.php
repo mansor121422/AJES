@@ -74,11 +74,28 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
         .chat-msg-dropdown button:hover { background: #f5f5f5; }
         .chat-empty { text-align: center; color: #888; padding: 40px 20px; }
         .chat-form-wrap { padding: 16px; background: #fff; border-top: 1px solid #c8e6c9; }
-        .chat-form { display: flex; gap: 10px; align-items: flex-end; }
-        .chat-form textarea { flex: 1; min-height: 44px; max-height: 120px; resize: vertical; padding: 12px; border: 1px solid #c8e6c9; border-radius: 10px; font-family: inherit; }
+        .chat-form { display: block; }
+        .chat-compose-row { display: flex; gap: 10px; align-items: flex-end; }
+        .chat-compose-row textarea { flex: 1; min-height: 44px; max-height: 120px; resize: vertical; padding: 12px; border: 1px solid #c8e6c9; border-radius: 10px; font-family: inherit; }
         .chat-form button { flex-shrink: 0; padding: 12px 20px; background: #2e7d32; color: #fff; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
         .chat-form button:hover { background: #1b5e20; }
         .chat-form button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .chat-attachment-wrap { display: flex; gap: 10px; align-items: center; flex: 0 0 auto; }
+        .chat-attachment-input { display: none; }
+        .chat-attachment-button {
+            padding: 12px 18px;
+            background: #2e7d32;
+            color: #fff;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(27, 94, 32, 0.12);
+        }
+        .chat-attachment-button:hover { background: #1b5e20; }
+        .chat-file-name { color: #558b2f; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
     </style>
 </head>
 <body>
@@ -149,7 +166,34 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                                     <?php if ($unsentForAll): ?>
                                     <div class="chat-msg-unsent-text">The message was unsent for everyone.</div>
                                     <?php else: ?>
-                                    <div><?= nl2br(esc($msg['content'])) ?></div>
+                                    <?php
+                                    $attachmentType = $msg['attachment_type'] ?? null;
+                                    $attachmentUrl  = $msg['attachment_url'] ?? null;
+                                    $attachmentName = $msg['attachment_name'] ?? null;
+                                    $attachmentSafeUrl = $attachmentUrl ? base_url(ltrim((string) $attachmentUrl, '/')) : null;
+                                    ?>
+                                    <?php if (! empty($attachmentType) && ! empty($attachmentUrl)): ?>
+                                        <?php if ($attachmentType === 'image'): ?>
+                                            <div style="margin-bottom: 8px;">
+                                                <img src="<?= esc($attachmentUrl) ?>" alt="<?= esc($attachmentName ?? 'image') ?>" style="max-width: 320px; max-height: 240px; border-radius: 10px; border: 1px solid #e0e0e0;" />
+                                            </div>
+                                        <?php elseif ($attachmentType === 'video'): ?>
+                                            <div style="margin-bottom: 8px;">
+                                                <video controls style="max-width: 360px; border-radius: 10px; border: 1px solid #e0e0e0;">
+                                                    <source src="<?= esc($attachmentUrl) ?>" type="<?= esc($msg['attachment_mime'] ?? 'video/mp4') ?>">
+                                                </video>
+                                            </div>
+                                        <?php else: ?>
+                                            <div style="margin-bottom: 8px;">
+                                                <a href="<?= esc($attachmentUrl) ?>" target="_blank" rel="noreferrer" class="link-details">
+                                                    <?= esc($attachmentName ?? 'Download file') ?>
+                                                </a>
+                                            </div>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                    <?php if (! empty($msg['content'])): ?>
+                                        <div><?= nl2br(esc($msg['content'])) ?></div>
+                                    <?php endif; ?>
                                     <?php endif; ?>
                                     <div class="chat-msg-time">
                                         <?= esc($msg['created_at'] ?? '') ?>
@@ -186,11 +230,18 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                     <?php endforeach; ?>
                 </div>
                 <div class="chat-form-wrap">
-                    <form class="chat-form" action="<?= base_url('chat/send') ?>" method="post" id="chat-form">
+                    <form class="chat-form" action="<?= base_url('chat/send') ?>" method="post" id="chat-form" enctype="multipart/form-data">
                         <?= csrf_field() ?>
                         <input type="hidden" name="receiver_id" value="<?= (int) $with_user['id'] ?>">
-                        <textarea name="content" id="chat-content" rows="1" placeholder="Type a message..." required></textarea>
-                        <button type="submit" id="chat-send-btn">Send</button>
+                        <div class="chat-compose-row">
+                            <div class="chat-attachment-wrap">
+                                <input type="file" name="attachment" id="chat-attachment" class="chat-attachment-input" />
+                                <label for="chat-attachment" class="chat-attachment-button" id="chat-attachment-label">Choose File</label>
+                                <span id="chat-file-name" class="chat-file-name">No file chosen</span>
+                            </div>
+                            <textarea name="content" id="chat-content" rows="1" placeholder="Type a message..."></textarea>
+                            <button type="submit" id="chat-send-btn">Send</button>
+                        </div>
                     </form>
                 </div>
             <?php else: ?>
@@ -273,7 +324,18 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                             if (unsent) {
                                 html += '<div class="chat-msg-unsent-text">The message was unsent for everyone.</div>';
                             } else {
-                                html += '<div>' + escapeHtml(m.content).replace(/\n/g, '<br>') + '</div>';
+                                if (m.attachment_type && m.attachment_url) {
+                                    if (m.attachment_type === 'image') {
+                                        html += '<div style="margin-bottom: 8px;"><img src="' + escapeHtml(m.attachment_url) + '" alt="' + escapeHtml(m.attachment_name || 'image') + '" style="max-width: 320px; max-height: 240px; border-radius: 10px; border: 1px solid #e0e0e0;" /></div>';
+                                    } else if (m.attachment_type === 'video') {
+                                        html += '<div style="margin-bottom: 8px;"><video controls style="max-width: 360px; border-radius: 10px; border: 1px solid #e0e0e0;"><source src="' + escapeHtml(m.attachment_url) + '" type="' + escapeHtml(m.attachment_mime || 'video/mp4') + '"></video></div>';
+                                    } else {
+                                        html += '<div style="margin-bottom: 8px;"><a href="' + escapeHtml(m.attachment_url) + '" target="_blank" rel="noreferrer" class="link-details">' + escapeHtml(m.attachment_name || 'Download file') + '</a></div>';
+                                    }
+                                }
+                                if (m.content) {
+                                    html += '<div>' + escapeHtml(m.content).replace(/\n/g, '<br>') + '</div>';
+                                }
                             }
                             var statusLabel = (m.is_mine && !unsent && m.status) ? (m.status === 'READ' ? 'Seen' : 'Delivered') : '';
                             var statusClass = (m.is_mine && !unsent && m.status) ? (' chat-msg-status chat-msg-status-' + (m.status || 'sent').toLowerCase()) : '';
@@ -448,6 +510,22 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
         window.addEventListener('beforeunload', function() {
             setTyping(false);
         });
+    })();
+    </script>
+
+    <script>
+    (function() {
+        var fileInput = document.getElementById('chat-attachment');
+        var fileNameEl = document.getElementById('chat-file-name');
+        if (!fileInput || !fileNameEl) return;
+
+        function updateFileName() {
+            var f = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+            fileNameEl.textContent = f ? f.name : 'No file chosen';
+        }
+
+        fileInput.addEventListener('change', updateFileName);
+        updateFileName();
     })();
     </script>
 </body>
