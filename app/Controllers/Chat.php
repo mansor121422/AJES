@@ -263,12 +263,105 @@ class Chat extends BaseController
      */
     public function getChatUsersApi(): ResponseInterface
     {
-        $userId = (int) session()->get('user_id');
-        if (! $userId) {
+        $userId = (int) ($this->request->getGet('current') ?? session()->get('user_id'));
+        if ($userId < 1) {
             return $this->response->setStatusCode(401)->setJSON(['users' => []]);
         }
         $list = $this->getChatUserList($userId);
         return $this->response->setJSON(['users' => $list]);
+    }
+
+    /**
+     * POST api/chat/typing
+     * Body JSON: { "to": <user_id>, "typing": 1|0 }
+     * Marks the current user typing state against a chat partner.
+     */
+    public function setTypingApi(): ResponseInterface
+    {
+        $sessionUserId = (int) session()->get('user_id');
+        if ($sessionUserId < 1) {
+            return $this->response->setStatusCode(401)->setJSON(['status' => 'error', 'message' => 'Not logged in.']);
+        }
+
+        $payload = $this->request->getJSON(true);
+        if (! is_array($payload)) {
+            $payload = [
+                'to'      => $this->request->getPost('to'),
+                'typing'  => $this->request->getPost('typing'),
+            ];
+        }
+
+        $fromUserId = (int) ($payload['from_user_id'] ?? $payload['from'] ?? $sessionUserId);
+
+        $toUserId = (int) ($payload['to'] ?? 0);
+        $typing   = (int) ($payload['typing'] ?? 1);
+
+        if ($toUserId < 1 || $toUserId === $fromUserId) {
+            return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'Invalid typing target.']);
+        }
+
+        $now = date('Y-m-d H:i:s');
+        $db  = \Config\Database::connect();
+
+        try {
+            $sql = "INSERT INTO typing_indicators (from_user_id, to_user_id, is_typing, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE
+                        is_typing = VALUES(is_typing),
+                        updated_at = VALUES(updated_at)";
+            $db->query($sql, [$fromUserId, $toUserId, $typing ? 1 : 0, $now, $now]);
+        } catch (\Throwable $e) {
+            // Typing is non-critical; never break chat.
+            log_message('error', 'Typing update failed: ' . $e->getMessage());
+        }
+
+        if ($typing === 1) {
+            log_message('info', 'Typing indicator ON: from_user_id=' . $fromUserId . ' to_user_id=' . $toUserId);
+        }
+
+        return $this->response->setJSON(['status' => 'success']);
+    }
+
+    /**
+     * GET api/chat/typing?with=<partner_id>
+     * Returns whether the partner is currently typing to the logged-in user.
+     */
+    public function getTypingApi(): ResponseInterface
+    {
+        $toUserId = (int) ($this->request->getGet('to') ?? session()->get('user_id'));
+        if ($toUserId < 1) {
+            return $this->response->setStatusCode(401)->setJSON(['typing' => false]);
+        }
+
+        $fromUserId = (int) $this->request->getGet('with');
+        if ($fromUserId < 1 || $fromUserId === $toUserId) {
+            return $this->response->setJSON(['typing' => false]);
+        }
+
+        $typingTimeoutSeconds = 6;
+        $threshold = date('Y-m-d H:i:s', time() - $typingTimeoutSeconds);
+        $db        = \Config\Database::connect();
+
+        try {
+            $row = $db->table('typing_indicators')
+                ->select('is_typing, updated_at')
+                ->where('from_user_id', $fromUserId)
+                ->where('to_user_id', $toUserId)
+                ->get()
+                ->getRowArray();
+
+            $isTyping = false;
+            if (is_array($row) && (int) ($row['is_typing'] ?? 0) === 1) {
+                $updatedAt = $row['updated_at'] ?? null;
+                $updatedTs = $updatedAt ? strtotime((string) $updatedAt) : null;
+                $isTyping  = $updatedTs !== null && $updatedTs >= strtotime((string) $threshold);
+            }
+
+            return $this->response->setJSON(['typing' => $isTyping]);
+        } catch (\Throwable $e) {
+            // If the table doesn't exist yet, just report "not typing".
+            return $this->response->setJSON(['typing' => false]);
+        }
     }
 
     /**
@@ -279,6 +372,8 @@ class Chat extends BaseController
         $now            = time();
         $timeoutSeconds = (int) config('App')->presenceTimeoutSeconds;
         $hasPresenceColumns = $this->usersHasPresenceColumns();
+        $typingTimeoutSeconds = 6;
+        $typingByFromUserId = $this->getTypingByFromUserIds($currentUserId, $typingTimeoutSeconds);
 
         $select = $hasPresenceColumns
             ? 'id, name, username, role, is_online, last_seen_at'
@@ -313,6 +408,7 @@ class Chat extends BaseController
             }
 
             $presence = $this->computePresence($u, $now, $timeoutSeconds);
+            $isTyping = (bool) ($typingByFromUserId[$id] ?? false);
             $list[] = [
                 'id'          => $id,
                 'name'        => $u['name'] ?? $u['username'] ?? 'User #' . $id,
@@ -322,6 +418,7 @@ class Chat extends BaseController
                 'has_unread'  => ($unreadBySender[$id] ?? 0) > 0,
                 'presence_state' => $presence['state'],
                 'presence_label' => $presence['label'],
+                'typing'      => $isTyping,
             ];
         }
         return $list;
@@ -414,5 +511,65 @@ class Chat extends BaseController
 
         $checked = $hasIsOnline && $hasLastSeen;
         return $checked;
+    }
+
+    /**
+     * Get typing state for all users typing TO the current user.
+     *
+     * Returns: [from_user_id => bool]
+     */
+    private function getTypingByFromUserIds(int $toUserId, int $timeoutSeconds): array
+    {
+        static $cachedToUserId = null;
+        static $cachedTimeoutSeconds = null;
+        static $cached = [];
+
+        // Cache per request for the "chat sidebar" list so we don't re-query per user.
+        if ($cachedToUserId === $toUserId && $cachedTimeoutSeconds === $timeoutSeconds) {
+            return $cached;
+        }
+
+        $cachedToUserId = $toUserId;
+        $cachedTimeoutSeconds = $timeoutSeconds;
+
+        $cached = [];
+        $hasTypingTable = $this->typingTableExists();
+        if (! $hasTypingTable) {
+            return $cached;
+        }
+
+        $threshold = date('Y-m-d H:i:s', time() - $timeoutSeconds);
+        $db = \Config\Database::connect();
+
+        try {
+            // Only need currently-typing rows.
+            // Assumes `typing_indicators.updated_at` is refreshed when "typing" is set.
+            $rows = $db->table('typing_indicators')
+                ->select('from_user_id')
+                ->where('to_user_id', $toUserId)
+                ->where('is_typing', 1)
+                ->where('updated_at >=', $threshold)
+                ->get()
+                ->getResultArray();
+
+            foreach ($rows as $r) {
+                $fid = (int) ($r['from_user_id'] ?? 0);
+                if ($fid > 0) {
+                    $cached[$fid] = true;
+                }
+            }
+        } catch (\Throwable $e) {
+            // Typing is non-critical; fall back to all false.
+            return [];
+        }
+
+        return $cached;
+    }
+
+    private function typingTableExists(): bool
+    {
+        $db = \Config\Database::connect();
+        $has = $db->query("SHOW TABLES LIKE 'typing_indicators'")->getNumRows() > 0;
+        return $has;
     }
 }

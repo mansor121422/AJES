@@ -20,6 +20,8 @@ $routes->post('auth/reset-password/(:segment)', 'Auth::resetPassword/$1');
 $routes->post('api/login', 'Api\Auth::login');
 $routes->post('api/logout', 'Api\Auth::logout');
 $routes->get('api/chat/users', 'Chat::getChatUsersApi', ['filter' => 'auth']);
+$routes->post('api/chat/typing', 'Chat::setTypingApi', ['filter' => 'auth']);
+$routes->get('api/chat/typing', 'Chat::getTypingApi', ['filter' => 'auth']);
 
 // Dashboards (protected with filters)
 $routes->group('dashboard', ['filter' => 'auth'], static function (RouteCollection $routes): void {

@@ -28,6 +28,8 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
         .chat-user-status { font-size: 0.75rem; color: #888; margin-top: 4px; }
         .chat-user-status.online { color: #2e7d32; font-weight: 700; }
         .chat-user-status.offline { color: #888; }
+        #chat-typing-indicator { display: none; color: #558b2f; font-weight: 600; margin-left: 10px; font-size: 0.85rem; }
+        .chat-user-typing { display: none; color: #558b2f; font-weight: 600; font-size: 0.75rem; margin-top: 4px; }
         .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         .chat-header { padding: 12px 20px; background: #e8f5e9; border-bottom: 1px solid #c8e6c9; color: #1b5e20; font-weight: 600; }
         .chat-messages { flex: 1; overflow-y: auto; padding: 20px; background: #fafafa; }
@@ -112,6 +114,7 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                     <div class="chat-user-status <?= (($u['presence_state'] ?? 'offline') === 'online') ? 'online' : 'offline' ?>">
                         <?= esc($u['presence_label'] ?? '') ?>
                     </div>
+                    <div class="chat-user-typing" data-user-typing="<?= ($u['typing'] ?? false) ? '1' : '0' ?>">Typing...</div>
                 </a>
             <?php endforeach; ?>
             <?php if (empty($chat_users)): ?>
@@ -132,6 +135,7 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                             <?= esc($with_user['presence_label']) ?>
                         </span>
                     <?php endif; ?>
+                    <span id="chat-typing-indicator" class="chat-user-status offline">Typing...</span>
                 </div>
                 <div class="chat-messages" id="chat-messages">
                     <?php foreach ($conversation as $msg): ?>
@@ -297,15 +301,23 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
 
     <script>
     (function() {
-        var pollUrl = '<?= base_url('api/chat/users') ?>';
-        var presenceIntervalMs = 15000;
+        var pollUrl = '<?= base_url('api/chat/users') ?>?current=<?= (int) $current_id ?>';
+        var presenceIntervalMs = 4000;
         var headerUserId = <?= (int) $with_id ?>;
+        var currentUserId = <?= (int) $current_id ?>;
 
         var statusById = new Map();
         document.querySelectorAll('.chat-user-item[data-user-id]').forEach(function(a) {
             var id = a.getAttribute('data-user-id');
             var el = a.querySelector('.chat-user-status');
             if (id && el) statusById.set(id, el);
+        });
+
+        var typingById = new Map();
+        document.querySelectorAll('.chat-user-item[data-user-id]').forEach(function(a) {
+            var id = a.getAttribute('data-user-id');
+            var el = a.querySelector('.chat-user-typing');
+            if (id && el) typingById.set(id, el);
         });
 
         var headerEl = document.getElementById('chat-presence-header');
@@ -321,6 +333,12 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                     el.textContent = label;
                     el.classList.toggle('online', state === 'online');
                     el.classList.toggle('offline', state !== 'online');
+                }
+
+                var tEl = typingById.get(id);
+                if (tEl) {
+                    var isTyping = !!(u.typing);
+                    tEl.style.display = isTyping ? 'block' : 'none';
                 }
 
                 if (headerEl && id === String(headerUserId)) {
@@ -347,6 +365,89 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
 
         pollPresence();
         setInterval(pollPresence, presenceIntervalMs);
+    })();
+    </script>
+
+    <script>
+    (function() {
+        var typingIndicatorEl = document.getElementById('chat-typing-indicator');
+        var inputEl = document.getElementById('chat-content');
+        var typingPollUrl = '<?= base_url('api/chat/typing') ?>';
+        var typingWithId = <?= (int) $with_id ?>;
+        var currentUserId = <?= (int) $current_id ?>;
+
+        // If we are not inside an active conversation, do nothing.
+        if (!typingIndicatorEl || !inputEl) {
+            return;
+        }
+
+        // Throttle typing updates so we don't spam the server.
+        var minTypingUpdateMs = 1200;
+        var lastTypingUpdateAt = 0;
+        var idleOffTimeout = null;
+        // Keep "typing" ON for a bit longer so the other side's poll
+        // (sidebar refresh) can catch it reliably.
+        var idleOffMs = 5000;
+
+        function setTyping(on) {
+            var now = Date.now();
+            if (on && (now - lastTypingUpdateAt) < minTypingUpdateMs) {
+                return;
+            }
+            if (on) lastTypingUpdateAt = now;
+
+            fetch(typingPollUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ from: currentUserId, to: typingWithId, typing: on ? 1 : 0 })
+            }).catch(function() {});
+        }
+
+        function scheduleOff() {
+            if (idleOffTimeout) clearTimeout(idleOffTimeout);
+            idleOffTimeout = setTimeout(function() {
+                setTyping(false);
+            }, idleOffMs);
+        }
+
+        inputEl.addEventListener('input', function() {
+            var hasText = (inputEl.value || '').trim().length > 0;
+            setTyping(hasText);
+            scheduleOff();
+        });
+
+        inputEl.addEventListener('keydown', function() {
+            // Mark typing even before the `input` event commits text.
+            setTyping(true);
+            scheduleOff();
+        });
+
+        inputEl.addEventListener('blur', function() {
+            setTyping(false);
+        });
+
+        function pollTyping() {
+            fetch(typingPollUrl + '?with=' + typingWithId + '&to=' + currentUserId, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    var isTyping = !!(d && d.typing);
+                    typingIndicatorEl.style.display = isTyping ? 'inline' : 'none';
+                    typingIndicatorEl.textContent = isTyping ? 'Typing...' : 'Typing...';
+                })
+                .catch(function() {});
+        }
+
+        pollTyping();
+        setInterval(pollTyping, 2000);
+
+        // Best-effort: when leaving page, stop typing (might not always run).
+        window.addEventListener('beforeunload', function() {
+            setTyping(false);
+        });
     })();
     </script>
 </body>
