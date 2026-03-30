@@ -134,6 +134,20 @@ class App extends BaseConfig
     public string $appTimezone = 'UTC';
 
     /**
+     * Presence (online/offline) settings.
+     *
+     * A user is considered "online" when their `last_seen_at` was updated
+     * within the last `$presenceTimeoutSeconds`.
+     */
+    public int $presenceTimeoutSeconds = 300; // 5 minutes
+
+    /**
+     * How often we update `last_seen_at` for an already-active session
+     * (prevents excessive DB writes when polling every few seconds).
+     */
+    public int $presenceHeartbeatSeconds = 60; // 1 minute
+
+    /**
      * --------------------------------------------------------------------------
      * Default Character Set
      * --------------------------------------------------------------------------

@@ -28,6 +28,8 @@ class UserModel extends Model
         'section_id',
         'guidance_flag',
         'is_active',
+        'is_online',
+        'last_seen_at',
         'failed_attempts',
         'last_failed_at',
         'deleted_at',

@@ -62,6 +62,11 @@ class Chat extends BaseController
         if ($withId > 0 && $withId !== $userId) {
             $withUser = $this->users->find($withId);
             if ($withUser) {
+                $now = time();
+                $timeoutSeconds = (int) config('App')->presenceTimeoutSeconds;
+                $presence = $this->computePresence($withUser, $now, $timeoutSeconds);
+                $withUser['presence_state']  = $presence['state'];
+                $withUser['presence_label']  = $presence['label'];
                 $conversation = $this->messages->getConversation($userId, $withId);
                 $this->markAsRead($userId, $withId);
             }
@@ -271,7 +276,18 @@ class Chat extends BaseController
      */
     private function getChatUserList(int $currentUserId): array
     {
-        $users      = $this->users->orderBy('name')->findAll();
+        $now            = time();
+        $timeoutSeconds = (int) config('App')->presenceTimeoutSeconds;
+        $hasPresenceColumns = $this->usersHasPresenceColumns();
+
+        $select = $hasPresenceColumns
+            ? 'id, name, username, role, is_online, last_seen_at'
+            : 'id, name, username, role';
+
+        $users = $this->users
+            ->select($select)
+            ->orderBy('name')
+            ->findAll();
         $partnerIds = $this->messages->getConversationPartnerIds($currentUserId);
 
         // Unread counts per sender (messages sent TO current user that are not READ yet).
@@ -295,6 +311,8 @@ class Chat extends BaseController
             if ($id === $currentUserId) {
                 continue;
             }
+
+            $presence = $this->computePresence($u, $now, $timeoutSeconds);
             $list[] = [
                 'id'          => $id,
                 'name'        => $u['name'] ?? $u['username'] ?? 'User #' . $id,
@@ -302,6 +320,8 @@ class Chat extends BaseController
                 'has_chat'    => in_array($id, $partnerIds, true),
                 'unread'      => $unreadBySender[$id] ?? 0,
                 'has_unread'  => ($unreadBySender[$id] ?? 0) > 0,
+                'presence_state' => $presence['state'],
+                'presence_label' => $presence['label'],
             ];
         }
         return $list;
@@ -326,5 +346,73 @@ class Chat extends BaseController
             $text = preg_replace('/\b' . $word . '\b/iu', '****', $text);
         }
         return $text;
+    }
+
+    private function computePresence(array $userRow, int $now, int $timeoutSeconds): array
+    {
+        $isOnlineFlag = (int) ($userRow['is_online'] ?? 0);
+        $lastSeenAt   = $userRow['last_seen_at'] ?? null;
+        $lastSeenTs   = $lastSeenAt ? strtotime((string) $lastSeenAt) : null;
+
+        // Consider a user "online" only when:
+        // - server explicitly marked them online (`is_online=1`)
+        // - and their last seen timestamp is still within the timeout window.
+        if ($isOnlineFlag === 1 && $lastSeenTs !== null && $lastSeenTs >= ($now - $timeoutSeconds)) {
+            return ['state' => 'online', 'label' => 'Active now'];
+        }
+
+        if ($lastSeenTs === null) {
+            return ['state' => 'offline', 'label' => 'Offline'];
+        }
+
+        $diffSeconds = $now - $lastSeenTs;
+        if ($diffSeconds < 0) {
+            $diffSeconds = 0;
+        }
+
+        return [
+            'state' => 'offline',
+            'label' => 'Last active: ' . $this->formatTimeAgo($diffSeconds),
+        ];
+    }
+
+    private function formatTimeAgo(int $diffSeconds): string
+    {
+        if ($diffSeconds < 30) {
+            return 'just now';
+        }
+        if ($diffSeconds < 60) {
+            return $diffSeconds . ' seconds ago';
+        }
+        if ($diffSeconds < 3600) {
+            $m = (int) floor($diffSeconds / 60);
+            return $m . ' ' . ($m === 1 ? 'minute' : 'minutes') . ' ago';
+        }
+        if ($diffSeconds < 86400) {
+            $h = (int) floor($diffSeconds / 3600);
+            return $h . ' ' . ($h === 1 ? 'hour' : 'hours') . ' ago';
+        }
+
+        $d = (int) floor($diffSeconds / 86400);
+        return $d . ' ' . ($d === 1 ? 'day' : 'days') . ' ago';
+    }
+
+    /**
+     * Presence columns may not exist yet if migrations weren't run.
+     * We detect them once per request and then safely select/update.
+     */
+    private function usersHasPresenceColumns(): bool
+    {
+        static $checked = null;
+        if ($checked !== null) {
+            return $checked;
+        }
+
+        $db = \Config\Database::connect();
+        $hasIsOnline = $db->query("SHOW COLUMNS FROM `users` LIKE 'is_online'")->getNumRows() > 0;
+        $hasLastSeen = $db->query("SHOW COLUMNS FROM `users` LIKE 'last_seen_at'")->getNumRows() > 0;
+
+        $checked = $hasIsOnline && $hasLastSeen;
+        return $checked;
     }
 }

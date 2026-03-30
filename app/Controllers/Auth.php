@@ -60,12 +60,39 @@ class Auth extends BaseController
             'role'    => $user['role'],
         ]);
 
+        // Presence update should never break login.
+        // (If migrations weren't run yet, columns may not exist.)
+        try {
+            $this->users->update($user['id'], [
+                'is_online'   => 1,
+                'last_seen_at'=> date('Y-m-d H:i:s'),
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'Presence update failed on login for user_id=' . (int) $user['id'] . ': ' . $e->getMessage());
+        }
+
         return redirect()->to($this->redirectForRole($user['role']));
     }
 
     public function logout(): RedirectResponse
     {
         $session = session();
+
+        // Presence: mark user offline on logout (best-effort).
+        $userId = (int) $session->get('user_id');
+        if ($userId > 0) {
+            try {
+                $this->users->update($userId, [
+                    'is_online'   => 0,
+                    // Set last_seen_at to the actual logout moment.
+                    // UI decides Online only when is_online=1, so this will show
+                    // "Last seen X seconds/minutes ago" immediately after logout.
+                    'last_seen_at'=> date('Y-m-d H:i:s'),
+                ]);
+            } catch (\Throwable $e) {
+                log_message('error', 'Presence update failed on logout for user_id=' . $userId . ': ' . $e->getMessage());
+            }
+        }
         $session->destroy();
 
         return redirect()->to(base_url('/'));

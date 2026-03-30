@@ -25,6 +25,9 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
         .chat-user-item .chat-user-name { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
         .chat-user-item .chat-user-unread-dot { width: 8px; height: 8px; border-radius: 50%; background: #66bb6a; flex-shrink: 0; }
         .chat-user-item .chat-user-role { font-size: 0.8rem; color: #558b2f; margin-top: 2px; }
+        .chat-user-status { font-size: 0.75rem; color: #888; margin-top: 4px; }
+        .chat-user-status.online { color: #2e7d32; font-weight: 700; }
+        .chat-user-status.offline { color: #888; }
         .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         .chat-header { padding: 12px 20px; background: #e8f5e9; border-bottom: 1px solid #c8e6c9; color: #1b5e20; font-weight: 600; }
         .chat-messages { flex: 1; overflow-y: auto; padding: 20px; background: #fafafa; }
@@ -98,7 +101,7 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                 $hasUnread  = ! empty($u['has_unread']);
                 $unreadCnt  = (int) ($u['unread'] ?? 0);
                 ?>
-                <a href="<?= base_url('chat?with=' . $uid) ?>" class="chat-user-item <?= $isActive ? 'active' : '' ?> <?= $hasUnread ? 'has-unread' : '' ?>">
+                <a href="<?= base_url('chat?with=' . $uid) ?>" class="chat-user-item <?= $isActive ? 'active' : '' ?> <?= $hasUnread ? 'has-unread' : '' ?>" data-user-id="<?= (int) $uid ?>">
                     <div class="chat-user-name">
                         <span><?= esc($u['name']) ?></span>
                         <?php if ($hasUnread): ?>
@@ -106,6 +109,9 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                         <?php endif; ?>
                     </div>
                     <div class="chat-user-role"><?= esc($u['role']) ?></div>
+                    <div class="chat-user-status <?= (($u['presence_state'] ?? 'offline') === 'online') ? 'online' : 'offline' ?>">
+                        <?= esc($u['presence_label'] ?? '') ?>
+                    </div>
                 </a>
             <?php endforeach; ?>
             <?php if (empty($chat_users)): ?>
@@ -114,7 +120,19 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
         </aside>
         <div class="chat-main">
             <?php if ($with_user): ?>
-                <div class="chat-header"><?= esc($with_user['name']) ?> <span style="font-weight: normal; color: #558b2f;">(<?= esc($with_user['role']) ?>)</span></div>
+                <div class="chat-header">
+                    <?= esc($with_user['name']) ?>
+                    <span style="font-weight: normal; color: #558b2f;">(<?= esc($with_user['role']) ?>)</span>
+                <?php if (! empty($with_user['presence_label'])): ?>
+                        <span
+                            id="chat-presence-header"
+                            class="chat-user-status <?= (($with_user['presence_state'] ?? 'offline') === 'online') ? 'online' : 'offline' ?>"
+                            style="margin-left: 10px;"
+                        >
+                            <?= esc($with_user['presence_label']) ?>
+                        </span>
+                    <?php endif; ?>
+                </div>
                 <div class="chat-messages" id="chat-messages">
                     <?php foreach ($conversation as $msg): ?>
                         <?php
@@ -276,5 +294,60 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
     })();
     </script>
     <?php endif; ?>
+
+    <script>
+    (function() {
+        var pollUrl = '<?= base_url('api/chat/users') ?>';
+        var presenceIntervalMs = 15000;
+        var headerUserId = <?= (int) $with_id ?>;
+
+        var statusById = new Map();
+        document.querySelectorAll('.chat-user-item[data-user-id]').forEach(function(a) {
+            var id = a.getAttribute('data-user-id');
+            var el = a.querySelector('.chat-user-status');
+            if (id && el) statusById.set(id, el);
+        });
+
+        var headerEl = document.getElementById('chat-presence-header');
+
+        function applyPresence(users) {
+            if (!Array.isArray(users)) return;
+            users.forEach(function(u) {
+                var id = String(u.id);
+                var el = statusById.get(id);
+                if (el) {
+                    var state = u.presence_state || 'offline';
+                    var label = u.presence_label || (state === 'online' ? 'Online' : 'Offline');
+                    el.textContent = label;
+                    el.classList.toggle('online', state === 'online');
+                    el.classList.toggle('offline', state !== 'online');
+                }
+
+                if (headerEl && id === String(headerUserId)) {
+                    var stateH = u.presence_state || 'offline';
+                    var labelH = u.presence_label || (stateH === 'online' ? 'Online' : 'Offline');
+                    headerEl.textContent = labelH;
+                    headerEl.classList.toggle('online', stateH === 'online');
+                    headerEl.classList.toggle('offline', stateH !== 'online');
+                }
+            });
+        }
+
+        function pollPresence() {
+            fetch(pollUrl, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                .then(function(r) {
+                    if (!r.ok) throw new Error('Presence request failed');
+                    return r.json();
+                })
+                .then(function(d) {
+                    applyPresence(d.users || []);
+                })
+                .catch(function() {});
+        }
+
+        pollPresence();
+        setInterval(pollPresence, presenceIntervalMs);
+    })();
+    </script>
 </body>
 </html>

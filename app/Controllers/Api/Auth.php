@@ -72,6 +72,16 @@ class Auth extends BaseController
 
         $token = $this->tokens->createToken((int) $user['id'], 30);
 
+        // Presence: mark user as online when API login succeeds.
+        try {
+            $this->users->update((int) $user['id'], [
+                'is_online'    => 1,
+                'last_seen_at' => date('Y-m-d H:i:s'),
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'Presence update failed on api login for user_id=' . (int) $user['id'] . ': ' . $e->getMessage());
+        }
+
         $data = [
             'user_id'  => (int) $user['id'],
             'username' => $user['username'] ?? $user['email'] ?? '',
@@ -90,9 +100,25 @@ class Auth extends BaseController
     public function logout(): ResponseInterface
     {
         $token = $this->getBearerToken();
+
+        // Presence: mark user offline (best-effort) before revoking the token.
+        $userId = $token !== '' ? $this->tokens->getUserIdByToken($token) : null;
+
         if ($token !== '') {
             $this->tokens->revokeToken($token);
         }
+
+        if ($userId !== null) {
+            try {
+                $this->users->update($userId, [
+                    'is_online'    => 0,
+                    'last_seen_at' => date('Y-m-d H:i:s'),
+                ]);
+            } catch (\Throwable $e) {
+                log_message('error', 'Presence update failed on api logout for user_id=' . (int) $userId . ': ' . $e->getMessage());
+            }
+        }
+
         return $this->successResponse(['message' => 'Logged out.'], 200);
     }
 
