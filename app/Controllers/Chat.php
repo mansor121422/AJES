@@ -228,7 +228,7 @@ class Chat extends BaseController
         $senderRole = $sender['role'] ?? '';
         $receiverRole = $receiver['role'] ?? '';
         
-        if ($this->aiChatService->getConfig()->shouldTriggerResponse($senderRole, $receiverRole) && $hasText) {
+        if ($this->aiChatService->getConfig()->shouldTriggerResponse($senderRole, $receiverRole, $content) && $hasText) {
             try {
                 // Generate AI response
                 $aiResponse = $this->aiChatService->generateResponse($contentCensored, [

@@ -37,10 +37,15 @@ class AIChat extends BaseConfig
     public int $timeout = 30;
 
     /**
+     * AI Assistant Name
+     */
+    public string $aiName = 'AjesAI';
+
+    /**
      * System prompt for the AI assistant
      */
     public string $systemPrompt = <<<PROMPT
-You are an AI assistant for AJES school, responding on behalf of the principal. Your role is to help answer student inquiries about school policies, procedures, and general information.
+You are AjesAI, an AI assistant for AJES school. Your role is to help answer student inquiries about school policies, procedures, and general information.
 
 Guidelines:
 - Be polite, professional, and friendly
@@ -68,6 +73,12 @@ PROMPT;
      * Roles that will receive AI auto-replies (the receiver role)
      */
     public array $receiverRoles = ['PRINCIPAL'];
+
+    /**
+     * Trigger mentions that will activate AI response (case-insensitive)
+     * The AI will respond when the message contains these mentions
+     */
+    public array $triggerMentions = ['@ajesai', '@ajes'];
 
     /**
      * Maximum length for AI responses (in characters)
@@ -113,13 +124,33 @@ PROMPT;
     /**
      * Check if a message should trigger AI response
      */
-    public function shouldTriggerResponse(string $senderRole, string $receiverRole): bool
+    public function shouldTriggerResponse(string $senderRole, string $receiverRole, string $message = ''): bool
     {
         if (!$this->enabled || !$this->autoReply) {
             return false;
         }
 
+        // Check if message contains trigger mentions
+        if (!empty($message) && $this->containsTriggerMention($message)) {
+            return true;
+        }
+
+        // Check role-based trigger (student to principal)
         return in_array($senderRole, $this->triggerRoles, true)
             && in_array($receiverRole, $this->receiverRoles, true);
+    }
+
+    /**
+     * Check if a message contains a trigger mention
+     */
+    public function containsTriggerMention(string $message): bool
+    {
+        $lowerMessage = strtolower($message);
+        foreach ($this->triggerMentions as $mention) {
+            if (strpos($lowerMessage, strtolower($mention)) !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 }
