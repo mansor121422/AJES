@@ -66,6 +66,23 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
             color: #757575; /* gray / seen */
         }
         .chat-msg.theirs .chat-msg-status { display: none; }
+        /* AI Bot message styling */
+        .chat-msg.ai-bot {
+            background: #f3e5f5;
+            border: 1px solid #ce93d8;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-msg-ai-badge {
+            display: inline-block;
+            background: #7b1fa2;
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
         .chat-msg-dropdown { display: none; position: absolute; right: 0; top: 100%; margin-top: 2px; min-width: 160px; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10; overflow: hidden; }
         .chat-msg-dropdown.open { display: block; }
         .chat-msg-dropdown form { display: block; border-bottom: 1px solid #eee; }
@@ -159,8 +176,10 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                         <?php
                         $isMine = (int) $msg['sender_id'] === $current_id;
                         $unsentForAll = ! empty($msg['deleted_at']);
+                        $isBot = ! empty($msg['is_bot']);
+                        $msgClass = $isMine ? 'mine' : ($isBot ? 'ai-bot' : 'theirs');
                         ?>
-                        <div class="chat-msg <?= $isMine ? 'mine' : 'theirs' ?> <?= $unsentForAll ? 'chat-msg-unsent' : '' ?>" data-message-id="<?= (int) $msg['id'] ?>" data-is-mine="<?= $isMine ? '1' : '0' ?>">
+                        <div class="chat-msg <?= $msgClass ?> <?= $unsentForAll ? 'chat-msg-unsent' : '' ?>" data-message-id="<?= (int) $msg['id'] ?>" data-is-mine="<?= $isMine ? '1' : '0' ?>">
                             <div class="chat-msg-inner">
                                 <div class="chat-msg-body">
                                     <?php if ($unsentForAll): ?>
@@ -316,7 +335,7 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                         lastCount = data.messages.length;
                         var html = '';
                         data.messages.forEach(function(m) {
-                            var cls = m.is_mine ? 'mine' : 'theirs';
+                            var cls = m.is_mine ? 'mine' : (m.is_bot ? 'ai-bot' : 'theirs');
                             var unsent = m.unsent_for_all;
                             if (unsent) cls += ' chat-msg-unsent';
                             html += '<div class="chat-msg ' + cls + '" data-message-id="' + m.id + '" data-is-mine="' + (m.is_mine ? '1' : '0') + '">';
@@ -337,9 +356,11 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                                     html += '<div>' + escapeHtml(m.content).replace(/\n/g, '<br>') + '</div>';
                                 }
                             }
+                            var timeHtml = escapeHtml(m.created_at);
                             var statusLabel = (m.is_mine && !unsent && m.status) ? (m.status === 'READ' ? 'Seen' : 'Delivered') : '';
                             var statusClass = (m.is_mine && !unsent && m.status) ? (' chat-msg-status chat-msg-status-' + (m.status || 'sent').toLowerCase()) : '';
-                            html += '<div class="chat-msg-time">' + escapeHtml(m.created_at) + (statusLabel ? ' <span class="chat-msg-status' + statusClass + '" title="' + escapeHtml(statusLabel) + '">' + escapeHtml(statusLabel) + '</span>' : '') + '</div>';
+                            timeHtml += (statusLabel ? ' <span class="chat-msg-status' + statusClass + '" title="' + escapeHtml(statusLabel) + '">' + escapeHtml(statusLabel) + '</span>' : '');
+                            html += '<div class="chat-msg-time">' + timeHtml + '</div>';
                             html += '</div>';
                             if (!unsent) html += unsendMenuHtml(m.id, m.is_mine);
                             html += '</div></div>';

@@ -111,4 +111,4 @@ $currentUri = uri_string();
     </aside>
     <main class="content">
         <!-- React entry script compiled by Vite (frontend/) into public/react/main.js -->
-        <script type="module" src="<?= base_url('react/main.js') ?>"></script>
+<script type="module" src="<?= base_url('react/main.js') ?>"></script>

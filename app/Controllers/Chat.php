@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\AIChatService;
 use App\Models\MessageModel;
 use App\Models\UserModel;
 use Config\BadWords;
@@ -12,11 +13,13 @@ class Chat extends BaseController
 {
     protected MessageModel $messages;
     protected UserModel $users;
+    protected AIChatService $aiChatService;
 
     public function __construct()
     {
         $this->messages = new MessageModel();
         $this->users    = new UserModel();
+        $this->aiChatService = new AIChatService();
         helper(['url', 'form', 'text']);
     }
 
@@ -220,6 +223,53 @@ class Chat extends BaseController
             ]);
         }
 
+        // AI Auto-Reply: Generate response if conditions are met
+        $sender = $this->users->find($userId);
+        $senderRole = $sender['role'] ?? '';
+        $receiverRole = $receiver['role'] ?? '';
+        
+        if ($this->aiChatService->getConfig()->shouldTriggerResponse($senderRole, $receiverRole) && $hasText) {
+            try {
+                // Generate AI response
+                $aiResponse = $this->aiChatService->generateResponse($contentCensored, [
+                    'student_name' => $senderName,
+                    'sender_role' => $senderRole,
+                ]);
+
+                // Save AI response as a message from the principal (bot)
+                $this->messages->insert([
+                    'sender_id'        => $receiverId,
+                    'receiver_id'      => $userId,
+                    'content'          => $aiResponse,
+                    'is_bot'           => 1,
+                    'status'           => 'SENT',
+                ]);
+                $aiMessageId = (int) $this->messages->getInsertID();
+
+                // Create notification for the student about the AI response
+                if ($aiMessageId > 0) {
+                    $principalName = $receiver['name'] ?? $receiver['username'] ?? 'Principal';
+                    $aiNotifMsg = 'Auto-reply from ' . $principalName . ' (AI Assistant)';
+                    $db->table('notifications')->insert([
+                        'user_id'          => $userId,
+                        'type'             => 'ai_auto_reply',
+                        'reference_table'  => 'messages',
+                        'reference_id'     => $aiMessageId,
+                        'message'          => $aiNotifMsg,
+                        'is_read'          => 0,
+                        'created_at'       => $now,
+                    ]);
+                }
+
+                log_message('info', 'AI Chat: Auto-reply generated for message #' . $messageId);
+            } catch (\Exception $e) {
+                log_message('error', 'AI Chat: Failed to generate auto-reply', [
+                    'error' => $e->getMessage(),
+                    'message_id' => $messageId
+                ]);
+            }
+        }
+
         // API client (e.g. Android app): return JSON instead of redirect (avoids HTTP 303)
         if ($this->isApiRequest()) {
             return $this->response->setStatusCode(200)->setJSON(['status' => 'success', 'message' => 'Message sent.']);
@@ -314,6 +364,7 @@ class Chat extends BaseController
                 'content'         => $deleted ? '' : $m['content'],
                 'created_at'      => $m['created_at'] ?? '',
                 'is_mine'         => (int) $m['sender_id'] === $userId,
+                'is_bot'          => (int) ($m['is_bot'] ?? 0),
                 'unsent_for_all'  => $deleted,
                 'status'          => $m['status'] ?? 'SENT',
                 'attachment_type' => $deleted ? null : ($m['attachment_type'] ?? null),
