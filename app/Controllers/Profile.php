@@ -78,7 +78,14 @@ class Profile extends BaseController
 
         $password = (string) $this->request->getPost('new_password');
         $confirmPassword = (string) $this->request->getPost('confirm_password');
+        $oldPassword = (string) $this->request->getPost('old_password');
         if ($password !== '' || $confirmPassword !== '') {
+            if ($oldPassword === '') {
+                return redirect()->back()->withInput()->with('error', 'Old password is required to change password.');
+            }
+            if (! password_verify($oldPassword, (string) ($user['password_hash'] ?? ''))) {
+                return redirect()->back()->withInput()->with('error', 'Old password is incorrect.');
+            }
             if (strlen($password) < 8) {
                 return redirect()->back()->withInput()->with('error', 'New password must be at least 8 characters.');
             }

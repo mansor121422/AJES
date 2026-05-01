@@ -79,6 +79,7 @@ class Email extends BaseConfig
         $from = env('EMAIL_FROM', '');
         $fromName = env('EMAIL_FROM_NAME', '');
         $smtpHost = env('SMTP_HOST', '');
+        $smtpUser = (string) env('SMTP_USER', '');
         if ($from !== '') {
             $this->fromEmail = $from;
         }
@@ -86,12 +87,27 @@ class Email extends BaseConfig
             $this->fromName = $fromName;
         }
         if ($smtpHost !== '') {
+            $smtpPass = (string) env('SMTP_PASS', '');
+            // Gmail App Password is 16 chars and sometimes copied with spaces.
+            // Normalize it so auth won't fail due to formatting.
+            $smtpPass = str_replace(' ', '', trim($smtpPass));
+
             $this->protocol   = env('EMAIL_PROTOCOL', 'smtp') ?: 'smtp';
             $this->SMTPHost   = $smtpHost;
-            $this->SMTPUser   = (string) env('SMTP_USER', '');
-            $this->SMTPPass   = (string) env('SMTP_PASS', '');
+            $this->SMTPUser   = $smtpUser;
+            $this->SMTPPass   = $smtpPass;
             $this->SMTPPort   = (int) (env('SMTP_PORT', 587) ?: 587);
             $this->SMTPCrypto = (string) (env('SMTP_CRYPTO', 'tls') ?: 'tls');
+            $this->SMTPAuthMethod = (string) (env('SMTP_AUTH_METHOD', 'login') ?: 'login');
+            $this->SMTPTimeout = (int) (env('SMTP_TIMEOUT', 15) ?: 15);
+        }
+
+        // Prevent "Cannot send mail with no From header" on forgot password.
+        if ($this->fromEmail === '' && $smtpUser !== '') {
+            $this->fromEmail = $smtpUser;
+        }
+        if ($this->fromName === '') {
+            $this->fromName = 'AJES CRIER';
         }
     }
 

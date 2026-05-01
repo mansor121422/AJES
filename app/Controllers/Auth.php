@@ -155,6 +155,11 @@ class Auth extends BaseController
             . '</td></tr></table></td></tr></table></body></html>';
 
         $emailService = service('email');
+        $fromAddress = (string) env('EMAIL_FROM', (string) env('SMTP_USER', ''));
+        $fromName = (string) env('EMAIL_FROM_NAME', 'AJES CRIER');
+        if ($fromAddress !== '') {
+            $emailService->setFrom($fromAddress, $fromName);
+        }
         $emailService->setTo($email);
         $emailService->setSubject('AJES Password Reset');
         $emailService->setMailType('html');
@@ -162,8 +167,18 @@ class Auth extends BaseController
         $sent = $emailService->send();
 
         if (! $sent) {
-            log_message('error', 'Forgot password email failed: ' . strip_tags($emailService->printDebugger([])));
-            return redirect()->back()->withInput()->with('error', 'Email could not be sent. Use a file named .env (with a dot) in the project root with SMTP_HOST, SMTP_USER, SMTP_PASS. See docs/GMAIL_FORGOT_PASSWORD_SETUP.md and writable/logs.');
+            $debug = strip_tags($emailService->printDebugger([]));
+            log_message('error', 'Forgot password email failed: ' . $debug);
+
+            // Development fallback: still allow password reset even when SMTP fails.
+            // This keeps local/XAMPP workflow usable while mail credentials are being configured.
+            if (ENVIRONMENT === 'development') {
+                session()->setFlashdata('success', 'Email send failed on this local setup. Use the temporary reset link below.');
+                session()->setFlashdata('dev_reset_link', $resetLink);
+                return redirect()->back()->withInput();
+            }
+
+            return redirect()->back()->withInput()->with('error', 'Email could not be sent. Configure .env with SMTP_HOST, SMTP_USER, SMTP_PASS, and EMAIL_FROM (or let EMAIL_FROM fallback to SMTP_USER). Check writable/logs for detailed SMTP errors.');
         }
 
         $session->setFlashdata('success', 'If that email exists, a reset link has been sent.');

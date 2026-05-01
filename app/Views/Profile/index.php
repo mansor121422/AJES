@@ -86,7 +86,11 @@ $photoUrl = $photo !== '' ? base_url($photo) : null;
                     </div>
                     <div class="profile-section-title">Security</div>
                     <div class="profile-field">
-                        <label for="new_password">New Password (optional)</label>
+                        <label for="old_password">Old Password (required to change password)</label>
+                        <input type="password" id="old_password" name="old_password" minlength="8" placeholder="Enter your current password">
+                    </div>
+                    <div class="profile-field">
+                        <label for="new_password">New Password</label>
                         <input type="password" id="new_password" name="new_password" minlength="8" placeholder="Minimum 8 characters">
                     </div>
                     <div class="profile-field">

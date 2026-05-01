@@ -44,6 +44,14 @@
             <?php if (session()->getFlashdata('success')): ?>
                 <div class="message success"><?= esc(session()->getFlashdata('success')) ?></div>
             <?php endif; ?>
+            <?php if (session()->getFlashdata('dev_reset_link')): ?>
+                <div class="message success">
+                    Temporary reset link (local dev):<br>
+                    <a href="<?= esc((string) session()->getFlashdata('dev_reset_link')) ?>" style="color: #fff; text-decoration: underline; word-break: break-all;">
+                        <?= esc((string) session()->getFlashdata('dev_reset_link')) ?>
+                    </a>
+                </div>
+            <?php endif; ?>
 
             <form action="<?= base_url('auth/forgot-password') ?>" method="post">
                 <?= csrf_field() ?>
