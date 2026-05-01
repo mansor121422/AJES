@@ -64,12 +64,28 @@ switch ($role) {
 }
 
 $currentUri = uri_string();
+$sessionUserId = (int) (session()->get('user_id') ?? 0);
+$topbarPhotoUrl = null;
+if ($sessionUserId > 0) {
+    $sessionUser = (new \App\Models\UserModel())->find($sessionUserId);
+    $profilePhoto = trim((string) ($sessionUser['profile_photo'] ?? ''));
+    if ($profilePhoto !== '') {
+        $topbarPhotoUrl = base_url($profilePhoto);
+    }
+}
 ?>
 <div class="topbar" aria-label="AJES dashboard top navigation">
     <div class="topbar-left">AJES CRIER</div>
     <div class="topbar-right">
         <a href="<?= base_url('notifications') ?>" class="icon-button" aria-label="Notifications" id="notif-bell">🔔<span class="icon-badge" id="notif-badge" style="display: none;">0</span></a>
-        <span><?= esc($name ?? 'User') ?> <span class="badge"><?= esc($role) ?></span></span>
+        <a href="<?= base_url('profile') ?>" style="display:flex; align-items:center; gap:8px; color:#fff; text-decoration:none;">
+            <?php if ($topbarPhotoUrl): ?>
+                <img src="<?= esc($topbarPhotoUrl) ?>" alt="Profile" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.7);">
+            <?php else: ?>
+                <span style="width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center;">👤</span>
+            <?php endif; ?>
+            <span><?= esc($name ?? 'User') ?> <span class="badge"><?= esc($role) ?></span></span>
+        </a>
         <a href="<?= base_url('auth/logout') ?>" style="color: #fff; text-decoration: none; font-weight: 500;">Logout</a>
     </div>
 </div>
@@ -106,7 +122,7 @@ $currentUri = uri_string();
             <?php endforeach; ?>
         </nav>
         <div class="sidebar-footer">
-            <a href="<?= base_url('dashboard/' . strtolower($role)) ?>">⚙️ Settings</a>
+            <a href="<?= base_url('profile') ?>">⚙️ Profile Settings</a>
         </div>
     </aside>
     <main class="content">

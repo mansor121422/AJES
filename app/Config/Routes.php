@@ -55,6 +55,10 @@ $routes->get('notifications/mark-read/(:num)', 'Notifications::markReadGet/$1', 
 $routes->post('notifications/mark-read', 'Notifications::markRead', ['filter' => 'auth']);
 $routes->get('notifications/mark-all-read', 'Notifications::markAllRead', ['filter' => 'auth']);
 
+// Profile settings (all authenticated users)
+$routes->get('profile', 'Profile::index', ['filter' => 'auth']);
+$routes->post('profile', 'Profile::update', ['filter' => 'auth']);
+
 // Admin: Sections CRUD and invite teachers
 $routes->group('admin', ['filter' => 'auth'], static function (RouteCollection $routes): void {
     $routes->get('sections', 'Sections::index', ['filter' => 'role:ADMIN']);

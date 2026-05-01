@@ -5,6 +5,7 @@ namespace App\Controllers\Api;
 use App\Controllers\BaseController;
 use App\Models\ApiTokenModel;
 use App\Models\UserModel;
+use CodeIgniter\HTTP\Exceptions\HTTPException;
 use CodeIgniter\HTTP\ResponseInterface;
 
 /**
@@ -33,8 +34,13 @@ class Auth extends BaseController
     {
         $request = $this->request;
 
-        // Accept JSON or form body
-        $json = $request->getJSON(true);
+        // Accept JSON or form body; malformed JSON should not crash the endpoint.
+        $json = null;
+        try {
+            $json = $request->getJSON(true);
+        } catch (HTTPException) {
+            $json = null;
+        }
         if (is_array($json)) {
             $username = trim((string) ($json['username'] ?? $json['email'] ?? ''));
             $password = (string) ($json['password'] ?? '');

@@ -32,6 +32,9 @@ class UserModel extends Model
         'last_seen_at',
         'failed_attempts',
         'last_failed_at',
+        'contact_number',
+        'bio',
+        'profile_photo',
         'deleted_at',
     ];
 
