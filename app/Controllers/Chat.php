@@ -108,6 +108,9 @@ class Chat extends BaseController
         if (! $attachment || ! $attachment->isValid() || $attachment->getSize() <= 0) {
             $attachment = $this->request->getFile('attachment_video');
         }
+        if (! $attachment || ! $attachment->isValid() || $attachment->getSize() <= 0) {
+            $attachment = $this->request->getFile('attachment_audio');
+        }
 
         $hasText        = $content !== '';
         $hasAttachment = $attachment && $attachment->isValid() && $attachment->getSize() > 0;
@@ -157,8 +160,15 @@ class Chat extends BaseController
                 $attachmentType = 'image';
             } elseif (str_starts_with($attachmentMime, 'video/')) {
                 $attachmentType = 'video';
+            } elseif (str_starts_with($attachmentMime, 'audio/')) {
+                $attachmentType = 'audio';
             } else {
                 $attachmentType = 'file';
+            }
+
+            // Browser mic recordings sometimes report video/webm for opus-in-webm voice clips.
+            if ($this->request->getPost('voice_message') === '1') {
+                $attachmentType = 'audio';
             }
 
             $ext = strtolower((string) ($attachment->getClientExtension() ?? ''));
@@ -168,7 +178,11 @@ class Chat extends BaseController
                 $ext = isset($parts[1]) ? preg_replace('/[^a-z0-9]/i', '', $parts[1]) : '';
             }
             if ($ext === '') {
-                $ext = $attachmentType === 'image' ? 'jpg' : ($attachmentType === 'video' ? 'mp4' : 'bin');
+                $ext = $attachmentType === 'image'
+                    ? 'jpg'
+                    : ($attachmentType === 'video'
+                        ? 'mp4'
+                        : ($attachmentType === 'audio' ? 'webm' : 'bin'));
             }
 
             $uploadDir = FCPATH . 'public/assets/chat_uploads';
@@ -285,7 +299,7 @@ class Chat extends BaseController
         if ($this->isApiRequest()) {
             return $this->response->setStatusCode(200)->setJSON(['status' => 'success', 'message' => 'Message sent.']);
         }
-        return redirect()->to(base_url('chat?with=' . $receiverId))->with('success', 'Message sent.');
+        return redirect()->to(base_url('chat?with=' . $receiverId));
     }
 
     /**
@@ -533,8 +547,8 @@ class Chat extends BaseController
         $typingByFromUserId = $this->getTypingByFromUserIds($currentUserId, $typingTimeoutSeconds);
 
         $select = $hasPresenceColumns
-            ? 'id, name, username, role, is_online, last_seen_at'
-            : 'id, name, username, role';
+            ? 'id, name, username, role, is_online, last_seen_at, profile_photo'
+            : 'id, name, username, role, profile_photo';
 
         $users = $this->users
             ->select($select)
@@ -566,16 +580,19 @@ class Chat extends BaseController
 
             $presence = $this->computePresence($u, $now, $timeoutSeconds);
             $isTyping = (bool) ($typingByFromUserId[$id] ?? false);
+            $photoRel = trim((string) ($u['profile_photo'] ?? ''));
+            $photoUrl = $photoRel !== '' ? base_url($photoRel) : null;
             $list[] = [
-                'id'          => $id,
-                'name'        => $u['name'] ?? $u['username'] ?? 'User #' . $id,
-                'role'        => $u['role'] ?? '',
-                'has_chat'    => in_array($id, $partnerIds, true),
-                'unread'      => $unreadBySender[$id] ?? 0,
-                'has_unread'  => ($unreadBySender[$id] ?? 0) > 0,
-                'presence_state' => $presence['state'],
-                'presence_label' => $presence['label'],
-                'typing'      => $isTyping,
+                'id'                => $id,
+                'name'              => $u['name'] ?? $u['username'] ?? 'User #' . $id,
+                'role'              => $u['role'] ?? '',
+                'has_chat'          => in_array($id, $partnerIds, true),
+                'unread'            => $unreadBySender[$id] ?? 0,
+                'has_unread'        => ($unreadBySender[$id] ?? 0) > 0,
+                'presence_state'    => $presence['state'],
+                'presence_label'    => $presence['label'],
+                'typing'            => $isTyping,
+                'profile_photo_url' => $photoUrl,
             ];
         }
         return $list;

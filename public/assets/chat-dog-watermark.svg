@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 360" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="coat" x1="15%" y1="10%" x2="85%" y2="90%">
+      <stop offset="0%" stop-color="#a1887f" stop-opacity="0.4"/>
+      <stop offset="50%" stop-color="#6d4c41" stop-opacity="0.34"/>
+      <stop offset="100%" stop-color="#5d4037" stop-opacity="0.28"/>
+    </linearGradient>
+    <linearGradient id="coatLight" x1="40%" y1="0%" x2="60%" y2="100%">
+      <stop offset="0%" stop-color="#d7ccc8" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#8d6e63" stop-opacity="0.26"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <!-- Friendly sitting dog silhouette -->
+    <ellipse cx="168" cy="268" rx="88" ry="36" fill="url(#coat)" fill-opacity="0.25"/>
+    <path fill="url(#coat)" d="M98 148c4-48 44-84 92-84 38 0 72 22 86 56 8 20 8 42 0 62 6 14 10 30 10 46 0 52-42 94-94 94-24 0-46-8-62-24-20 18-46 28-74 28-8 0-16-1-24-3 6-32 26-58 52-74-12-16-18-36-14-58 4-22 18-40 36-52l-8-3z"/>
+    <ellipse cx="188" cy="132" rx="52" ry="56" fill="url(#coatLight)"/>
+    <path fill="url(#coatLight)" fill-opacity="0.5" d="M128 72c-10-22 8-44 32-40 14 2 26 14 30 28 18-12 42-8 54 10 8 14 6 32-4 46 20 16 32 40 32 66 0 44-36 80-80 80-30 0-56-16-70-40-18 8-38 10-58 4 4-24 18-44 38-56-8-20-4-44 12-60-8-12-10-28-4-42z"/>
+    <!-- floppy ear -->
+    <path fill="url(#coat)" fill-opacity="0.42" d="M96 124c-18 8-32 28-34 50-2 22 8 42 26 52l18-90c-4-8-12-14-22-14-4 0-8 1-12 2z"/>
+  </g>
+</svg>

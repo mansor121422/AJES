@@ -12,8 +12,8 @@ $photoUrl = $photo !== '' ? base_url($photo) : null;
     <title>Profile Settings - AJES</title>
     <?php include(APPPATH . 'Views/template.php'); ?>
     <style>
-        .profile-card { max-width: 760px; background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 14px rgba(27, 94, 32, 0.08); border: 1px solid rgba(46,125,50,0.1); }
-        .profile-grid { display: grid; grid-template-columns: 140px 1fr; gap: 20px; align-items: start; }
+        .profile-card { width: 100%; max-width: none; background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 14px rgba(27, 94, 32, 0.08); border: 1px solid rgba(46,125,50,0.1); }
+        .profile-grid { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 24px; align-items: start; }
         .profile-avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #c8e6c9; background: #f1f8e9; }
         .profile-avatar-fallback { width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #2e7d32; background: #e8f5e9; border: 3px solid #c8e6c9; }
         .profile-field { margin-bottom: 14px; }
@@ -41,6 +41,10 @@ $photoUrl = $photo !== '' ? base_url($photo) : null;
         .photo-modal-title { margin: 0 0 10px; color: #1b5e20; font-size: 1.02rem; font-weight: 700; }
         .photo-modal-actions { margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px; }
         .btn-cancel { background: #f5f5f5; color: #333; border: 1px solid #ddd; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .btn-photo-save { background: #2e7d32; color: #fff; border: 1px solid #1b5e20; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        @media (max-width: 900px) {
+            .profile-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -116,6 +120,7 @@ $photoUrl = $photo !== '' ? base_url($photo) : null;
                         <button type="submit" name="remove_photo" value="1" class="btn-danger" onclick="return confirm('Delete current profile picture?')">Delete Current Photo</button>
                     <?php endif; ?>
                     <div class="photo-modal-actions">
+                        <button type="submit" class="btn-photo-save">Save Photo</button>
                         <button type="button" class="btn-cancel" onclick="closePhotoEditor()">Close</button>
                     </div>
                 </div>

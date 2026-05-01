@@ -1,6 +1,13 @@
 <?php
-$role = 'STUDENT';
-$name = session()->get('name') ?? 'Student';
+$role = $role ?? 'STUDENT';
+$name = $name ?? (session()->get('name') ?? 'Student');
+$studentSection = $student_section ?? null;
+$hasSection = is_array($studentSection) && ! empty($studentSection['id']);
+$sectionLabel = $hasSection ? (($studentSection['grade_level'] ?? '') . ' - ' . ($studentSection['name'] ?? '')) : 'Not assigned yet';
+$announcementCountWeek = (int) ($announcement_count_week ?? 0);
+$announcementCountToday = (int) ($announcement_count_today ?? 0);
+$unreadMessages = (int) ($unread_messages ?? 0);
+$recentAnnouncements = $recent_announcements ?? [];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,22 +23,26 @@ $name = session()->get('name') ?? 'Student';
 
     <div class="welcome-card">
         <div class="card-title">Welcome back, <?= esc($name) ?>!</div>
-        <p>Your role: <strong><?= esc($role) ?></strong>. Announcements for your grade and section, and messages from teachers and guidance, appear here.</p>
+        <?php if ($hasSection): ?>
+            <p>Your role: <strong><?= esc($role) ?></strong>. Your current section is <strong><?= esc($sectionLabel) ?></strong>. Announcements and updates for your section appear here.</p>
+        <?php else: ?>
+            <p>Your role: <strong><?= esc($role) ?></strong>. You are not assigned to a section yet. Ask your teacher/admin to assign you so section announcements appear here.</p>
+        <?php endif; ?>
     </div>
 
     <div class="kpi-row">
         <div class="kpi-card kpi-mint">
             <div class="kpi-body">
                 <h3>Announcements for You</h3>
-                <div class="kpi-value">9</div>
-                <div class="kpi-meta">This week (your section)</div>
+                <div class="kpi-value"><?= esc((string) $announcementCountWeek) ?></div>
+                <div class="kpi-meta"><?= $hasSection ? 'This week (your section)' : 'This week (school-wide)' ?></div>
             </div>
             <div class="kpi-progress" style="--pct: 80%;"></div>
         </div>
         <div class="kpi-card kpi-sage">
             <div class="kpi-body">
                 <h3>Unread Messages</h3>
-                <div class="kpi-value">2</div>
+                <div class="kpi-value"><?= esc((string) $unreadMessages) ?></div>
                 <div class="kpi-meta">From teachers / guidance</div>
             </div>
             <div class="kpi-progress" style="--pct: 25%;"></div>
@@ -39,7 +50,7 @@ $name = session()->get('name') ?? 'Student';
         <div class="kpi-card kpi-green">
             <div class="kpi-body">
                 <h3>Today</h3>
-                <div class="kpi-value">3</div>
+                <div class="kpi-value"><?= esc((string) $announcementCountToday) ?></div>
                 <div class="kpi-meta">New announcements today</div>
             </div>
             <div class="kpi-icon">📢</div>
@@ -66,24 +77,20 @@ $name = session()->get('name') ?? 'Student';
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>School Assembly – Tomorrow 8 AM</td>
-                            <td>Announcer</td>
-                            <td>Today</td>
-                            <td><a href="<?= base_url('announcements') ?>" class="link-details">Read</a></td>
-                        </tr>
-                        <tr>
-                            <td>Grade 3 – Reading Activity Reminder</td>
-                            <td>Teacher</td>
-                            <td>Today</td>
-                            <td><a href="<?= base_url('announcements') ?>" class="link-details">Read</a></td>
-                        </tr>
-                        <tr>
-                            <td>Lunch Menu Update</td>
-                            <td>Announcer</td>
-                            <td>Yesterday</td>
-                            <td><a href="<?= base_url('announcements') ?>" class="link-details">Read</a></td>
-                        </tr>
+                        <?php if (empty($recentAnnouncements)): ?>
+                            <tr>
+                                <td colspan="4"><?= $hasSection ? 'No announcements for your section yet.' : 'No announcements yet.' ?></td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($recentAnnouncements as $a): ?>
+                                <tr>
+                                    <td><?= esc($a['title'] ?? '') ?></td>
+                                    <td><?= esc($a['audience_type'] ?? 'School') ?></td>
+                                    <td><?= esc($a['created_at'] ?? '') ?></td>
+                                    <td><a href="<?= base_url('announcements') ?>" class="link-details">Read</a></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>

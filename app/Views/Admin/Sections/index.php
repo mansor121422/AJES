@@ -31,18 +31,20 @@ $sections = $sections ?? [];
                     <th>ID</th>
                     <th>Name</th>
                     <th>Grade level</th>
+                    <th>School day (times)</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($sections)): ?>
-                    <tr><td colspan="4">No sections yet.</td></tr>
+                    <tr><td colspan="5">No sections yet.</td></tr>
                 <?php else: ?>
                     <?php foreach ($sections as $s): ?>
                         <tr>
                             <td><?= esc($s['id']) ?></td>
                             <td><?= esc($s['name']) ?></td>
                             <td><?= esc($s['grade_level']) ?></td>
+                            <td style="font-size: 0.85rem; color: #555;"><?= esc($s['schedule_time_summary'] ?? '—') ?></td>
                             <td>
                                 <a href="<?= base_url('admin/sections/' . $s['id'] . '/teachers') ?>" class="link-details">Invite teachers</a>
                                 &nbsp;|&nbsp;

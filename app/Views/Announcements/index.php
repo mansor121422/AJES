@@ -2,7 +2,7 @@
 $role          = $role ?? 'ADMIN';
 $name          = $name ?? 'User';
 $announcements = $announcements ?? [];
-$canManage     = in_array($role, ['ADMIN', 'PRINCIPAL', 'ANNOUNCER'], true);
+$canManage     = in_array($role, ['ADMIN', 'PRINCIPAL', 'ANNOUNCER', 'TEACHER'], true);
 ?>
 <!DOCTYPE html>
 <html lang="en">

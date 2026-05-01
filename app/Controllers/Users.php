@@ -40,11 +40,9 @@ class Users extends BaseController
 
     public function create(): string
     {
-        $sections = $this->sections->orderBy('grade_level')->orderBy('name')->findAll();
         $data = [
-            'sections' => $sections,
-            'role'     => session()->get('role') ?? 'ADMIN',
-            'name'     => session()->get('name') ?? 'User',
+            'role' => session()->get('role') ?? 'ADMIN',
+            'name' => session()->get('name') ?? 'User',
         ];
         return view('Admin/Users/create', $data);
     }
@@ -56,8 +54,9 @@ class Users extends BaseController
         $username = trim((string) $this->request->getPost('username'));
         $password = (string) $this->request->getPost('password');
         $role     = trim((string) $this->request->getPost('role'));
-        $sectionId = $this->request->getPost('section_id');
         $isActive  = (int) $this->request->getPost('is_active');
+        $birthdate = trim((string) $this->request->getPost('birthdate'));
+        $age       = $this->computeAgeFromBirthdate($birthdate);
 
         if ($name === '' || $email === '' || $username === '' || $password === '' || $role === '') {
             return redirect()->back()->withInput()->with('error', 'Name, email, username, password and role are required.');
@@ -86,8 +85,19 @@ class Users extends BaseController
             'role'          => $role,
             'is_active'     => $isActive ? 1 : 0,
         ];
-        if ($sectionId !== null && $sectionId !== '' && in_array($role, ['TEACHER', 'STUDENT'], true)) {
-            $data['section_id'] = (int) $sectionId;
+        if ($role === 'STUDENT') {
+            $gradePick = trim((string) $this->request->getPost('grade_level'));
+            if (! in_array($gradePick, ['1', '2', '3', '4', '5', '6'], true)) {
+                return redirect()->back()->withInput()->with('error', 'Choose a grade level from Grade 1 to Grade 6.');
+            }
+            $data['student_id'] = trim((string) $this->request->getPost('student_id'));
+            $data['gender'] = trim((string) $this->request->getPost('gender'));
+            $data['grade_level'] = $gradePick;
+            $data['birthdate'] = $birthdate !== '' ? $birthdate : null;
+            $data['age'] = $age;
+            $data['address'] = trim((string) $this->request->getPost('address'));
+            $data['guardian_name'] = trim((string) $this->request->getPost('guardian_name'));
+            $data['guardian_contact'] = trim((string) $this->request->getPost('guardian_contact'));
         }
         $this->users->insert($data);
         return redirect()->to(base_url('admin/users'))->with('success', 'User created.');
@@ -130,6 +140,8 @@ class Users extends BaseController
         $role     = $is_editing_self ? ($user['role'] ?? 'ADMIN') : trim((string) $this->request->getPost('role'));
         $sectionId = $this->request->getPost('section_id');
         $isActive  = (int) $this->request->getPost('is_active');
+        $birthdate = trim((string) $this->request->getPost('birthdate'));
+        $age       = $this->computeAgeFromBirthdate($birthdate);
 
         if ($name === '' || $email === '' || $username === '' || $role === '') {
             return redirect()->back()->withInput()->with('error', 'Name, email, username and role are required.');
@@ -156,14 +168,33 @@ class Users extends BaseController
             'role'      => $role,
             'is_active' => $isActive ? 1 : 0,
         ];
+        if ($role === 'STUDENT') {
+            $data['student_id'] = trim((string) $this->request->getPost('student_id'));
+            $data['gender'] = trim((string) $this->request->getPost('gender'));
+            $data['grade_level'] = trim((string) $this->request->getPost('grade_level'));
+            $data['birthdate'] = $birthdate !== '' ? $birthdate : null;
+            $data['age'] = $age;
+            $data['address'] = trim((string) $this->request->getPost('address'));
+            $data['guardian_name'] = trim((string) $this->request->getPost('guardian_name'));
+            $data['guardian_contact'] = trim((string) $this->request->getPost('guardian_contact'));
+        }
         if ($password !== '') {
             if (strlen($password) < 6) {
                 return redirect()->back()->withInput()->with('error', 'Password must be at least 6 characters.');
             }
             $data['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
         }
-        if ($sectionId !== null && $sectionId !== '' && in_array($role, ['TEACHER', 'STUDENT'], true)) {
-            $data['section_id'] = (int) $sectionId;
+        if ($role === 'TEACHER') {
+            $data['section_id'] = ($sectionId !== null && $sectionId !== '') ? (int) $sectionId : null;
+        } elseif ($role === 'STUDENT') {
+            $existingSectionId = (int) ($user['section_id'] ?? 0);
+            if ($existingSectionId > 0) {
+                $data['section_id'] = $existingSectionId;
+            } elseif ($sectionId !== null && $sectionId !== '') {
+                $data['section_id'] = (int) $sectionId;
+            } else {
+                $data['section_id'] = null;
+            }
         } else {
             $data['section_id'] = null;
         }
@@ -175,6 +206,23 @@ class Users extends BaseController
         }
 
         return redirect()->to(base_url('admin/users'))->with('success', 'User updated.');
+    }
+
+    private function computeAgeFromBirthdate(string $birthdate): ?int
+    {
+        if ($birthdate === '') {
+            return null;
+        }
+        try {
+            $dob = new \DateTimeImmutable($birthdate);
+            $now = new \DateTimeImmutable('today');
+            if ($dob > $now) {
+                return null;
+            }
+            return (int) $dob->diff($now)->y;
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     public function delete(int $id): RedirectResponse

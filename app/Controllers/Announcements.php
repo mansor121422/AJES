@@ -130,6 +130,6 @@ class Announcements extends BaseController
     private function canManageAnnouncements(): bool
     {
         $role = session()->get('role');
-        return in_array($role, ['ADMIN', 'PRINCIPAL', 'ANNOUNCER'], true);
+        return in_array($role, ['ADMIN', 'PRINCIPAL', 'ANNOUNCER', 'TEACHER'], true);
     }
 }

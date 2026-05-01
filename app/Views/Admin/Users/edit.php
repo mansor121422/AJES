@@ -5,6 +5,16 @@ $role = $role ?? 'ADMIN';
 $name = $name ?? 'User';
 $is_editing_self = $is_editing_self ?? false;
 $roleReadonlyStyle = $is_editing_self ? ' background: #e0e0e0; color: #666; cursor: not-allowed;' : '';
+$studentSectionLocked = (($user['role'] ?? '') === 'STUDENT' && (int) ($user['section_id'] ?? 0) > 0);
+$lockedSectionLabel = '';
+if ($studentSectionLocked) {
+    foreach ($sections as $s) {
+        if ((string) ($s['id'] ?? '') === (string) ($user['section_id'] ?? '')) {
+            $lockedSectionLabel = esc($s['grade_level'] . ' - ' . $s['name']);
+            break;
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -62,13 +72,60 @@ $roleReadonlyStyle = $is_editing_self ? ' background: #e0e0e0; color: #666; curs
                 <?php endif; ?>
             </div>
             <div class="form-group" id="section-group" style="display: none;">
-                <label for="section_id" style="color: #1b5e20;">Section</label>
-                <select id="section_id" name="section_id" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
-                    <option value="">— None —</option>
-                    <?php foreach ($sections as $s): ?>
-                        <option value="<?= (int) $s['id'] ?>" <?= (string) ($user['section_id'] ?? '') === (string) $s['id'] ? 'selected' : '' ?>><?= esc($s['grade_level'] . ' - ' . $s['name']) ?></option>
-                    <?php endforeach; ?>
-                </select>
+                <?php if ($studentSectionLocked): ?>
+                    <span style="display: block; color: #1b5e20; font-weight: 600; margin-bottom: 4px;">Section</span>
+                <?php else: ?>
+                    <label for="section_id" style="color: #1b5e20;">Section</label>
+                <?php endif; ?>
+                <?php if ($studentSectionLocked): ?>
+                    <p style="margin: 0; padding: 10px 12px; background: #f1f8e9; border: 1px solid #c8e6c9; border-radius: 8px; color: #1b5e20;">
+                        <?= $lockedSectionLabel !== '' ? $lockedSectionLabel : 'Assigned section' ?>
+                        <span style="display: block; font-size: 0.82rem; color: #558b2f; margin-top: 6px;">This student must stay in this section — it cannot be changed here.</span>
+                    </p>
+                    <input type="hidden" name="section_id" value="<?= (int) $user['section_id'] ?>">
+                <?php else: ?>
+                    <select id="section_id" name="section_id" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                        <option value="">— None —</option>
+                        <?php foreach ($sections as $s): ?>
+                            <option value="<?= (int) $s['id'] ?>" <?= (string) ($user['section_id'] ?? '') === (string) $s['id'] ? 'selected' : '' ?>><?= esc($s['grade_level'] . ' - ' . $s['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php endif; ?>
+            </div>
+            <div id="student-fields" style="display:none;">
+                <div class="form-group">
+                    <label for="student_id" style="color: #1b5e20;">Student ID / LRN</label>
+                    <input type="text" id="student_id" name="student_id" value="<?= esc(old('student_id', $user['student_id'] ?? '')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                </div>
+                <div class="form-group">
+                    <label for="gender" style="color: #1b5e20;">Gender</label>
+                    <select id="gender" name="gender" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                        <option value="">Select gender</option>
+                        <option value="Male" <?= old('gender', $user['gender'] ?? '') === 'Male' ? 'selected' : '' ?>>Male</option>
+                        <option value="Female" <?= old('gender', $user['gender'] ?? '') === 'Female' ? 'selected' : '' ?>>Female</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="grade_level" style="color: #1b5e20;">Grade Level</label>
+                    <input type="text" id="grade_level" name="grade_level" value="<?= esc(old('grade_level', $user['grade_level'] ?? '')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                </div>
+                <div class="form-group">
+                    <label for="birthdate" style="color: #1b5e20;">Birthdate</label>
+                    <input type="date" id="birthdate" name="birthdate" value="<?= esc(old('birthdate', $user['birthdate'] ?? '')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                    <small style="color: #666;">Student must be at least 6 years old.</small>
+                </div>
+                <div class="form-group">
+                    <label for="address" style="color: #1b5e20;">Address</label>
+                    <textarea id="address" name="address" rows="2" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;"><?= esc(old('address', $user['address'] ?? '')) ?></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="guardian_name" style="color: #1b5e20;">Guardian Name</label>
+                    <input type="text" id="guardian_name" name="guardian_name" value="<?= esc(old('guardian_name', $user['guardian_name'] ?? '')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                </div>
+                <div class="form-group">
+                    <label for="guardian_contact" style="color: #1b5e20;">Guardian Contact</label>
+                    <input type="text" id="guardian_contact" name="guardian_contact" value="<?= esc(old('guardian_contact', $user['guardian_contact'] ?? '')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                </div>
             </div>
             <div class="form-group">
                 <label style="color: #1b5e20;">
@@ -83,8 +140,21 @@ $roleReadonlyStyle = $is_editing_self ? ' background: #e0e0e0; color: #666; curs
     <script>
     document.getElementById('role').addEventListener('change', function() {
         var g = document.getElementById('section-group');
+        var sf = document.getElementById('student-fields');
         g.style.display = ['TEACHER','STUDENT'].indexOf(this.value) >= 0 ? 'block' : 'none';
+        sf.style.display = this.value === 'STUDENT' ? 'block' : 'none';
     });
+
+    (function() {
+        var birthdateEl = document.getElementById('birthdate');
+        if (!birthdateEl) return;
+        var today = new Date();
+        var max = new Date(today.getFullYear() - 6, today.getMonth(), today.getDate());
+        var min = new Date(today.getFullYear() - 25, today.getMonth(), today.getDate());
+        birthdateEl.max = max.toISOString().split('T')[0];
+        birthdateEl.min = min.toISOString().split('T')[0];
+    })();
+
     document.getElementById('role').dispatchEvent(new Event('change'));
     </script>
 

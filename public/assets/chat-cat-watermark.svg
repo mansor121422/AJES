@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 380" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="fur" x1="18%" y1="12%" x2="88%" y2="92%">
+      <stop offset="0%" stop-color="#ffab40" stop-opacity="0.42"/>
+      <stop offset="45%" stop-color="#ff6d00" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#e65100" stop-opacity="0.32"/>
+    </linearGradient>
+    <linearGradient id="furSoft" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#ffe0b2" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ff8f42" stop-opacity="0.28"/>
+    </linearGradient>
+  </defs>
+  <g opacity="1">
+    <!-- Sitting tabby silhouette (watermark style) -->
+    <path fill="url(#fur)" d="M118 42c-8-18 4-38 22-34 10 2 18 12 20 24 12-8 28-6 36 6 6 10 4 24-4 34 18 14 28 36 28 58 0 8-2 16-6 24 10 18 16 40 14 62-2 28-14 52-34 68-24 20-56 28-86 22-42-8-76-42-84-84-4-22 2-44 14-62-16-20-20-48-10-72 8-20 26-34 46-38 8-28 32-48 60-48 6 0 12 1 18 3z"/>
+    <ellipse cx="198" cy="118" rx="38" ry="44" fill="url(#furSoft)"/>
+    <path fill="url(#furSoft)" fill-opacity="0.55" d="M96 200c-18 8-32 24-38 44-6 22-2 46 12 64 20 26 52 38 84 32 28-6 52-26 62-52 10-28 6-58-10-82-12-18-30-30-50-34-20 52-26 58-60 28z"/>
+    <!-- Simple ear hints -->
+    <path fill="url(#fur)" fill-opacity="0.45" d="M132 56l-14-28c-4-8 2-16 10-14l22 8-18 34zm72-8l20-32c6-10 18-8 22 4l8 26-50 2z"/>
+  </g>
+</svg>

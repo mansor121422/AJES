@@ -70,6 +70,8 @@ $routes->group('admin', ['filter' => 'auth'], static function (RouteCollection $
     $routes->get('sections/delete/(:num)', 'Sections::delete/$1', ['filter' => 'role:ADMIN']);
     $routes->get('sections/(:num)/teachers', 'Sections::sectionTeachers/$1', ['filter' => 'role:ADMIN']);
     $routes->post('sections/invite', 'Sections::invite', ['filter' => 'role:ADMIN']);
+    $routes->post('sections/assignment/update/(:num)', 'Sections::updateTeacherAssignment/$1', ['filter' => 'role:ADMIN']);
+    $routes->get('sections/assignment/delete/(:num)', 'Sections::deleteTeacherAssignment/$1', ['filter' => 'role:ADMIN']);
     $routes->get('users', 'Users::index', ['filter' => 'role:ADMIN']);
     $routes->get('users/create', 'Users::create', ['filter' => 'role:ADMIN']);
     $routes->post('users/store', 'Users::store', ['filter' => 'role:ADMIN']);
@@ -84,6 +86,8 @@ $routes->group('admin', ['filter' => 'auth'], static function (RouteCollection $
 $routes->group('teacher', ['filter' => 'auth'], static function (RouteCollection $routes): void {
     $routes->get('sections', 'TeacherSections::index', ['filter' => 'role:TEACHER']);
     $routes->get('sections/accept/(:num)', 'TeacherSections::accept/$1', ['filter' => 'role:TEACHER']);
+    $routes->get('sections/leave/(:num)', 'TeacherSections::removeAssignment/$1', ['filter' => 'role:TEACHER']);
+    $routes->get('sections/(:num)/schedule', 'TeacherSections::sectionSchedule/$1', ['filter' => 'role:TEACHER']);
     $routes->get('sections/(:num)/students', 'TeacherSections::sectionStudents/$1', ['filter' => 'role:TEACHER']);
     $routes->post('sections/add-student', 'TeacherSections::addStudent', ['filter' => 'role:TEACHER']);
 });

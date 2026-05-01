@@ -11,7 +11,7 @@ class SectionModel extends Model
     protected $useAutoIncrement  = true;
     protected $returnType       = 'array';
     protected $useSoftDeletes   = true;
-    protected $allowedFields    = ['name', 'grade_level'];
+    protected $allowedFields    = ['name', 'grade_level', 'class_schedule'];
     protected $useTimestamps    = true;
     protected $createdField     = 'created_at';
     protected $updatedField     = 'updated_at';

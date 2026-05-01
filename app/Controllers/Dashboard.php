@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Models\AnnouncementModel;
 use App\Models\UserModel;
+use App\Models\SectionModel;
+use App\Models\MessageModel;
 
 class Dashboard extends BaseController
 {
@@ -85,7 +87,69 @@ class Dashboard extends BaseController
 
     public function student(): string
     {
-        return view('Student/dashboard');
+        $userId = (int) (session()->get('user_id') ?? 0);
+        $users = new UserModel();
+        $sections = new SectionModel();
+        $announcements = new AnnouncementModel();
+        $messages = new MessageModel();
+
+        $student = $users->find($userId);
+        $sectionId = (int) ($student['section_id'] ?? 0);
+        $section = $sectionId > 0 ? $sections->find($sectionId) : null;
+
+        $todayStart = date('Y-m-d 00:00:00');
+        $weekStart = date('Y-m-d 00:00:00', strtotime('-7 days'));
+
+        $annBuilder = $announcements->where('status', 'ACTIVE');
+        if ($sectionId > 0) {
+            $annBuilder = $annBuilder->groupStart()
+                ->whereIn('audience_type', ['ALL', 'school-wide'])
+                ->orWhere('section_id', $sectionId)
+                ->groupEnd();
+        } else {
+            $annBuilder = $annBuilder->whereIn('audience_type', ['ALL', 'school-wide']);
+        }
+
+        $announcementCountWeek = $annBuilder->where('created_at >=', $weekStart)->countAllResults();
+
+        $todayBuilder = $announcements->where('status', 'ACTIVE');
+        if ($sectionId > 0) {
+            $todayBuilder = $todayBuilder->groupStart()
+                ->whereIn('audience_type', ['ALL', 'school-wide'])
+                ->orWhere('section_id', $sectionId)
+                ->groupEnd();
+        } else {
+            $todayBuilder = $todayBuilder->whereIn('audience_type', ['ALL', 'school-wide']);
+        }
+        $announcementCountToday = $todayBuilder->where('created_at >=', $todayStart)->countAllResults();
+
+        $recentBuilder = $announcements->where('status', 'ACTIVE');
+        if ($sectionId > 0) {
+            $recentBuilder = $recentBuilder->groupStart()
+                ->whereIn('audience_type', ['ALL', 'school-wide'])
+                ->orWhere('section_id', $sectionId)
+                ->groupEnd();
+        } else {
+            $recentBuilder = $recentBuilder->whereIn('audience_type', ['ALL', 'school-wide']);
+        }
+        $recentAnnouncements = $recentBuilder->orderBy('created_at', 'DESC')->findAll(5);
+
+        $unreadMessages = $messages
+            ->where('receiver_id', $userId)
+            ->where('status !=', 'READ')
+            ->countAllResults();
+
+        $data = [
+            'role' => 'STUDENT',
+            'name' => session()->get('name') ?? 'Student',
+            'student_section' => $section,
+            'announcement_count_week' => $announcementCountWeek,
+            'announcement_count_today' => $announcementCountToday,
+            'unread_messages' => $unreadMessages,
+            'recent_announcements' => $recentAnnouncements,
+        ];
+
+        return view('Student/dashboard', $data);
     }
 }
 

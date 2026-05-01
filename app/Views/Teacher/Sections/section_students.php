@@ -36,9 +36,9 @@ function formatStudentName(array $u): string {
 
     <div class="card">
         <div class="card-title">Add student to section</div>
-        <p style="margin-bottom: 12px; color: #558b2f;">Only students who already have a record (from Guidance) can be added.</p>
+        <p style="margin-bottom: 12px; color: #558b2f;">Only <strong>active students with the same grade as this section</strong> and <strong>not yet assigned</strong> to any class appear here (for example, a Grade 2 section lists unassigned Grade 2 students only — Grade 3 students will not show).</p>
         <?php if (empty($addableStudents)): ?>
-            <p>No students available to add (all have records and are either in this section or another).</p>
+            <p>No students available to add right now.</p>
         <?php else: ?>
             <form action="<?= base_url('teacher/sections/add-student') ?>" method="post" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
                 <?= csrf_field() ?>
@@ -48,7 +48,9 @@ function formatStudentName(array $u): string {
                     <select id="student_id" name="student_id" required style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
                         <option value="">Select student</option>
                         <?php foreach ($addableStudents as $s): ?>
-                            <option value="<?= (int) $s['id'] ?>"><?= esc($s['id']) ?> — <?= esc(formatStudentName($s)) ?> (<?= esc($s['gender'] ?? '-') ?> / Grade <?= esc($s['grade_level'] ?? '-') ?>)</option>
+                            <option value="<?= (int) $s['id'] ?>">
+                                <?= esc($s['id']) ?> — <?= esc(formatStudentName($s)) ?> (<?= esc($s['gender'] ?? '-') ?> / Grade <?= esc($s['grade_level'] ?? '-') ?>)
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>

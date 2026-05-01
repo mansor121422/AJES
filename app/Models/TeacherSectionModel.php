@@ -10,7 +10,7 @@ class TeacherSectionModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $allowedFields   = ['teacher_id', 'section_id', 'status'];
+    protected $allowedFields   = ['teacher_id', 'section_id', 'assignment_role', 'subject_name', 'status'];
     protected $useTimestamps    = true;
     protected $createdField     = 'created_at';
     protected $updatedField     = 'updated_at';
@@ -18,7 +18,7 @@ class TeacherSectionModel extends Model
     public function getInvitesForTeacher(int $teacherId): array
     {
         return $this->db->table($this->table)
-            ->select('teacher_sections.*, sections.name as section_name, sections.grade_level')
+            ->select('teacher_sections.*, sections.name as section_name, sections.grade_level, sections.class_schedule')
             ->join('sections', 'sections.id = teacher_sections.section_id')
             ->where('teacher_sections.teacher_id', $teacherId)
             ->where('teacher_sections.status', 'pending')
@@ -29,7 +29,7 @@ class TeacherSectionModel extends Model
     public function getAcceptedSectionsForTeacher(int $teacherId): array
     {
         return $this->db->table($this->table)
-            ->select('teacher_sections.*, sections.name as section_name, sections.grade_level')
+            ->select('teacher_sections.*, sections.name as section_name, sections.grade_level, sections.class_schedule')
             ->join('sections', 'sections.id = teacher_sections.section_id')
             ->where('teacher_sections.teacher_id', $teacherId)
             ->where('teacher_sections.status', 'accepted')
