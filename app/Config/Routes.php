@@ -47,6 +47,7 @@ $routes->get('chat', 'Chat::index', ['filter' => 'auth']);
 $routes->post('chat/send', 'Chat::send', ['filter' => 'auth']);
 $routes->post('chat/unsend', 'Chat::unsend', ['filter' => 'auth']);
 $routes->get('chat/messages', 'Chat::getMessages', ['filter' => 'auth']);
+$routes->get('chat/media/(:segment)', 'Chat::media/$1', ['filter' => 'auth']);
 
 // Notifications (bell – count, list, mark read)
 $routes->get('notifications', 'Notifications::index', ['filter' => 'auth']);

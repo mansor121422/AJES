@@ -33,12 +33,20 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
         .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         .chat-header { padding: 12px 20px; background: #e8f5e9; border-bottom: 1px solid #c8e6c9; color: #1b5e20; font-weight: 600; }
         .chat-messages { flex: 1; overflow-y: auto; padding: 20px; background: #fafafa; }
-        .chat-msg { max-width: 75%; margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.4; }
+        .chat-msg {
+            width: fit-content;
+            max-width: 50%;
+            margin-bottom: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
         .chat-msg.mine { margin-left: auto; background: #c8e6c9; color: #1b5e20; border-bottom-right-radius: 4px; }
-        .chat-msg.theirs { background: #fff; border: 1px solid #e0e0e0; color: #333; border-bottom-left-radius: 4px; }
+        .chat-msg.theirs { margin-right: auto; background: #fff; border: 1px solid #e0e0e0; color: #333; border-bottom-left-radius: 4px; }
         .chat-msg-time { font-size: 0.75rem; color: #888; margin-top: 4px; }
         .chat-msg-inner { display: flex; align-items: flex-start; gap: 6px; }
-        .chat-msg-body { flex: 1; min-width: 0; }
+        .chat-msg-body { flex: 1; min-width: 0; word-break: break-word; overflow-wrap: anywhere; }
         .chat-msg-menu { position: relative; flex-shrink: 0; }
         .chat-msg-dots { background: none; border: none; cursor: pointer; padding: 2px 6px; color: #558b2f; font-size: 1.1rem; line-height: 1; border-radius: 4px; }
         .chat-msg-dots:hover { background: rgba(0,0,0,0.08); color: #1b5e20; }
@@ -100,6 +108,23 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
 
         .chat-attachment-wrap { display: flex; gap: 10px; align-items: center; flex: 0 0 auto; }
         .chat-attachment-input { display: none; }
+        .chat-camera-button {
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #2e7d32;
+            color: #fff;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 4px 12px rgba(27, 94, 32, 0.12);
+            font-size: 20px;
+            line-height: 1;
+        }
+        .chat-camera-button:hover { background: #1b5e20; }
         .chat-attachment-button {
             padding: 12px 18px;
             background: #2e7d32;
@@ -113,6 +138,102 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
         }
         .chat-attachment-button:hover { background: #1b5e20; }
         .chat-file-name { color: #558b2f; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+        .chat-image-thumb {
+            max-width: 320px;
+            max-height: 240px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            cursor: zoom-in;
+        }
+        .chat-video-thumb {
+            width: 320px;
+            max-width: 100%;
+            height: 240px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            background: #000;
+        }
+        .chat-image-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.82);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 24px;
+        }
+        .chat-image-modal.open { display: flex; }
+        .chat-image-modal img {
+            max-width: min(95vw, 1200px);
+            max-height: 90vh;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+        }
+        .chat-image-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            border: none;
+            border-radius: 999px;
+            width: 36px;
+            height: 36px;
+            font-size: 24px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .chat-camera-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+        .chat-camera-modal.open { display: flex; }
+        .chat-camera-panel {
+            width: min(92vw, 520px);
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+        }
+        .chat-camera-preview {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #111;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chat-camera-preview video,
+        .chat-camera-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .chat-camera-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        .chat-camera-actions button {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .chat-camera-actions .btn-primary { background: #2e7d32; color: #fff; }
+        .chat-camera-actions .btn-muted { background: #eceff1; color: #263238; }
     </style>
 </head>
 <body>
@@ -194,11 +315,11 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                                     <?php if (! empty($attachmentType) && ! empty($attachmentUrl)): ?>
                                         <?php if ($attachmentType === 'image'): ?>
                                             <div style="margin-bottom: 8px;">
-                                                <img src="<?= esc($attachmentUrl) ?>" alt="<?= esc($attachmentName ?? 'image') ?>" style="max-width: 320px; max-height: 240px; border-radius: 10px; border: 1px solid #e0e0e0;" />
+                                                <img src="<?= esc($attachmentUrl) ?>" alt="<?= esc($attachmentName ?? 'image') ?>" class="chat-image-thumb chat-zoomable-image" />
                                             </div>
                                         <?php elseif ($attachmentType === 'video'): ?>
                                             <div style="margin-bottom: 8px;">
-                                                <video controls style="max-width: 360px; border-radius: 10px; border: 1px solid #e0e0e0;">
+                                                <video controls class="chat-video-thumb">
                                                     <source src="<?= esc($attachmentUrl) ?>" type="<?= esc($msg['attachment_mime'] ?? 'video/mp4') ?>">
                                                 </video>
                                             </div>
@@ -254,7 +375,8 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                         <input type="hidden" name="receiver_id" value="<?= (int) $with_user['id'] ?>">
                         <div class="chat-compose-row">
                             <div class="chat-attachment-wrap">
-                                <input type="file" name="attachment" id="chat-attachment" class="chat-attachment-input" />
+                                <input type="file" name="attachment" id="chat-attachment" class="chat-attachment-input" accept="image/*,video/*" />
+                                <button type="button" id="chat-open-camera" class="chat-camera-button" title="Open camera" aria-label="Open camera">📷</button>
                                 <label for="chat-attachment" class="chat-attachment-button" id="chat-attachment-label">Choose File</label>
                                 <span id="chat-file-name" class="chat-file-name">No file chosen</span>
                             </div>
@@ -277,6 +399,7 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
     (function() {
         var withId = <?= (int) $with_user['id'] ?>;
         var lastCount = <?= count($conversation) ?>;
+        var lastMessagesSignature = '';
         var form = document.getElementById('chat-form');
         var messagesEl = document.getElementById('chat-messages');
         var unsendUrl = '<?= base_url('chat/unsend') ?>';
@@ -327,11 +450,63 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
             d.textContent = s;
             return d.innerHTML;
         }
+        function buildMessagesSignature(messages) {
+            return JSON.stringify((messages || []).map(function(m) {
+                return [
+                    m.id,
+                    m.status || '',
+                    m.content || '',
+                    m.unsent_for_all ? 1 : 0,
+                    m.attachment_type || '',
+                    m.attachment_url || '',
+                    m.attachment_name || '',
+                    m.attachment_mime || '',
+                    m.created_at || ''
+                ];
+            }));
+        }
+        function capturePlayingVideos() {
+            var states = {};
+            messagesEl.querySelectorAll('.chat-msg[data-message-id]').forEach(function(msgEl) {
+                var videoEl = msgEl.querySelector('video');
+                if (!videoEl) return;
+                var msgId = msgEl.getAttribute('data-message-id');
+                if (!msgId) return;
+                if (!videoEl.paused) {
+                    states[msgId] = {
+                        currentTime: videoEl.currentTime || 0,
+                        wasPlaying: true
+                    };
+                }
+            });
+            return states;
+        }
+        function restorePlayingVideos(states) {
+            Object.keys(states || {}).forEach(function(msgId) {
+                var msgEl = messagesEl.querySelector('.chat-msg[data-message-id="' + msgId + '"]');
+                if (!msgEl) return;
+                var videoEl = msgEl.querySelector('video');
+                if (!videoEl) return;
+                var st = states[msgId];
+                if (typeof st.currentTime === 'number' && isFinite(st.currentTime)) {
+                    try { videoEl.currentTime = st.currentTime; } catch (e) {}
+                }
+                if (st.wasPlaying) {
+                    var p = videoEl.play();
+                    if (p && typeof p.catch === 'function') p.catch(function() {});
+                }
+            });
+        }
         function poll() {
             fetch('<?= base_url('chat/messages') ?>?with=' + withId, { credentials: 'same-origin' })
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
                     if (data.messages) {
+                        var nextSignature = buildMessagesSignature(data.messages);
+                        if (nextSignature === lastMessagesSignature) {
+                            return;
+                        }
+                        var playingStates = capturePlayingVideos();
                         lastCount = data.messages.length;
                         var html = '';
                         data.messages.forEach(function(m) {
@@ -345,9 +520,9 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                             } else {
                                 if (m.attachment_type && m.attachment_url) {
                                     if (m.attachment_type === 'image') {
-                                        html += '<div style="margin-bottom: 8px;"><img src="' + escapeHtml(m.attachment_url) + '" alt="' + escapeHtml(m.attachment_name || 'image') + '" style="max-width: 320px; max-height: 240px; border-radius: 10px; border: 1px solid #e0e0e0;" /></div>';
+                                        html += '<div style="margin-bottom: 8px;"><img src="' + escapeHtml(m.attachment_url) + '" alt="' + escapeHtml(m.attachment_name || 'image') + '" class="chat-image-thumb chat-zoomable-image" /></div>';
                                     } else if (m.attachment_type === 'video') {
-                                        html += '<div style="margin-bottom: 8px;"><video controls style="max-width: 360px; border-radius: 10px; border: 1px solid #e0e0e0;"><source src="' + escapeHtml(m.attachment_url) + '" type="' + escapeHtml(m.attachment_mime || 'video/mp4') + '"></video></div>';
+                                        html += '<div style="margin-bottom: 8px;"><video controls class="chat-video-thumb"><source src="' + escapeHtml(m.attachment_url) + '" type="' + escapeHtml(m.attachment_mime || 'video/mp4') + '"></video></div>';
                                     } else {
                                         html += '<div style="margin-bottom: 8px;"><a href="' + escapeHtml(m.attachment_url) + '" target="_blank" rel="noreferrer" class="link-details">' + escapeHtml(m.attachment_name || 'Download file') + '</a></div>';
                                     }
@@ -366,6 +541,8 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                             html += '</div></div>';
                         });
                         messagesEl.innerHTML = html;
+                        lastMessagesSignature = nextSignature;
+                        restorePlayingVideos(playingStates);
                         messagesEl.scrollTop = messagesEl.scrollHeight;
                         bindDotsMenus(messagesEl);
                     }
@@ -381,6 +558,24 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
     })();
     </script>
     <?php endif; ?>
+
+    <div id="chat-image-modal" class="chat-image-modal" aria-hidden="true">
+        <button type="button" id="chat-image-modal-close" class="chat-image-modal-close" aria-label="Close image preview">&times;</button>
+        <img id="chat-image-modal-preview" src="" alt="Image preview" />
+    </div>
+    <div id="chat-camera-modal" class="chat-camera-modal" aria-hidden="true">
+        <div class="chat-camera-panel">
+            <div class="chat-camera-preview">
+                <video id="chat-camera-video" autoplay playsinline muted></video>
+                <img id="chat-camera-snapshot" alt="Captured photo" style="display:none;" />
+            </div>
+            <div class="chat-camera-actions">
+                <button type="button" id="chat-camera-close" class="btn-muted">Close</button>
+                <button type="button" id="chat-camera-capture" class="btn-primary">Capture</button>
+                <button type="button" id="chat-camera-use" class="btn-primary" style="display:none;">Use photo</button>
+            </div>
+        </div>
+    </div>
 
     <script>
     (function() {
@@ -538,15 +733,165 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
     (function() {
         var fileInput = document.getElementById('chat-attachment');
         var fileNameEl = document.getElementById('chat-file-name');
+        var openCameraBtn = document.getElementById('chat-open-camera');
+        var cameraModal = document.getElementById('chat-camera-modal');
+        var cameraVideo = document.getElementById('chat-camera-video');
+        var cameraSnapshot = document.getElementById('chat-camera-snapshot');
+        var cameraCloseBtn = document.getElementById('chat-camera-close');
+        var cameraCaptureBtn = document.getElementById('chat-camera-capture');
+        var cameraUseBtn = document.getElementById('chat-camera-use');
         if (!fileInput || !fileNameEl) return;
+
+        var cameraStream = null;
+        var snapshotBlob = null;
 
         function updateFileName() {
             var f = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
             fileNameEl.textContent = f ? f.name : 'No file chosen';
         }
 
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(function(track) { track.stop(); });
+                cameraStream = null;
+            }
+        }
+
+        function resetSnapshot() {
+            snapshotBlob = null;
+            cameraSnapshot.style.display = 'none';
+            cameraSnapshot.src = '';
+            cameraVideo.style.display = 'block';
+            cameraCaptureBtn.style.display = 'inline-block';
+            cameraUseBtn.style.display = 'none';
+        }
+
+        function closeCameraModal() {
+            if (!cameraModal) return;
+            cameraModal.classList.remove('open');
+            cameraModal.setAttribute('aria-hidden', 'true');
+            stopCamera();
+            resetSnapshot();
+        }
+
+        function blobToFile(blob, fileName) {
+            return new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+        }
+
+        function applyCapturedPhoto(blob) {
+            var dt = new DataTransfer();
+            var now = new Date();
+            var stamped = 'camera-' + now.getFullYear()
+                + String(now.getMonth() + 1).padStart(2, '0')
+                + String(now.getDate()).padStart(2, '0')
+                + '-' + String(now.getHours()).padStart(2, '0')
+                + String(now.getMinutes()).padStart(2, '0')
+                + String(now.getSeconds()).padStart(2, '0')
+                + '.jpg';
+            dt.items.add(blobToFile(blob, stamped));
+            fileInput.files = dt.files;
+            updateFileName();
+        }
+
+        async function openCameraModal() {
+            if (!cameraModal || !cameraVideo) return;
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                cameraVideo.srcObject = cameraStream;
+                resetSnapshot();
+                cameraModal.classList.add('open');
+                cameraModal.setAttribute('aria-hidden', 'false');
+            } catch (err) {
+                alert('Unable to access camera. Please allow camera permission.');
+            }
+        }
+
+        if (openCameraBtn && cameraModal && cameraCaptureBtn && cameraUseBtn && cameraCloseBtn) {
+            openCameraBtn.addEventListener('click', function() {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    alert('Camera is not supported on this browser.');
+                    return;
+                }
+                openCameraModal();
+            });
+
+            cameraCaptureBtn.addEventListener('click', function() {
+                if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) return;
+                var canvas = document.createElement('canvas');
+                canvas.width = cameraVideo.videoWidth;
+                canvas.height = cameraVideo.videoHeight;
+                var ctx = canvas.getContext('2d');
+                if (!ctx) return;
+                ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob(function(blob) {
+                    if (!blob) return;
+                    snapshotBlob = blob;
+                    cameraSnapshot.src = URL.createObjectURL(blob);
+                    cameraSnapshot.style.display = 'block';
+                    cameraVideo.style.display = 'none';
+                    cameraCaptureBtn.style.display = 'none';
+                    cameraUseBtn.style.display = 'inline-block';
+                }, 'image/jpeg', 0.92);
+            });
+
+            cameraUseBtn.addEventListener('click', function() {
+                if (!snapshotBlob) return;
+                applyCapturedPhoto(snapshotBlob);
+                closeCameraModal();
+            });
+
+            cameraCloseBtn.addEventListener('click', closeCameraModal);
+            cameraModal.addEventListener('click', function(e) {
+                if (e.target === cameraModal) closeCameraModal();
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && cameraModal.classList.contains('open')) {
+                    closeCameraModal();
+                }
+            });
+        }
+
         fileInput.addEventListener('change', updateFileName);
         updateFileName();
+    })();
+    </script>
+    <script>
+    (function() {
+        var modal = document.getElementById('chat-image-modal');
+        var preview = document.getElementById('chat-image-modal-preview');
+        var closeBtn = document.getElementById('chat-image-modal-close');
+        if (!modal || !preview || !closeBtn) return;
+
+        function openModal(src, alt) {
+            preview.src = src || '';
+            preview.alt = alt || 'Image preview';
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            preview.src = '';
+        }
+
+        document.addEventListener('click', function(e) {
+            var target = e.target;
+            if (target && target.classList && target.classList.contains('chat-zoomable-image')) {
+                openModal(target.getAttribute('src'), target.getAttribute('alt'));
+                return;
+            }
+            if (target === modal) {
+                closeModal();
+            }
+        });
+
+        closeBtn.addEventListener('click', closeModal);
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('open')) {
+                closeModal();
+            }
+        });
     })();
     </script>
 </body>

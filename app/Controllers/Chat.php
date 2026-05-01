@@ -8,6 +8,7 @@ use App\Models\UserModel;
 use Config\BadWords;
 use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\HTTP\ResponseInterface;
+use CodeIgniter\Exceptions\PageNotFoundException;
 
 class Chat extends BaseController
 {
@@ -71,6 +72,10 @@ class Chat extends BaseController
                 $withUser['presence_state']  = $presence['state'];
                 $withUser['presence_label']  = $presence['label'];
                 $conversation = $this->messages->getConversation($userId, $withId);
+                foreach ($conversation as &$msg) {
+                    $msg['attachment_url'] = $this->normalizeAttachmentUrl($msg['attachment_url'] ?? null);
+                }
+                unset($msg);
                 $this->markAsRead($userId, $withId);
             }
         }
@@ -97,6 +102,12 @@ class Chat extends BaseController
         $receiverId = (int) $this->request->getPost('receiver_id');
         $content    = trim((string) $this->request->getPost('content'));
         $attachment = $this->request->getFile('attachment');
+        if (! $attachment || ! $attachment->isValid() || $attachment->getSize() <= 0) {
+            $attachment = $this->request->getFile('attachment_image');
+        }
+        if (! $attachment || ! $attachment->isValid() || $attachment->getSize() <= 0) {
+            $attachment = $this->request->getFile('attachment_video');
+        }
 
         $hasText        = $content !== '';
         $hasAttachment = $attachment && $attachment->isValid() && $attachment->getSize() > 0;
@@ -168,7 +179,7 @@ class Chat extends BaseController
             $fileName = bin2hex(random_bytes(16)) . '.' . $ext;
             $attachment->move($uploadDir, $fileName);
 
-            $attachmentUrl = base_url('assets/chat_uploads/' . $fileName);
+            $attachmentUrl = base_url('chat/media/' . rawurlencode($fileName));
         }
 
         $contentOriginal = $hasText ? $content : null;
@@ -368,13 +379,39 @@ class Chat extends BaseController
                 'unsent_for_all'  => $deleted,
                 'status'          => $m['status'] ?? 'SENT',
                 'attachment_type' => $deleted ? null : ($m['attachment_type'] ?? null),
-                'attachment_url'  => $deleted ? null : ($m['attachment_url'] ?? null),
+                'attachment_url'  => $deleted ? null : $this->normalizeAttachmentUrl($m['attachment_url'] ?? null),
                 'attachment_name' => $deleted ? null : ($m['attachment_name'] ?? null),
                 'attachment_mime' => $deleted ? null : ($m['attachment_mime'] ?? null),
                 'attachment_size' => $deleted ? null : ($m['attachment_size'] ?? null),
             ];
         }
         return $this->response->setJSON(['messages' => $out]);
+    }
+
+    /**
+     * Public endpoint for chat attachments.
+     */
+    public function media(string $fileName = ''): ResponseInterface
+    {
+        $safeName = basename(rawurldecode($fileName));
+        if ($safeName === '' || ! preg_match('/^[a-zA-Z0-9._-]+$/', $safeName)) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        $path = FCPATH . 'public/assets/chat_uploads/' . $safeName;
+        if (! is_file($path)) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        $mime = function_exists('mime_content_type') ? (mime_content_type($path) ?: 'application/octet-stream') : 'application/octet-stream';
+        $contents = file_get_contents($path);
+        if ($contents === false) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        return $this->response
+            ->setHeader('Content-Type', $mime)
+            ->setBody($contents);
     }
 
     /**
@@ -691,5 +728,25 @@ class Chat extends BaseController
         $db = \Config\Database::connect();
         $has = $db->query("SHOW TABLES LIKE 'typing_indicators'")->getNumRows() > 0;
         return $has;
+    }
+
+    private function normalizeAttachmentUrl(?string $attachmentUrl): ?string
+    {
+        $url = trim((string) $attachmentUrl);
+        if ($url === '') {
+            return null;
+        }
+        if (str_contains($url, '/chat/media/')) {
+            return $url;
+        }
+
+        $parts = parse_url($url);
+        $path = isset($parts['path']) ? (string) $parts['path'] : $url;
+        $base = basename($path);
+        if ($base === '' || $base === '.' || $base === '..') {
+            return $url;
+        }
+
+        return base_url('chat/media/' . rawurlencode($base));
     }
 }
