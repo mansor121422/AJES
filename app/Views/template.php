@@ -202,16 +202,71 @@
         transform: translateX(2px) scale(0.98);
     }
 
-    /* Content area – fade-in when page loads */
-    .content {
+    /* Content area – enter animation on each navigation */
+    main.content {
         flex: 1;
         padding: 72px 24px 24px;
         min-width: 0;
-        animation: ajesContentFadeIn 0.45s ease-out;
+        animation: ajesContentEnter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
-    @keyframes ajesContentFadeIn {
-        from { opacity: 0; transform: translateY(8px); }
-        to   { opacity: 1; transform: translateY(0); }
+    @keyframes ajesContentEnter {
+        from {
+            opacity: 0;
+            transform: translateY(22px) scale(0.985);
+            filter: blur(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+    }
+
+    /* Leaving current page (sidebar / footer nav) — synced with template/index.php script */
+    @keyframes ajesContentExit {
+        to {
+            opacity: 0;
+            transform: translateY(18px) scale(0.97);
+            filter: blur(8px);
+        }
+    }
+    body.ajes-nav-leaving main.content {
+        animation: ajesContentExit 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        pointer-events: none;
+    }
+
+    .menu a.menu-link-pulse {
+        animation: ajesMenuPulse 0.45s ease;
+    }
+    @keyframes ajesMenuPulse {
+        0% { box-shadow: 0 0 0 0 rgba(129, 199, 132, 0.6); }
+        70% { box-shadow: 0 0 0 10px rgba(129, 199, 132, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(129, 199, 132, 0); }
+    }
+
+    @supports (view-transition-name: none) {
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation-duration: 0.35s;
+            animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        main.content {
+            animation: ajesContentEnterReduced 0.25s ease-out both;
+        }
+        @keyframes ajesContentEnterReduced {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        body.ajes-nav-leaving main.content {
+            animation: none;
+            opacity: 0.7;
+        }
+        .menu a.menu-link-pulse {
+            animation: none;
+        }
     }
 
     .dashboard-header {

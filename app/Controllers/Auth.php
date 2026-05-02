@@ -98,9 +98,14 @@ class Auth extends BaseController
         return redirect()->to(base_url('/'));
     }
 
-    public function showForgotPassword(): string
+    public function showForgotPassword(): RedirectResponse
     {
-        return view('Auth/forgot_password');
+        return redirect()->to($this->forgotPasswordRedirect());
+    }
+
+    protected function forgotPasswordRedirect(): string
+    {
+        return site_url('/') . '?forgot=1';
     }
 
     public function sendResetLink(): RedirectResponse
@@ -109,13 +114,13 @@ class Auth extends BaseController
         $session = session();
 
         if ($email === '') {
-            return redirect()->back()->withInput()->with('error', 'Email is required.');
+            return redirect()->to($this->forgotPasswordRedirect())->withInput()->with('error', 'Email is required.');
         }
 
         $user = $this->users->where('email', $email)->first();
 
         if (! $user) {
-            return redirect()->back()->withInput()->with('error', 'If that email exists, a reset link has been sent.');
+            return redirect()->to($this->forgotPasswordRedirect())->withInput()->with('error', 'If that email exists, a reset link has been sent.');
         }
 
         $token   = bin2hex(random_bytes(32));
@@ -175,15 +180,15 @@ class Auth extends BaseController
             if (ENVIRONMENT === 'development') {
                 session()->setFlashdata('success', 'Email send failed on this local setup. Use the temporary reset link below.');
                 session()->setFlashdata('dev_reset_link', $resetLink);
-                return redirect()->back()->withInput();
+                return redirect()->to($this->forgotPasswordRedirect())->withInput();
             }
 
-            return redirect()->back()->withInput()->with('error', 'Email could not be sent. Configure .env with SMTP_HOST, SMTP_USER, SMTP_PASS, and EMAIL_FROM (or let EMAIL_FROM fallback to SMTP_USER). Check writable/logs for detailed SMTP errors.');
+            return redirect()->to($this->forgotPasswordRedirect())->withInput()->with('error', 'Email could not be sent. Configure .env with SMTP_HOST, SMTP_USER, SMTP_PASS, and EMAIL_FROM (or let EMAIL_FROM fallback to SMTP_USER). Check writable/logs for detailed SMTP errors.');
         }
 
         $session->setFlashdata('success', 'If that email exists, a reset link has been sent.');
 
-        return redirect()->back();
+        return redirect()->to($this->forgotPasswordRedirect());
     }
 
     public function showResetForm(string $token): string|ResponseInterface

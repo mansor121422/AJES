@@ -126,5 +126,47 @@ if ($sessionUserId > 0) {
         </div>
     </aside>
     <main class="content">
+<script>
+(function () {
+    var EXIT_MS = 380;
+    function pathKey(url) {
+        try {
+            var p = new URL(url, location.href).pathname;
+            p = p.replace(/\/index\.php/i, '').replace(/\/+$/, '') || '/';
+            return p;
+        } catch (e) { return ''; }
+    }
+    document.addEventListener('click', function (e) {
+        var a = e.target.closest('a');
+        if (!a || !a.getAttribute('href')) return;
+        if (e.defaultPrevented) return;
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        if (a.target === '_blank') return;
+        if (a.hasAttribute('download')) return;
+        var hrefAttr = a.getAttribute('href');
+        if (hrefAttr && hrefAttr.charAt(0) === '#') return;
+        if (!a.closest('.sidebar')) return;
+        var url = a.href;
+        if (!url || url.indexOf(location.origin) !== 0) return;
+        if (pathKey(url) === pathKey(location.href)) {
+            e.preventDefault();
+            return;
+        }
+        a.classList.add('menu-link-pulse');
+        if (document.startViewTransition) {
+            e.preventDefault();
+            document.startViewTransition(function () {
+                location.href = url;
+            });
+            return;
+        }
+        e.preventDefault();
+        document.body.classList.add('ajes-nav-leaving');
+        setTimeout(function () {
+            location.href = url;
+        }, EXIT_MS);
+    }, true);
+})();
+</script>
         <!-- React entry script compiled by Vite (frontend/) into public/react/main.js -->
 <script type="module" src="<?= base_url('react/main.js') ?>"></script>
