@@ -26,7 +26,11 @@ $canManage     = in_array($role, ['ADMIN', 'PRINCIPAL', 'ANNOUNCER', 'TEACHER'],
 
     <div class="card">
         <div class="card-title">School announcements</div>
-        <p style="margin-bottom: 12px; color: #558b2f;">New announcements notify all users.</p>
+        <p style="margin-bottom: 12px; color: #558b2f;">
+            <?= ($role ?? '') === 'STUDENT'
+                ? 'You only see announcements sent to you.'
+                : 'New announcements notify users based on audience.' ?>
+        </p>
         <?php if ($canManage): ?>
             <a href="<?= base_url('announcements/create') ?>" class="login-button" style="display: inline-flex; width: auto; padding: 10px 20px; text-decoration: none; margin-bottom: 16px;">Create announcement</a>
         <?php endif; ?>

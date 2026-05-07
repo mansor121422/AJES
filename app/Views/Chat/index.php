@@ -103,6 +103,34 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
         }
         .chat-sidebar { width: 280px; flex-shrink: 0; background: var(--chat-sidebar-bg); border-right: 1px solid var(--chat-sidebar-border); overflow-y: auto; }
         .chat-sidebar-title { padding: 16px; font-weight: 700; color: var(--chat-header-text); background: var(--chat-sidebar-title-bg); border-bottom: 1px solid var(--chat-sidebar-border); }
+        .chat-sidebar-search-wrap {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--chat-sidebar-border);
+            background: var(--chat-sidebar-bg);
+            position: sticky;
+            top: 0;
+            z-index: 3;
+        }
+        .chat-sidebar-search {
+            width: 100%;
+            border: 1px solid var(--chat-textarea-border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 0.9rem;
+            background: #fff;
+            color: #333;
+        }
+        .chat-sidebar-search:focus {
+            outline: none;
+            border-color: var(--chat-accent);
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.15);
+        }
+        .chat-sidebar-empty-search {
+            display: none;
+            padding: 12px 14px;
+            font-size: 0.85rem;
+            color: #777;
+        }
         .chat-user-item {
             display: flex;
             flex-direction: row;
@@ -517,6 +545,16 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
         </script>
         <aside class="chat-sidebar">
             <div class="chat-sidebar-title">💬 Message</div>
+            <div class="chat-sidebar-search-wrap">
+                <input
+                    type="text"
+                    id="chat-user-search"
+                    class="chat-sidebar-search"
+                    placeholder="Search name or role..."
+                    aria-label="Search chat users"
+                    autocomplete="off"
+                />
+            </div>
             <?php foreach ($chat_users as $u): ?>
                 <?php
                 $uid        = (int) $u['id'];
@@ -529,7 +567,7 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                     ? (function_exists('mb_substr') ? mb_substr($nameStr, 0, 1, 'UTF-8') : substr($nameStr, 0, 1))
                     : '?';
                 ?>
-                <a href="<?= base_url('chat?with=' . $uid) ?>" class="chat-user-item <?= $isActive ? 'active' : '' ?> <?= $hasUnread ? 'has-unread' : '' ?>" data-user-id="<?= (int) $uid ?>">
+                <a href="<?= base_url('chat?with=' . $uid) ?>" class="chat-user-item <?= $isActive ? 'active' : '' ?> <?= $hasUnread ? 'has-unread' : '' ?>" data-user-id="<?= (int) $uid ?>" data-has-chat="<?= ! empty($u['has_chat']) ? '1' : '0' ?>" data-user-role="<?= esc(strtoupper((string) ($u['role'] ?? ''))) ?>">
                     <div class="chat-user-avatar-wrap" aria-hidden="true">
                         <?php if (! empty($avatarUrl)): ?>
                             <img src="<?= esc($avatarUrl) ?>" alt="" loading="lazy" width="44" height="44" />
@@ -552,6 +590,7 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                     </div>
                 </a>
             <?php endforeach; ?>
+            <p id="chat-sidebar-empty-search" class="chat-sidebar-empty-search">No matching users.</p>
             <?php if (empty($chat_users)): ?>
                 <p style="padding: 16px; color: #888;">No other users to chat with.</p>
             <?php endif; ?>
@@ -751,6 +790,47 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
             menu.classList.remove('open');
             btn.setAttribute('aria-expanded', 'false');
         });
+    })();
+    </script>
+    <script>
+    (function () {
+        var searchInput = document.getElementById('chat-user-search');
+        if (!searchInput) return;
+
+        var userItems = Array.prototype.slice.call(document.querySelectorAll('.chat-user-item[data-user-id]'));
+        var emptySearch = document.getElementById('chat-sidebar-empty-search');
+        var currentRole = '<?= esc(strtoupper((string) $role)) ?>';
+
+        function textForItem(item) {
+            var nameEl = item.querySelector('.chat-user-name span');
+            var roleEl = item.querySelector('.chat-user-role');
+            var name = nameEl ? nameEl.textContent : '';
+            var role = roleEl ? roleEl.textContent : '';
+            return (name + ' ' + role).toLowerCase();
+        }
+
+        function applyFilter() {
+            var q = (searchInput.value || '').trim().toLowerCase();
+            var shown = 0;
+            userItems.forEach(function (item) {
+                var role = (item.getAttribute('data-user-role') || '').toUpperCase();
+                var hasChat = item.getAttribute('data-has-chat') === '1';
+                var isActiveConversation = item.classList.contains('active');
+                var allowedByDefault = isActiveConversation || !(currentRole === 'TEACHER' && !hasChat && role !== 'PRINCIPAL');
+                var match = q === ''
+                    ? allowedByDefault
+                    : textForItem(item).indexOf(q) !== -1;
+                item.style.display = match ? '' : 'none';
+                if (match) shown++;
+            });
+
+            if (emptySearch) {
+                emptySearch.style.display = (userItems.length > 0 && shown === 0) ? 'block' : 'none';
+            }
+        }
+
+        searchInput.addEventListener('input', applyFilter);
+        applyFilter();
     })();
     </script>
 

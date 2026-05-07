@@ -7,6 +7,20 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 class Notifications extends BaseController
 {
+    private function resolveNotificationUrl(string $type, bool $isAdmin): string
+    {
+        if ($type === 'censored_chat' && $isAdmin) {
+            return base_url('admin/chat-logs');
+        }
+        if ($type === 'announcement') {
+            return base_url('announcements');
+        }
+        if ($type === 'chat') {
+            return base_url('chat');
+        }
+        return base_url('notifications');
+    }
+
     /**
      * Unread count for the current user (for the bell badge).
      */
@@ -44,6 +58,39 @@ class Notifications extends BaseController
             'name'          => session()->get('name') ?? 'User',
         ];
         return view('Notifications/index', $data);
+    }
+
+    /**
+     * Recent notifications for bell floating dropdown.
+     */
+    public function recent(): ResponseInterface
+    {
+        $userId = (int) session()->get('user_id');
+        if (! $userId) {
+            return $this->response->setJSON(['items' => []]);
+        }
+
+        $db   = \Config\Database::connect();
+        $rows = $db->table('notifications')
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'DESC')
+            ->limit(8)
+            ->get()
+            ->getResultArray();
+
+        $isAdmin = strtoupper((string) session()->get('role')) === 'ADMIN';
+        $items = array_map(function (array $row) use ($isAdmin): array {
+            $type = (string) ($row['type'] ?? '');
+            return [
+                'id' => (int) ($row['id'] ?? 0),
+                'message' => (string) ($row['message'] ?? ''),
+                'created_at' => (string) ($row['created_at'] ?? ''),
+                'is_read' => ! empty($row['is_read']),
+                'url' => $this->resolveNotificationUrl($type, $isAdmin),
+            ];
+        }, $rows);
+
+        return $this->response->setJSON(['items' => $items]);
     }
 
     /**

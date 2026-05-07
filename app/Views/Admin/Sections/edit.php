@@ -1,8 +1,9 @@
 <?php
 $section = $section ?? [];
 $schedule = $schedule ?? [];
+$depedSubjectsByGrade = $deped_subjects_by_grade ?? [];
 $slots = $schedule['slots'] ?? [];
-$dismissal = $schedule['dismissal_time'] ?? '15:00';
+$dismissal = $schedule['dismissal_time'] ?? '15:30';
 $sectionAdviserId = (int) ($section_adviser_id ?? 0);
 $fmtRange = static function (string $s, string $e): string {
     $a = date('g:i A', strtotime($s));
@@ -67,19 +68,19 @@ if ($sectionAdviserId <= 0 && ! is_array($oldAdv)) {
             </div>
 
             <div class="form-group" style="margin-top: 20px;">
-                <label style="color: #1b5e20; display: block; margin-bottom: 6px;">Daily class schedule — five subjects (1 hour each)</label>
-                <div class="hint-text" style="margin-bottom: 8px;">Two classes before recess, one before lunch, two after lunch. Enter each subject name for the time shown.</div>
+                <label style="color: #1b5e20; display: block; margin-bottom: 6px;">Daily class schedule — eight subjects (50 minutes each)</label>
+                <div class="hint-text" style="margin-bottom: 8px;">Times are fixed. Subjects are pre-listed based on grade level.</div>
                 <?php if ($sectionAdviserId <= 0): ?>
                     <p class="hint-text" style="color: #6d4c41;">No adviser on this section yet. Use <strong>Invite teachers</strong> to assign an adviser, then you can mark up to two slots here.</p>
                 <?php else: ?>
-                    <p class="hint-text">Mark up to <strong>two</strong> slots the current class adviser teaches (subject name required for each checked slot).</p>
+                    <p id="edit-adviser-grade-rule-hint" class="hint-text">Mark adviser slots based on grade rule.</p>
                 <?php endif; ?>
                 <table class="schedule-table">
                     <thead>
                         <tr>
                             <th style="width: 36%;">Class time</th>
                             <th>Subject</th>
-                            <th style="width: 22%; text-align: center;">Adviser teaches<br><span style="font-weight:400;font-size:0.8rem;">(max 2)</span></th>
+                            <th style="width: 22%; text-align: center;">Adviser teaches<br><span id="edit-adviser-max-label" style="font-weight:400;font-size:0.8rem;"></span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -87,12 +88,12 @@ if ($sectionAdviserId <= 0 && ! is_array($oldAdv)) {
                         <?php foreach ($slots as $slot): ?>
                             <?php if ($si === 2): ?>
                                 <tr class="schedule-break">
-                                    <td colspan="3"><strong>Recess</strong> — <?= $fmtRange('09:45', '10:00') ?></td>
+                                    <td colspan="3"><strong>Recess</strong> — <?= $fmtRange('09:10', '09:30') ?></td>
                                 </tr>
                             <?php endif; ?>
-                            <?php if ($si === 3): ?>
+                            <?php if ($si === 5): ?>
                                 <tr class="schedule-break">
-                                    <td colspan="3"><strong>Lunch break</strong> — <?= $fmtRange('11:00', '13:00') ?></td>
+                                    <td colspan="3"><strong>Lunch break</strong> — <?= $fmtRange('12:00', '13:00') ?></td>
                                 </tr>
                             <?php endif; ?>
                             <?php
@@ -101,9 +102,15 @@ if ($sectionAdviserId <= 0 && ! is_array($oldAdv)) {
                             $fieldVal = old('schedule_subj_' . $sn, $defSubj);
                             ?>
                             <tr>
-                                <td><?= esc($fmtRange((string) ($slot['start'] ?? ''), (string) ($slot['end'] ?? ''))) ?> <span style="color:#888;">(1 hr)</span></td>
+                                <td><?= esc($fmtRange((string) ($slot['start'] ?? ''), (string) ($slot['end'] ?? ''))) ?> <span style="color:#888;">(50 min)</span></td>
                                 <td>
-                                    <input type="text" name="schedule_subj_<?= $sn ?>" value="<?= esc((string) $fieldVal) ?>" placeholder="e.g. Mathematics" style="width: 100%; max-width: 320px; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                                    <select class="schedule-subject-select" data-slot="<?= $sn ?>" name="schedule_subj_<?= $sn ?>" style="width: 100%; max-width: 320px; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                                        <option value="">Select subject</option>
+                                        <?php $fieldValTrim = trim((string) $fieldVal); ?>
+                                        <?php if ($fieldValTrim !== ''): ?>
+                                            <option value="<?= esc($fieldValTrim) ?>" selected><?= esc($fieldValTrim) ?></option>
+                                        <?php endif; ?>
+                                    </select>
                                 </td>
                                 <td style="text-align: center;">
                                     <label class="checkbox-row" style="justify-content: center; margin: 0;">
@@ -128,8 +135,83 @@ if ($sectionAdviserId <= 0 && ! is_array($oldAdv)) {
 
     <script>
     (function() {
+        var depedSubjectsByGrade = <?= json_encode($depedSubjectsByGrade) ?>;
+        var gradeEl = document.getElementById('grade_level');
+        var selects = document.querySelectorAll('.schedule-subject-select');
+        if (!gradeEl || !selects.length) return;
+
+        function gradeDigit(raw) {
+            var t = String(raw || '').trim();
+            var m = t.match(/([1-6])/);
+            return m ? m[1] : '';
+        }
+
+        function rebuildSubjectOptions() {
+            var g = gradeDigit(gradeEl.value);
+            var subjectList = depedSubjectsByGrade[g] || [];
+            selects.forEach(function(sel, idx) {
+                var existing = (sel.value || '').trim();
+                sel.innerHTML = '';
+                var ph = document.createElement('option');
+                ph.value = '';
+                ph.textContent = 'Select subject';
+                sel.appendChild(ph);
+                subjectList.forEach(function(subj) {
+                    var opt = document.createElement('option');
+                    opt.value = subj;
+                    opt.textContent = subj;
+                    if (existing !== '' ? existing === subj : idx < subjectList.length && subjectList[idx] === subj) {
+                        opt.selected = true;
+                    }
+                    sel.appendChild(opt);
+                });
+                if (existing !== '' && subjectList.indexOf(existing) === -1) {
+                    var keep = document.createElement('option');
+                    keep.value = existing;
+                    keep.textContent = existing;
+                    keep.selected = true;
+                    sel.appendChild(keep);
+                }
+            });
+        }
+        gradeEl.addEventListener('change', rebuildSubjectOptions);
+        rebuildSubjectOptions();
+    })();
+
+    (function() {
         var boxes = document.querySelectorAll('.adviser-teach-cb');
+        var gradeEl = document.getElementById('grade_level');
+        var gradeHint = document.getElementById('edit-adviser-grade-rule-hint');
+        var maxLabelEl = document.getElementById('edit-adviser-max-label');
         if (!boxes.length) return;
+
+        function isGradeAdviserOnly() {
+            var raw = (gradeEl && gradeEl.value ? String(gradeEl.value) : '').trim();
+            var m = raw.match(/([1-6])/);
+            if (!m) return false;
+            var n = parseInt(m[1], 10);
+            return !isNaN(n) && n >= 1 && n <= 3;
+        }
+
+        function syncGradeRule() {
+            var adviserOnly = isGradeAdviserOnly();
+            boxes.forEach(function(cb) {
+                if (cb.disabled) return;
+                cb.disabled = adviserOnly;
+                if (adviserOnly) cb.checked = true;
+            });
+            if (gradeHint) {
+                if (adviserOnly) {
+                    gradeHint.innerHTML = 'Grade 1 to 3 rule: class adviser handles <strong>all subjects</strong> (subject teacher not allowed).';
+                } else {
+                    gradeHint.innerHTML = 'Grade 4 to 6: mark up to <strong>two</strong> slots the current adviser teaches.';
+                }
+            }
+            if (maxLabelEl) {
+                maxLabelEl.textContent = adviserOnly ? '' : '(max 2)';
+            }
+        }
+
         function onBoxChange(changed) {
             if (changed.disabled) return;
             var checked = Array.prototype.filter.call(boxes, function(c) {
@@ -145,6 +227,10 @@ if ($sectionAdviserId <= 0 && ! is_array($oldAdv)) {
                 onBoxChange(cb);
             });
         });
+        if (gradeEl) {
+            gradeEl.addEventListener('change', syncGradeRule);
+        }
+        syncGradeRule();
     })();
     </script>
 

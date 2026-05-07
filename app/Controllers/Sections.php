@@ -44,6 +44,7 @@ class Sections extends BaseController
             ->where('is_active', 1)
             ->orderBy('name', 'ASC')
             ->findAll();
+        $adviserTeacherIds = $this->adviserTeacherIds();
 
         $existingNamesByGrade = [];
         foreach ($this->sections->orderBy('grade_level')->orderBy('name')->findAll() as $row) {
@@ -62,7 +63,9 @@ class Sections extends BaseController
             'role'                         => session()->get('role') ?? 'ADMIN',
             'name'                         => session()->get('name') ?? 'User',
             'teachers'                     => $teachers,
+            'adviser_teacher_ids'          => $adviserTeacherIds,
             'schedule'                     => $this->emptyScheduleStructure(),
+            'deped_subjects_by_grade'      => $this->depedSubjectsByGrade(),
             'existing_section_names_by_grade' => $existingNamesByGrade,
         ];
         return view('Admin/Sections/create', $data);
@@ -82,6 +85,9 @@ class Sections extends BaseController
         [$adviserSlots, $adviserErr] = $this->adviserTeachesSlotsFromRequest($teacherId);
         if ($adviserErr !== null) {
             return redirect()->back()->withInput()->with('error', $adviserErr);
+        }
+        if ($teacherId > 0 && $this->isAdviserOnlyGrade($gradeLevel)) {
+            $adviserSlots = $this->allScheduleSlotNumbers();
         }
 
         $classSchedule = $this->buildClassScheduleFromRequest($adviserSlots);
@@ -110,6 +116,9 @@ class Sections extends BaseController
 
             if (! $teacher) {
                 return redirect()->back()->withInput()->with('error', 'Selected teacher was not found.');
+            }
+            if ($this->hasExistingAdviserAssignment($teacherId)) {
+                return redirect()->back()->withInput()->with('error', 'This teacher is already an adviser in another section and cannot be assigned again as adviser.');
             }
 
             $this->teacherSections->insert([
@@ -140,6 +149,7 @@ class Sections extends BaseController
             'section'            => $section,
             'schedule'           => $this->parseClassSchedule($section['class_schedule'] ?? null),
             'section_adviser_id' => $this->resolveSectionAdviserTeacherId($id),
+            'deped_subjects_by_grade' => $this->depedSubjectsByGrade(),
             'role'               => session()->get('role') ?? 'ADMIN',
             'name'               => session()->get('name') ?? 'User',
         ];
@@ -162,6 +172,9 @@ class Sections extends BaseController
         [$adviserSlots, $adviserErr] = $this->adviserTeachesSlotsFromRequest($adviserId);
         if ($adviserErr !== null) {
             return redirect()->back()->withInput()->with('error', $adviserErr);
+        }
+        if ($adviserId > 0 && $this->isAdviserOnlyGrade($gradeLevel)) {
+            $adviserSlots = $this->allScheduleSlotNumbers();
         }
 
         $classSchedule = $this->buildClassScheduleFromRequest($adviserSlots);
@@ -208,6 +221,9 @@ class Sections extends BaseController
         if (! $section) {
             return redirect()->back()->with('error', 'Section not found.');
         }
+        if ($this->isAdviserOnlyGrade((string) ($section['grade_level'] ?? ''))) {
+            return redirect()->back()->with('error', 'Grade 1 to Grade 3 sections are adviser-only. Subject teacher invites are not allowed.');
+        }
 
         $assignable = $this->subjectsFromScheduleNonAdviserSlots($section['class_schedule'] ?? null);
         if ($subjectName === '' || ! $this->subjectIsAssignableForSection($subjectName, $assignable)) {
@@ -217,6 +233,9 @@ class Sections extends BaseController
         $adviserIds = $this->adviserTeacherIdsForSection($sectionId);
         if (in_array($teacherId, $adviserIds, true)) {
             return redirect()->back()->with('error', 'The class adviser cannot be invited again as a subject teacher from this form.');
+        }
+        if ($this->hasAdviserAssignmentInGradesOneToThree($teacherId)) {
+            return redirect()->back()->with('error', 'This teacher is an adviser in Grade 1 to 3 and cannot be assigned as subject teacher.');
         }
 
         $takenSubjects = $this->assignedSubjectTeacherKeys($sectionId);
@@ -289,10 +308,20 @@ class Sections extends BaseController
         $adviserIds = $this->adviserTeacherIdsForSection($id);
         $teachersForInvite = array_values(array_filter(
             $teachers,
-            static fn (array $t) => ! in_array((int) ($t['id'] ?? 0), $adviserIds, true)
+            function (array $t) use ($adviserIds): bool {
+                $tid = (int) ($t['id'] ?? 0);
+                if (in_array($tid, $adviserIds, true)) {
+                    return false;
+                }
+                if ($this->hasAdviserAssignmentInGradesOneToThree($tid)) {
+                    return false;
+                }
+                return true;
+            }
         ));
 
-        $assignableSubjects = $this->subjectsFromScheduleNonAdviserSlots($section['class_schedule'] ?? null);
+        $isAdviserOnlyGrade = $this->isAdviserOnlyGrade((string) ($section['grade_level'] ?? ''));
+        $assignableSubjects = $isAdviserOnlyGrade ? [] : $this->subjectsFromScheduleNonAdviserSlots($section['class_schedule'] ?? null);
         $assignedKeys       = $this->assignedSubjectTeacherKeys($id);
         $remainingSubjects  = [];
         foreach ($assignableSubjects as $display) {
@@ -335,6 +364,7 @@ class Sections extends BaseController
             'section_schedule_rows'   => $sectionScheduleRows,
             'invite_subject_time_meta' => $inviteSubjectTimeMeta,
             'teacher_busy_by_id'      => $teacherBusyById,
+            'is_adviser_only_grade'   => $isAdviserOnlyGrade,
             'role'                    => session()->get('role') ?? 'ADMIN',
             'name'                    => session()->get('name') ?? 'User',
         ];
@@ -371,12 +401,19 @@ class Sections extends BaseController
         if (! $section) {
             return redirect()->back()->with('error', 'Section not found.');
         }
+        $isAdviserOnlyGrade = $this->isAdviserOnlyGrade((string) ($section['grade_level'] ?? ''));
         $assignable = $this->subjectsFromScheduleNonAdviserSlots($section['class_schedule'] ?? null);
 
         if (! in_array($assignmentRole, ['ADVISER', 'SUBJECT_TEACHER'], true)) {
             $assignmentRole = 'SUBJECT_TEACHER';
         }
+        if ($isAdviserOnlyGrade && $assignmentRole === 'SUBJECT_TEACHER') {
+            return redirect()->back()->with('error', 'Grade 1 to Grade 3 sections are adviser-only. Subject teacher assignment is not allowed.');
+        }
         if ($assignmentRole === 'SUBJECT_TEACHER') {
+            if ($this->hasAdviserAssignmentInGradesOneToThree($teacherId, $assignmentId)) {
+                return redirect()->back()->with('error', 'This teacher is an adviser in Grade 1 to 3 and cannot be assigned as subject teacher.');
+            }
             if ($subjectName === '' || ! $this->subjectIsAssignableForSection($subjectName, $assignable)) {
                 return redirect()->back()->with('error', 'Subject must match a non‑adviser slot in this section schedule.');
             }
@@ -398,6 +435,9 @@ class Sections extends BaseController
         }
 
         if ($assignmentRole === 'ADVISER') {
+            if ($this->hasExistingAdviserAssignment($teacherId, $assignmentId)) {
+                return redirect()->back()->with('error', 'This teacher is already an adviser in another section and cannot be assigned again as adviser.');
+            }
             $otherAdviser = $this->teacherSections
                 ->where('section_id', $sectionId)
                 ->where('assignment_role', 'ADVISER')
@@ -443,36 +483,38 @@ class Sections extends BaseController
         return redirect()->to(base_url('admin/sections/' . $sectionId . '/teachers'))->with('success', 'Teacher assignment removed.');
     }
 
-    /** Default daily template: five 1-hour subjects, recess, lunch, 3:00 PM dismissal. */
+    /** Default daily template: eight 50-minute subjects with recess/lunch breaks. */
     private function emptyScheduleStructure(): array
     {
         return [
             'slots' => [
-                ['slot' => 1, 'subject' => '', 'start' => '07:45', 'end' => '08:45', 'adviser_teaches' => false],
-                ['slot' => 2, 'subject' => '', 'start' => '08:45', 'end' => '09:45', 'adviser_teaches' => false],
-                ['slot' => 3, 'subject' => '', 'start' => '10:00', 'end' => '11:00', 'adviser_teaches' => false],
-                ['slot' => 4, 'subject' => '', 'start' => '13:00', 'end' => '14:00', 'adviser_teaches' => false],
-                ['slot' => 5, 'subject' => '', 'start' => '14:00', 'end' => '15:00', 'adviser_teaches' => false],
+                ['slot' => 1, 'subject' => '', 'start' => '07:30', 'end' => '08:20', 'adviser_teaches' => false],
+                ['slot' => 2, 'subject' => '', 'start' => '08:20', 'end' => '09:10', 'adviser_teaches' => false],
+                ['slot' => 3, 'subject' => '', 'start' => '09:30', 'end' => '10:20', 'adviser_teaches' => false],
+                ['slot' => 4, 'subject' => '', 'start' => '10:20', 'end' => '11:10', 'adviser_teaches' => false],
+                ['slot' => 5, 'subject' => '', 'start' => '11:10', 'end' => '12:00', 'adviser_teaches' => false],
+                ['slot' => 6, 'subject' => '', 'start' => '13:00', 'end' => '13:50', 'adviser_teaches' => false],
+                ['slot' => 7, 'subject' => '', 'start' => '13:50', 'end' => '14:40', 'adviser_teaches' => false],
+                ['slot' => 8, 'subject' => '', 'start' => '14:40', 'end' => '15:30', 'adviser_teaches' => false],
             ],
             'breaks' => [
-                ['label' => 'Recess', 'start' => '09:45', 'end' => '10:00'],
-                ['label' => 'Lunch break', 'start' => '11:00', 'end' => '13:00'],
+                ['label' => 'Recess', 'start' => '09:10', 'end' => '09:30'],
+                ['label' => 'Lunch break', 'start' => '12:00', 'end' => '13:00'],
             ],
-            'dismissal_time' => '15:00',
+            'dismissal_time' => '15:30',
         ];
     }
 
-    /**
-     * @param list<int> $adviserSlotNumbers slot numbers 1–5 the assigned adviser teaches (max 2)
-     */
+    /** @param list<int> $adviserSlotNumbers slot numbers from schedule the assigned adviser teaches */
     private function buildClassScheduleFromRequest(array $adviserSlotNumbers): string
     {
         $base = $this->emptyScheduleStructure();
         $adviserSet = array_fill_keys($adviserSlotNumbers, true);
-        for ($i = 1; $i <= 5; $i++) {
-            $subj = trim((string) $this->request->getPost('schedule_subj_' . $i));
-            $base['slots'][$i - 1]['subject'] = $subj;
-            $base['slots'][$i - 1]['adviser_teaches'] = isset($adviserSet[$i]);
+        foreach ($base['slots'] as $idx => $slot) {
+            $slotNo = (int) ($slot['slot'] ?? ($idx + 1));
+            $subj = trim((string) $this->request->getPost('schedule_subj_' . $slotNo));
+            $base['slots'][$idx]['subject'] = $subj;
+            $base['slots'][$idx]['adviser_teaches'] = isset($adviserSet[$slotNo]);
         }
 
         return json_encode($base, JSON_UNESCAPED_UNICODE);
@@ -493,9 +535,10 @@ class Sections extends BaseController
         }
 
         $slots = [];
+        $maxSlot = count($this->emptyScheduleStructure()['slots'] ?? []);
         foreach ($raw as $v) {
             $n = (int) $v;
-            if ($n >= 1 && $n <= 5) {
+            if ($n >= 1 && $n <= $maxSlot) {
                 $slots[$n] = true;
             }
         }
@@ -893,6 +936,119 @@ class Sections extends BaseController
                 continue;
             }
             if (strcasecmp(trim((string) ($r['name'] ?? '')), $name) === 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isAdviserOnlyGrade(string $gradeLevel): bool
+    {
+        $g = trim($gradeLevel);
+        if ($g === '') {
+            return false;
+        }
+        if (preg_match('/^([1-6])$/', $g, $m)) {
+            $n = (int) $m[1];
+            return $n >= 1 && $n <= 3;
+        }
+        if (preg_match('/grade\s*([1-6])/i', $g, $m)) {
+            $n = (int) $m[1];
+            return $n >= 1 && $n <= 3;
+        }
+        return false;
+    }
+
+    /** @return array<string, list<string>> */
+    private function depedSubjectsByGrade(): array
+    {
+        return [
+            '1' => ['English', 'Filipino', 'Mathematics', 'Science', 'Araling Panlipunan', 'MTB-MLE', 'MAPEH', 'ESP'],
+            '2' => ['English', 'Filipino', 'Mathematics', 'Science', 'Araling Panlipunan', 'MTB-MLE', 'MAPEH', 'ESP'],
+            '3' => ['English', 'Filipino', 'Mathematics', 'Science', 'Araling Panlipunan', 'MTB-MLE', 'MAPEH', 'ESP'],
+            '4' => ['English', 'Filipino', 'Mathematics', 'Science', 'Araling Panlipunan', 'MAPEH', 'ESP', 'EPP / Homeroom'],
+            '5' => ['English', 'Filipino', 'Mathematics', 'Science', 'Araling Panlipunan', 'MAPEH', 'ESP', 'EPP / Homeroom'],
+            '6' => ['English', 'Filipino', 'Mathematics', 'Science', 'Araling Panlipunan', 'MAPEH', 'ESP', 'EPP / Homeroom'],
+        ];
+    }
+
+    /** @return list<int> */
+    private function allScheduleSlotNumbers(): array
+    {
+        $slots = $this->emptyScheduleStructure()['slots'] ?? [];
+        $out = [];
+        foreach ($slots as $idx => $slot) {
+            $out[] = (int) ($slot['slot'] ?? ($idx + 1));
+        }
+        return $out;
+    }
+
+    /** @return list<int> */
+    private function adviserTeacherIds(): array
+    {
+        $rows = $this->teacherSections
+            ->select('teacher_id')
+            ->where('assignment_role', 'ADVISER')
+            ->groupStart()
+                ->where('status', 'accepted')
+                ->orWhere('status', 'pending')
+            ->groupEnd()
+            ->findAll();
+
+        $ids = [];
+        foreach ($rows as $row) {
+            $ids[] = (int) ($row['teacher_id'] ?? 0);
+        }
+
+        return array_values(array_unique(array_filter($ids)));
+    }
+
+    private function hasExistingAdviserAssignment(int $teacherId, ?int $excludeAssignmentId = null): bool
+    {
+        if ($teacherId <= 0) {
+            return false;
+        }
+
+        $builder = $this->teacherSections
+            ->where('teacher_id', $teacherId)
+            ->where('assignment_role', 'ADVISER')
+            ->groupStart()
+                ->where('status', 'accepted')
+                ->orWhere('status', 'pending')
+            ->groupEnd();
+        if ($excludeAssignmentId !== null && $excludeAssignmentId > 0) {
+            $builder->where('id !=', $excludeAssignmentId);
+        }
+        return $builder->first() !== null;
+    }
+
+    private function hasAdviserAssignmentInGradesOneToThree(int $teacherId, ?int $excludeAssignmentId = null): bool
+    {
+        if ($teacherId <= 0) {
+            return false;
+        }
+
+        $db = \Config\Database::connect();
+        $builder = $db->table('teacher_sections ts')
+            ->select('ts.id, s.grade_level')
+            ->join('sections s', 's.id = ts.section_id', 'inner')
+            ->where('ts.teacher_id', $teacherId)
+            ->where('ts.assignment_role', 'ADVISER')
+            ->groupStart()
+                ->where('ts.status', 'accepted')
+                ->orWhere('ts.status', 'pending')
+            ->groupEnd();
+        if ($excludeAssignmentId !== null && $excludeAssignmentId > 0) {
+            $builder->where('ts.id !=', $excludeAssignmentId);
+        }
+        $rows = $builder->get()->getResultArray();
+        foreach ($rows as $row) {
+            $g = trim((string) ($row['grade_level'] ?? ''));
+            if (preg_match('/^([1-3])$/', $g)) {
+                return true;
+            }
+            if (preg_match('/grade\s*([1-3])/i', $g)) {
                 return true;
             }
         }

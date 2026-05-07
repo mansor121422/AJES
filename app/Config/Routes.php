@@ -52,6 +52,7 @@ $routes->get('chat/media/(:segment)', 'Chat::media/$1', ['filter' => 'auth']);
 // Notifications (bell – count, list, mark read)
 $routes->get('notifications', 'Notifications::index', ['filter' => 'auth']);
 $routes->get('notifications/count', 'Notifications::count', ['filter' => 'auth']);
+$routes->get('notifications/recent', 'Notifications::recent', ['filter' => 'auth']);
 $routes->get('notifications/mark-read/(:num)', 'Notifications::markReadGet/$1', ['filter' => 'auth']);
 $routes->post('notifications/mark-read', 'Notifications::markRead', ['filter' => 'auth']);
 $routes->get('notifications/mark-all-read', 'Notifications::markAllRead', ['filter' => 'auth']);

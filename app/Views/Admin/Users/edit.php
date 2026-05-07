@@ -15,6 +15,25 @@ if ($studentSectionLocked) {
         }
     }
 }
+$fullName = trim((string) ($user['name'] ?? ''));
+$nameParts = preg_split('/\s+/', $fullName, -1, PREG_SPLIT_NO_EMPTY);
+$firstNameValue = '';
+$middleNameValue = '';
+$surnameValue = '';
+$suffixValue = '';
+if (! empty($nameParts)) {
+    $lastPart = strtoupper(rtrim((string) end($nameParts), '.'));
+    if (in_array($lastPart, ['JR', 'SR', 'II', 'III', 'IV', 'V'], true)) {
+        $suffixValue = (string) array_pop($nameParts);
+    }
+}
+if (! empty($nameParts)) {
+    $firstNameValue = array_shift($nameParts);
+    if (! empty($nameParts)) {
+        $surnameValue = array_pop($nameParts);
+        $middleNameValue = implode(' ', $nameParts);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,6 +42,12 @@ if ($studentSectionLocked) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit user - AJES Admin</title>
     <?php include(APPPATH . 'Views/template.php'); ?>
+    <style>
+        .invalid-field {
+            border-color: #d32f2f !important;
+            background-color: #ffebee !important;
+        }
+    </style>
 </head>
 <body>
     <?php include(APPPATH . 'Views/template/index.php'); ?>
@@ -40,8 +65,21 @@ if ($studentSectionLocked) {
         <form action="<?= base_url('admin/users/update/' . $user['id']) ?>" method="post">
             <?= csrf_field() ?>
             <div class="form-group">
-                <label for="name" style="color: #1b5e20;">Name</label>
-                <input type="text" id="name" name="name" required value="<?= esc(old('name', $user['name'])) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <label for="first_name" style="color: #1b5e20;">First name</label>
+                <input type="text" id="first_name" name="first_name" required value="<?= esc(old('first_name', $firstNameValue)) ?>" pattern="[A-Za-zÑñ ]+" title="First name must contain letters (including Ñ/ñ) and spaces only. Numbers and special characters are not allowed." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+            </div>
+            <div class="form-group">
+                <label for="middle_name" style="color: #1b5e20;">Middle name</label>
+                <input type="text" id="middle_name" name="middle_name" value="<?= esc(old('middle_name', $middleNameValue)) ?>" placeholder="Middle name (optional)" pattern="[A-Za-zÑñ ]*" title="Middle name must contain letters (including Ñ/ñ) and spaces only. Numbers and special characters are not allowed." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+            </div>
+            <div class="form-group">
+                <label for="surname" style="color: #1b5e20;">Surname</label>
+                <input type="text" id="surname" name="surname" required value="<?= esc(old('surname', $surnameValue)) ?>" pattern="[A-Za-zÑñ ]+" title="Surname must contain letters (including Ñ/ñ) and spaces only. Numbers and special characters are not allowed." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <small style="color: #666;">Name fields: letters (including Ñ/ñ) and spaces only. No numbers or special characters.</small>
+            </div>
+            <div class="form-group">
+                <label for="suffix" style="color: #1b5e20;">Suffix (optional)</label>
+                <input type="text" id="suffix" name="suffix" value="<?= esc(old('suffix', $suffixValue)) ?>" placeholder="e.g. Jr., Sr., III" pattern="[A-Za-zÑñ. ]*" title="Suffix must contain letters (including Ñ/ñ), spaces, or dot only." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
             </div>
             <div class="form-group">
                 <label for="email" style="color: #1b5e20;">Email</label>
@@ -138,12 +176,36 @@ if ($studentSectionLocked) {
     </div>
 
     <script>
+    var formEl = document.querySelector('form[action*="admin/users/update/"]');
+
     document.getElementById('role').addEventListener('change', function() {
         var g = document.getElementById('section-group');
         var sf = document.getElementById('student-fields');
         g.style.display = ['TEACHER','STUDENT'].indexOf(this.value) >= 0 ? 'block' : 'none';
         sf.style.display = this.value === 'STUDENT' ? 'block' : 'none';
     });
+
+    function refreshFieldState(field) {
+        if (!field || typeof field.checkValidity !== 'function') return;
+        if (field.checkValidity()) {
+            field.classList.remove('invalid-field');
+        } else {
+            field.classList.add('invalid-field');
+        }
+    }
+
+    function bindValidationStyles() {
+        if (!formEl) return;
+        var fields = formEl.querySelectorAll('input, select, textarea');
+        fields.forEach(function(field) {
+            field.addEventListener('input', function() { refreshFieldState(field); });
+            field.addEventListener('change', function() { refreshFieldState(field); });
+            field.addEventListener('blur', function() { refreshFieldState(field); });
+        });
+        formEl.addEventListener('submit', function() {
+            fields.forEach(function(field) { refreshFieldState(field); });
+        });
+    }
 
     (function() {
         var birthdateEl = document.getElementById('birthdate');
@@ -156,6 +218,7 @@ if ($studentSectionLocked) {
     })();
 
     document.getElementById('role').dispatchEvent(new Event('change'));
+    bindValidationStyles();
     </script>
 
     </main>

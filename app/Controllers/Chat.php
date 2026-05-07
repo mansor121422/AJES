@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Libraries\AIChatService;
 use App\Models\MessageModel;
+use App\Models\TeacherSectionModel;
 use App\Models\UserModel;
 use Config\BadWords;
 use CodeIgniter\HTTP\RedirectResponse;
@@ -14,12 +15,14 @@ class Chat extends BaseController
 {
     protected MessageModel $messages;
     protected UserModel $users;
+    protected TeacherSectionModel $teacherSections;
     protected AIChatService $aiChatService;
 
     public function __construct()
     {
         $this->messages = new MessageModel();
         $this->users    = new UserModel();
+        $this->teacherSections = new TeacherSectionModel();
         $this->aiChatService = new AIChatService();
         helper(['url', 'form', 'text']);
     }
@@ -61,9 +64,10 @@ class Chat extends BaseController
         $withId = (int) $this->request->getGet('with');
 
         $chatUsers = $this->getChatUserList($userId);
+        $allowedChatUserIds = array_map(static fn(array $row): int => (int) ($row['id'] ?? 0), $chatUsers);
         $conversation = [];
         $withUser = null;
-        if ($withId > 0 && $withId !== $userId) {
+        if ($withId > 0 && $withId !== $userId && in_array($withId, $allowedChatUserIds, true)) {
             $withUser = $this->users->find($withId);
             if ($withUser) {
                 $now = time();
@@ -125,6 +129,13 @@ class Chat extends BaseController
                 ? $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'You cannot send a message to yourself.'])
                 : redirect()->back()->with('error', 'You cannot send a message to yourself.');
         }
+
+        if (! $this->canChatWith($userId, $receiverId)) {
+            return $this->isApiRequest()
+                ? $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'You are not allowed to chat with this user.'])
+                : redirect()->back()->with('error', 'You are not allowed to chat with this user.');
+        }
+
         $receiver = $this->users->find($receiverId);
         if (! $receiver) {
             return $this->isApiRequest()
@@ -550,10 +561,37 @@ class Chat extends BaseController
             ? 'id, name, username, role, is_online, last_seen_at, profile_photo'
             : 'id, name, username, role, profile_photo';
 
-        $users = $this->users
+        $currentUser = $this->users->find($currentUserId);
+        $currentRole = strtoupper(trim((string) ($currentUser['role'] ?? '')));
+
+        $userBuilder = $this->users
             ->select($select)
-            ->orderBy('name')
-            ->findAll();
+            ->orderBy('name');
+
+        if ($currentRole === 'TEACHER') {
+            $sectionIds = $this->teacherSections
+                ->select('section_id')
+                ->where('teacher_id', $currentUserId)
+                ->where('status', 'accepted')
+                ->findColumn('section_id');
+            $sectionIds = array_values(array_unique(array_map('intval', $sectionIds ?? [])));
+
+            // Teacher can always chat with key staff roles, while students must be
+            // enrolled in one of the teacher's accepted sections.
+            $userBuilder->groupStart()
+                ->whereIn('role', ['TEACHER', 'GUIDANCE', 'PRINCIPAL', 'ADMIN', 'ANNOUNCER'])
+                ->orGroupStart()
+                    ->where('role', 'STUDENT');
+            if ($sectionIds === []) {
+                $userBuilder->where('1 = 0', null, false);
+            } else {
+                $userBuilder->whereIn('section_id', $sectionIds);
+            }
+            $userBuilder->groupEnd()
+            ->groupEnd();
+        }
+
+        $users = $userBuilder->findAll();
         $partnerIds = $this->messages->getConversationPartnerIds($currentUserId);
 
         // Unread counts per sender (messages sent TO current user that are not READ yet).
@@ -577,6 +615,7 @@ class Chat extends BaseController
             if ($id === $currentUserId) {
                 continue;
             }
+            $hasChat = in_array($id, $partnerIds, true);
 
             $presence = $this->computePresence($u, $now, $timeoutSeconds);
             $isTyping = (bool) ($typingByFromUserId[$id] ?? false);
@@ -586,7 +625,7 @@ class Chat extends BaseController
                 'id'                => $id,
                 'name'              => $u['name'] ?? $u['username'] ?? 'User #' . $id,
                 'role'              => $u['role'] ?? '',
-                'has_chat'          => in_array($id, $partnerIds, true),
+                'has_chat'          => $hasChat,
                 'unread'            => $unreadBySender[$id] ?? 0,
                 'has_unread'        => ($unreadBySender[$id] ?? 0) > 0,
                 'presence_state'    => $presence['state'],
@@ -596,6 +635,20 @@ class Chat extends BaseController
             ];
         }
         return $list;
+    }
+
+    private function canChatWith(int $currentUserId, int $otherUserId): bool
+    {
+        if ($currentUserId < 1 || $otherUserId < 1 || $currentUserId === $otherUserId) {
+            return false;
+        }
+
+        $allowedIds = array_map(
+            static fn(array $row): int => (int) ($row['id'] ?? 0),
+            $this->getChatUserList($currentUserId)
+        );
+
+        return in_array($otherUserId, $allowedIds, true);
     }
 
     private function markAsRead(int $userId, int $otherUserId): void

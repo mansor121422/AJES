@@ -9,6 +9,12 @@ $name = $name ?? 'User';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create user - AJES Admin</title>
     <?php include(APPPATH . 'Views/template.php'); ?>
+    <style>
+        .invalid-field {
+            border-color: #d32f2f !important;
+            background-color: #ffebee !important;
+        }
+    </style>
 </head>
 <body>
     <?php include(APPPATH . 'Views/template/index.php'); ?>
@@ -23,8 +29,21 @@ $name = $name ?? 'User';
         <form action="<?= base_url('admin/users/store') ?>" method="post">
             <?= csrf_field() ?>
             <div class="form-group">
-                <label for="name" style="color: #1b5e20;">Name</label>
-                <input type="text" id="name" name="name" required value="<?= esc(old('name')) ?>" placeholder="Full name" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <label for="first_name" style="color: #1b5e20;">First name</label>
+                <input type="text" id="first_name" name="first_name" required value="<?= esc(old('first_name')) ?>" placeholder="First name" pattern="[A-Za-zÑñ ]+" title="First name must contain letters (including Ñ/ñ) and spaces only. Numbers and special characters are not allowed." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+            </div>
+            <div class="form-group">
+                <label for="middle_name" style="color: #1b5e20;">Middle name</label>
+                <input type="text" id="middle_name" name="middle_name" value="<?= esc(old('middle_name')) ?>" placeholder="Middle name (optional)" pattern="[A-Za-zÑñ ]*" title="Middle name must contain letters (including Ñ/ñ) and spaces only. Numbers and special characters are not allowed." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+            </div>
+            <div class="form-group">
+                <label for="surname" style="color: #1b5e20;">Surname</label>
+                <input type="text" id="surname" name="surname" required value="<?= esc(old('surname')) ?>" placeholder="Surname" pattern="[A-Za-zÑñ ]+" title="Surname must contain letters (including Ñ/ñ) and spaces only. Numbers and special characters are not allowed." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <small style="color: #666;">Name fields: letters (including Ñ/ñ) and spaces only. No numbers or special characters.</small>
+            </div>
+            <div class="form-group">
+                <label for="suffix" style="color: #1b5e20;">Suffix (optional)</label>
+                <input type="text" id="suffix" name="suffix" value="<?= esc(old('suffix')) ?>" placeholder="e.g. Jr., Sr., III" pattern="[A-Za-zÑñ. ]*" title="Suffix must contain letters (including Ñ/ñ), spaces, or dot only." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
             </div>
             <div class="form-group">
                 <label for="email" style="color: #1b5e20;">Email</label>
@@ -37,18 +56,16 @@ $name = $name ?? 'User';
                 <small style="color: #666;">Letters, numbers, at underscore lang. Walang special characters.</small>
             </div>
             <div class="form-group">
-                <label for="password" style="color: #1b5e20;">Password</label>
-                <input type="password" id="password" name="password" required placeholder="Min 6 characters" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <label for="password_preview" style="color: #1b5e20;">Default Password</label>
+                <input type="text" id="password_preview" value="ajes2026" readonly style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px; background: #f1f8e9; color: #1b5e20;">
+                <small style="color: #666;">This is set automatically for every new user created by admin.</small>
             </div>
             <div class="form-group">
                 <label for="role" style="color: #1b5e20;">Role</label>
                 <select id="role" name="role" required style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
                     <option value="">Select role</option>
                     <option value="ADMIN" <?= old('role') === 'ADMIN' ? 'selected' : '' ?>>ADMIN</option>
-                    <option value="PRINCIPAL" <?= old('role') === 'PRINCIPAL' ? 'selected' : '' ?>>PRINCIPAL</option>
-                    <option value="ANNOUNCER" <?= old('role') === 'ANNOUNCER' ? 'selected' : '' ?>>ANNOUNCER</option>
                     <option value="TEACHER" <?= old('role') === 'TEACHER' ? 'selected' : '' ?>>TEACHER</option>
-                    <option value="GUIDANCE" <?= old('role') === 'GUIDANCE' ? 'selected' : '' ?>>GUIDANCE</option>
                     <option value="STUDENT" <?= old('role') === 'STUDENT' ? 'selected' : '' ?>>STUDENT</option>
                 </select>
             </div>
@@ -104,6 +121,7 @@ $name = $name ?? 'User';
 
     <script>
     (function() {
+        var formEl = document.querySelector('form[action$="admin/users/store"]');
         var roleEl = document.getElementById('role');
         var sf = document.getElementById('student-fields');
         var gradeEl = document.getElementById('grade_level');
@@ -113,6 +131,28 @@ $name = $name ?? 'User';
             if (sf) sf.style.display = isStudent ? 'block' : 'none';
             // Hidden required fields block submit for TEACHER etc.; require grade only for STUDENT.
             if (gradeEl) gradeEl.required = !!isStudent;
+        }
+
+        function refreshFieldState(field) {
+            if (!field || typeof field.checkValidity !== 'function') return;
+            if (field.checkValidity()) {
+                field.classList.remove('invalid-field');
+            } else {
+                field.classList.add('invalid-field');
+            }
+        }
+
+        function bindValidationStyles() {
+            if (!formEl) return;
+            var fields = formEl.querySelectorAll('input, select, textarea');
+            fields.forEach(function(field) {
+                field.addEventListener('input', function() { refreshFieldState(field); });
+                field.addEventListener('change', function() { refreshFieldState(field); });
+                field.addEventListener('blur', function() { refreshFieldState(field); });
+            });
+            formEl.addEventListener('submit', function() {
+                fields.forEach(function(field) { refreshFieldState(field); });
+            });
         }
 
         if (roleEl) roleEl.addEventListener('change', syncStudentBlock);
@@ -127,6 +167,7 @@ $name = $name ?? 'User';
         }
 
         syncStudentBlock();
+        bindValidationStyles();
     })();
     </script>
 

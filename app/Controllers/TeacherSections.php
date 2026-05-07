@@ -176,10 +176,10 @@ class TeacherSections extends BaseController
         $si = 0;
         foreach ($slots as $slot) {
             if ($si === 2) {
-                $scheduleRows[] = ['kind' => 'break', 'label' => 'Recess', 'start' => '09:45', 'end' => '10:00'];
+                $scheduleRows[] = ['kind' => 'break', 'label' => 'Recess', 'start' => '09:10', 'end' => '09:30'];
             }
-            if ($si === 3) {
-                $scheduleRows[] = ['kind' => 'break', 'label' => 'Lunch break', 'start' => '11:00', 'end' => '13:00'];
+            if ($si === 5) {
+                $scheduleRows[] = ['kind' => 'break', 'label' => 'Lunch break', 'start' => '12:00', 'end' => '13:00'];
             }
 
             $subj = trim((string) ($slot['subject'] ?? ''));
@@ -204,7 +204,7 @@ class TeacherSections extends BaseController
         }
         $scheduleRows[] = [
             'kind' => 'dismissal',
-            'time' => (string) ($schedule['dismissal_time'] ?? '15:00'),
+            'time' => (string) ($schedule['dismissal_time'] ?? '15:30'),
         ];
 
         $data = [
@@ -319,13 +319,16 @@ class TeacherSections extends BaseController
     {
         $defaults = [
             'slots' => [
-                ['slot' => 1, 'subject' => '', 'start' => '07:45', 'end' => '08:45', 'adviser_teaches' => false],
-                ['slot' => 2, 'subject' => '', 'start' => '08:45', 'end' => '09:45', 'adviser_teaches' => false],
-                ['slot' => 3, 'subject' => '', 'start' => '10:00', 'end' => '11:00', 'adviser_teaches' => false],
-                ['slot' => 4, 'subject' => '', 'start' => '13:00', 'end' => '14:00', 'adviser_teaches' => false],
-                ['slot' => 5, 'subject' => '', 'start' => '14:00', 'end' => '15:00', 'adviser_teaches' => false],
+                ['slot' => 1, 'subject' => '', 'start' => '07:30', 'end' => '08:20', 'adviser_teaches' => false],
+                ['slot' => 2, 'subject' => '', 'start' => '08:20', 'end' => '09:10', 'adviser_teaches' => false],
+                ['slot' => 3, 'subject' => '', 'start' => '09:30', 'end' => '10:20', 'adviser_teaches' => false],
+                ['slot' => 4, 'subject' => '', 'start' => '10:20', 'end' => '11:10', 'adviser_teaches' => false],
+                ['slot' => 5, 'subject' => '', 'start' => '11:10', 'end' => '12:00', 'adviser_teaches' => false],
+                ['slot' => 6, 'subject' => '', 'start' => '13:00', 'end' => '13:50', 'adviser_teaches' => false],
+                ['slot' => 7, 'subject' => '', 'start' => '13:50', 'end' => '14:40', 'adviser_teaches' => false],
+                ['slot' => 8, 'subject' => '', 'start' => '14:40', 'end' => '15:30', 'adviser_teaches' => false],
             ],
-            'dismissal_time' => '15:00',
+            'dismissal_time' => '15:30',
         ];
         if ($raw === null || $raw === '') {
             return $defaults;

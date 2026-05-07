@@ -9,6 +9,7 @@ $adviser_subjects_label   = $adviser_subjects_label ?? '—';
 $section_schedule_rows    = $section_schedule_rows ?? [];
 $invite_subject_time_meta = $invite_subject_time_meta ?? [];
 $teacher_busy_by_id       = $teacher_busy_by_id ?? [];
+$is_adviser_only_grade    = ! empty($is_adviser_only_grade);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -58,7 +59,11 @@ $teacher_busy_by_id       = $teacher_busy_by_id ?? [];
 
     <div class="card">
         <div class="card-title">Invite subject teacher</div>
-        <p style="margin-bottom: 12px; color: #558b2f;">Invite teachers for subjects in the section schedule that the <strong>class adviser does not</strong> teach. The class adviser is not listed here. Teachers must accept the invite before they appear as assigned.</p>
+        <?php if ($is_adviser_only_grade): ?>
+            <p style="margin-bottom: 12px; color: #c62828;">This section is Grade 1 to 3, so it is <strong>adviser-only</strong>. Subject teacher invites are disabled.</p>
+        <?php else: ?>
+            <p style="margin-bottom: 12px; color: #558b2f;">Invite teachers for subjects in the section schedule that the <strong>class adviser does not</strong> teach. The class adviser is not listed here. Teachers must accept the invite before they appear as assigned.</p>
+        <?php endif; ?>
         <form id="invite-teacher-form" action="<?= base_url('admin/sections/invite') ?>" method="post" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
             <?= csrf_field() ?>
             <input type="hidden" name="section_id" value="<?= (int) $section['id'] ?>">
@@ -92,7 +97,7 @@ $teacher_busy_by_id       = $teacher_busy_by_id ?? [];
             <div id="invite-availability-wrap" style="flex-basis: 100%; display: none;">
                 <p id="invite-availability-msg" style="margin: 0; padding: 10px 12px; border-radius: 8px; font-size: 0.9rem;"></p>
             </div>
-            <button type="submit" id="invite-submit-btn" class="login-button" style="display: inline-flex; width: auto; padding: 10px 20px;" <?= empty($remaining_subjects) ? 'disabled' : '' ?>>Send invite</button>
+            <button type="submit" id="invite-submit-btn" class="login-button" style="display: inline-flex; width: auto; padding: 10px 20px;" <?= (empty($remaining_subjects) || $is_adviser_only_grade) ? 'disabled' : '' ?>>Send invite</button>
         </form>
     </div>
 

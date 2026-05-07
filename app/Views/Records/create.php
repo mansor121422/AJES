@@ -52,6 +52,7 @@ $recordTypes = $recordTypes ?? ['Session', 'Note', 'Referral', 'Other'];
             <div class="form-group">
                 <label for="details" style="color: #1b5e20;">Details</label>
                 <textarea id="details" name="details" rows="4" required placeholder="Session or note details..." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;"><?= esc(old('details')) ?></textarea>
+                <small style="color: #666;">For immediate Guidance + parent call, select <strong>Misbehavior</strong> and include the word <strong>fighting</strong> or <strong>bullying</strong> in details.</small>
             </div>
             <button type="submit" class="login-button" style="display: inline-flex; width: auto; padding: 10px 24px;">Save</button>
             <a href="<?= base_url('records') ?>" style="margin-left: 12px; color: #2e7d32;">Cancel</a>

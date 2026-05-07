@@ -8,6 +8,8 @@ use CodeIgniter\HTTP\RedirectResponse;
 
 class Users extends BaseController
 {
+    private const DEFAULT_NEW_USER_PASSWORD = 'ajes2026';
+
     protected UserModel   $users;
     protected SectionModel $sections;
 
@@ -49,26 +51,30 @@ class Users extends BaseController
 
     public function store(): RedirectResponse
     {
-        $name     = trim((string) $this->request->getPost('name'));
+        $firstName = trim((string) $this->request->getPost('first_name'));
+        $middleName = trim((string) $this->request->getPost('middle_name'));
+        $surname = trim((string) $this->request->getPost('surname'));
+        $suffix = trim((string) $this->request->getPost('suffix'));
+        $name     = trim($firstName . ' ' . $middleName . ' ' . $surname . ' ' . $suffix);
         $email    = trim((string) $this->request->getPost('email'));
         $username = trim((string) $this->request->getPost('username'));
-        $password = (string) $this->request->getPost('password');
+        $password = self::DEFAULT_NEW_USER_PASSWORD;
         $role     = trim((string) $this->request->getPost('role'));
         $isActive  = (int) $this->request->getPost('is_active');
         $birthdate = trim((string) $this->request->getPost('birthdate'));
         $age       = $this->computeAgeFromBirthdate($birthdate);
 
-        if ($name === '' || $email === '' || $username === '' || $password === '' || $role === '') {
-            return redirect()->back()->withInput()->with('error', 'Name, email, username, password and role are required.');
+        if ($firstName === '' || $surname === '' || $email === '' || $username === '' || $role === '') {
+            return redirect()->back()->withInput()->with('error', 'First name, surname, email, username and role are required.');
+        }
+        if (! preg_match('/^[a-zA-ZÑñ ]+$/', $firstName) || ($middleName !== '' && ! preg_match('/^[a-zA-ZÑñ ]+$/', $middleName)) || ! preg_match('/^[a-zA-ZÑñ ]+$/', $surname) || ($suffix !== '' && ! preg_match('/^[a-zA-ZÑñ. ]+$/', $suffix))) {
+            return redirect()->back()->withInput()->with('error', 'First name, middle name, surname, and suffix: letters (including Ñ/ñ) and spaces only. Suffix may include dot.');
         }
         if (! preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
             return redirect()->back()->withInput()->with('error', 'Username: letters, numbers, and underscore only. No special characters.');
         }
         if (! preg_match('/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $email)) {
             return redirect()->back()->withInput()->with('error', 'Email: invalid format. Only letters, numbers, and @ are allowed (e.g. user@domain.com).');
-        }
-        if (strlen($password) < 6) {
-            return redirect()->back()->withInput()->with('error', 'Password must be at least 6 characters.');
         }
         if ($this->users->where('email', $email)->first()) {
             return redirect()->back()->withInput()->with('error', 'Email already in use.');
@@ -133,7 +139,11 @@ class Users extends BaseController
         $currentUserId = (int) session()->get('user_id');
         $is_editing_self = ($currentRole === 'ADMIN' && $currentUserId === $id);
 
-        $name     = trim((string) $this->request->getPost('name'));
+        $firstName = trim((string) $this->request->getPost('first_name'));
+        $middleName = trim((string) $this->request->getPost('middle_name'));
+        $surname = trim((string) $this->request->getPost('surname'));
+        $suffix = trim((string) $this->request->getPost('suffix'));
+        $name     = trim($firstName . ' ' . $middleName . ' ' . $surname . ' ' . $suffix);
         $email    = trim((string) $this->request->getPost('email'));
         $username = trim((string) $this->request->getPost('username'));
         $password = (string) $this->request->getPost('password');
@@ -143,8 +153,11 @@ class Users extends BaseController
         $birthdate = trim((string) $this->request->getPost('birthdate'));
         $age       = $this->computeAgeFromBirthdate($birthdate);
 
-        if ($name === '' || $email === '' || $username === '' || $role === '') {
-            return redirect()->back()->withInput()->with('error', 'Name, email, username and role are required.');
+        if ($firstName === '' || $surname === '' || $email === '' || $username === '' || $role === '') {
+            return redirect()->back()->withInput()->with('error', 'First name, surname, email, username and role are required.');
+        }
+        if (! preg_match('/^[a-zA-ZÑñ ]+$/', $firstName) || ($middleName !== '' && ! preg_match('/^[a-zA-ZÑñ ]+$/', $middleName)) || ! preg_match('/^[a-zA-ZÑñ ]+$/', $surname) || ($suffix !== '' && ! preg_match('/^[a-zA-ZÑñ. ]+$/', $suffix))) {
+            return redirect()->back()->withInput()->with('error', 'First name, middle name, surname, and suffix: letters (including Ñ/ñ) and spaces only. Suffix may include dot.');
         }
         if (! preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
             return redirect()->back()->withInput()->with('error', 'Username: letters, numbers, and underscore only. No special characters.');

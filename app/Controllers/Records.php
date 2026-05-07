@@ -58,7 +58,7 @@ class Records extends BaseController
     /** Record types for counseling/session notes (used in forms). */
     protected function recordTypes(): array
     {
-        return ['Session', 'Note', 'Referral', 'Other'];
+        return ['Session', 'Note', 'Referral', 'Misbehavior', 'Other'];
     }
 
     public function create(): string
@@ -98,6 +98,10 @@ class Records extends BaseController
             'details'    => $details,
             'created_by' => $session->get('user_id'),
         ]);
+
+        if (strcasecmp($type, 'Misbehavior') === 0) {
+            $this->handleMisbehaviorEscalation($studentId, $details);
+        }
 
         return redirect()->to('records')->with('success', 'Record created.');
     }
@@ -153,6 +157,104 @@ class Records extends BaseController
         $this->records->delete($id);
 
         return redirect()->to('records')->with('success', 'Record deleted.');
+    }
+
+    private function handleMisbehaviorEscalation(int $studentId, string $details): void
+    {
+        if ($studentId <= 0) {
+            return;
+        }
+
+        $db = \Config\Database::connect();
+        $now = date('Y-m-d H:i:s');
+        $student = $this->users->find($studentId);
+        $studentName = trim((string) ($student['name'] ?? 'Student'));
+
+        // Immediate escalation for severe incidents (fighting/bullying).
+        if ($this->isImmediateGuidanceCase($details)) {
+            $guidanceUsers = $this->users->where('role', 'GUIDANCE')->findAll();
+            foreach ($guidanceUsers as $g) {
+                $guidanceId = (int) ($g['id'] ?? 0);
+                if ($guidanceId <= 0) {
+                    continue;
+                }
+                $db->table('notifications')->insert([
+                    'user_id' => $guidanceId,
+                    'type' => 'misbehavior_immediate_guidance',
+                    'reference_table' => 'records',
+                    'message' => 'Immediate action: ' . $studentName . ' is reported for fighting/bullying and must be called to Guidance with parent/guardian.',
+                    'is_read' => 0,
+                    'created_at' => $now,
+                ]);
+            }
+
+            $db->table('notifications')->insert([
+                'user_id' => $studentId,
+                'type' => 'misbehavior_immediate_parent_call',
+                'reference_table' => 'records',
+                'message' => 'Immediate Guidance notice: due to a serious incident (fighting/bullying), you are called to Guidance and your parent/guardian must be contacted immediately.',
+                'is_read' => 0,
+                'created_at' => $now,
+            ]);
+            return;
+        }
+
+        $offenseCount = $this->records
+            ->where('student_id', $studentId)
+            ->where('type', 'Misbehavior')
+            ->countAllResults();
+
+        if ($offenseCount < 1) {
+            return;
+        }
+
+        if ($offenseCount === 1) {
+            $db->table('notifications')->insert([
+                'user_id' => $studentId,
+                'type' => 'misbehavior_warning',
+                'reference_table' => 'records',
+                'message' => 'Warning: this is your 1st misbehavior offense. Please follow school rules.',
+                'is_read' => 0,
+                'created_at' => $now,
+            ]);
+            return;
+        }
+
+        if ($offenseCount === 3) {
+            $guidanceUsers = $this->users->where('role', 'GUIDANCE')->findAll();
+            foreach ($guidanceUsers as $g) {
+                $guidanceId = (int) ($g['id'] ?? 0);
+                if ($guidanceId <= 0) {
+                    continue;
+                }
+                $db->table('notifications')->insert([
+                    'user_id' => $guidanceId,
+                    'type' => 'misbehavior_guidance',
+                    'reference_table' => 'records',
+                    'message' => $studentName . ' has reached the 3rd misbehavior offense. Guidance attention is required.',
+                    'is_read' => 0,
+                    'created_at' => $now,
+                ]);
+            }
+            return;
+        }
+
+        if ($offenseCount === 5) {
+            $db->table('notifications')->insert([
+                'user_id' => $studentId,
+                'type' => 'misbehavior_parent_call',
+                'reference_table' => 'records',
+                'message' => 'Guidance notice: this is your 5th misbehavior offense. Your parent/guardian needs to be called.',
+                'is_read' => 0,
+                'created_at' => $now,
+            ]);
+        }
+    }
+
+    private function isImmediateGuidanceCase(string $details): bool
+    {
+        $text = strtolower($details);
+        return str_contains($text, 'fighting') || str_contains($text, 'bullying');
     }
 }
 
