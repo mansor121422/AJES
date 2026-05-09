@@ -3,6 +3,7 @@ $role         = $role ?? 'ADMIN';
 $name         = $name ?? 'User';
 $current_id   = $current_id ?? 0;
 $chat_users   = $chat_users ?? [];
+$chat_users_all = $chat_users_all ?? $chat_users;
 $with_user    = $with_user ?? null;
 $conversation = $conversation ?? [];
 $with_id      = $with_user ? (int) $with_user['id'] : 0;
@@ -555,7 +556,7 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                     autocomplete="off"
                 />
             </div>
-            <?php foreach ($chat_users as $u): ?>
+            <?php foreach ($chat_users_all as $u): ?>
                 <?php
                 $uid        = (int) $u['id'];
                 $isActive   = ($with_id === $uid);
@@ -591,7 +592,7 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                 </a>
             <?php endforeach; ?>
             <p id="chat-sidebar-empty-search" class="chat-sidebar-empty-search">No matching users.</p>
-            <?php if (empty($chat_users)): ?>
+            <?php if (empty($chat_users_all)): ?>
                 <p style="padding: 16px; color: #888;">No other users to chat with.</p>
             <?php endif; ?>
         </aside>
@@ -799,7 +800,6 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
 
         var userItems = Array.prototype.slice.call(document.querySelectorAll('.chat-user-item[data-user-id]'));
         var emptySearch = document.getElementById('chat-sidebar-empty-search');
-        var currentRole = '<?= esc(strtoupper((string) $role)) ?>';
 
         function textForItem(item) {
             var nameEl = item.querySelector('.chat-user-name span');
@@ -816,7 +816,9 @@ $with_id      = $with_user ? (int) $with_user['id'] : 0;
                 var role = (item.getAttribute('data-user-role') || '').toUpperCase();
                 var hasChat = item.getAttribute('data-has-chat') === '1';
                 var isActiveConversation = item.classList.contains('active');
-                var allowedByDefault = isActiveConversation || !(currentRole === 'TEACHER' && !hasChat && role !== 'PRINCIPAL');
+                var hasUnread = item.classList.contains('has-unread');
+                var isPrincipal = role === 'PRINCIPAL';
+                var allowedByDefault = isActiveConversation || hasChat || hasUnread || isPrincipal;
                 var match = q === ''
                     ? allowedByDefault
                     : textForItem(item).indexOf(q) !== -1;

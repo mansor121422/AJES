@@ -63,8 +63,9 @@ class Chat extends BaseController
         $userId = (int) session()->get('user_id');
         $withId = (int) $this->request->getGet('with');
 
-        $chatUsers = $this->getChatUserList($userId);
-        $allowedChatUserIds = array_map(static fn(array $row): int => (int) ($row['id'] ?? 0), $chatUsers);
+        $chatUsers = $this->getChatUserList($userId, false);
+        $chatUsersAll = $this->getChatUserList($userId, true);
+        $allowedChatUserIds = array_map(static fn(array $row): int => (int) ($row['id'] ?? 0), $chatUsersAll);
         $conversation = [];
         $withUser = null;
         if ($withId > 0 && $withId !== $userId && in_array($withId, $allowedChatUserIds, true)) {
@@ -89,6 +90,7 @@ class Chat extends BaseController
             'name'         => session()->get('name') ?? 'User',
             'current_id'   => $userId,
             'chat_users'   => $chatUsers,
+            'chat_users_all' => $chatUsersAll,
             'with_user'    => $withUser,
             'conversation' => $conversation,
         ];
@@ -549,7 +551,7 @@ class Chat extends BaseController
     /**
      * List of users the current user can chat with (all active users except self).
      */
-    private function getChatUserList(int $currentUserId): array
+    private function getChatUserList(int $currentUserId, bool $includeUsersWithoutConversation = false): array
     {
         $now            = time();
         $timeoutSeconds = (int) config('App')->presenceTimeoutSeconds;
@@ -575,19 +577,22 @@ class Chat extends BaseController
                 ->where('status', 'accepted')
                 ->findColumn('section_id');
             $sectionIds = array_values(array_unique(array_map('intval', $sectionIds ?? [])));
+            $staffRoles = ['TEACHER', 'GUIDANCE', 'PRINCIPAL', 'ADMIN', 'ANNOUNCER'];
 
             // Teacher can always chat with key staff roles, while students must be
             // enrolled in one of the teacher's accepted sections.
             $userBuilder->groupStart()
-                ->whereIn('role', ['TEACHER', 'GUIDANCE', 'PRINCIPAL', 'ADMIN', 'ANNOUNCER'])
+                ->whereIn('role', $staffRoles)
                 ->orGroupStart()
-                    ->where('role', 'STUDENT');
+                    ->where('role', 'STUDENT')
+                    ->groupStart();
             if ($sectionIds === []) {
-                $userBuilder->where('1 = 0', null, false);
+                $userBuilder->where('id', -1);
             } else {
                 $userBuilder->whereIn('section_id', $sectionIds);
             }
             $userBuilder->groupEnd()
+                ->groupEnd()
             ->groupEnd();
         }
 
@@ -616,6 +621,12 @@ class Chat extends BaseController
                 continue;
             }
             $hasChat = in_array($id, $partnerIds, true);
+            $unreadCount = (int) ($unreadBySender[$id] ?? 0);
+            $role = strtoupper((string) ($u['role'] ?? ''));
+            $isPrincipal = ($role === 'PRINCIPAL');
+            if (! $includeUsersWithoutConversation && ! $hasChat && $unreadCount <= 0 && ! $isPrincipal) {
+                continue;
+            }
 
             $presence = $this->computePresence($u, $now, $timeoutSeconds);
             $isTyping = (bool) ($typingByFromUserId[$id] ?? false);
@@ -626,8 +637,8 @@ class Chat extends BaseController
                 'name'              => $u['name'] ?? $u['username'] ?? 'User #' . $id,
                 'role'              => $u['role'] ?? '',
                 'has_chat'          => $hasChat,
-                'unread'            => $unreadBySender[$id] ?? 0,
-                'has_unread'        => ($unreadBySender[$id] ?? 0) > 0,
+                'unread'            => $unreadCount,
+                'has_unread'        => $unreadCount > 0,
                 'presence_state'    => $presence['state'],
                 'presence_label'    => $presence['label'],
                 'typing'            => $isTyping,
@@ -645,7 +656,7 @@ class Chat extends BaseController
 
         $allowedIds = array_map(
             static fn(array $row): int => (int) ($row['id'] ?? 0),
-            $this->getChatUserList($currentUserId)
+            $this->getChatUserList($currentUserId, true)
         );
 
         return in_array($otherUserId, $allowedIds, true);
