@@ -103,6 +103,202 @@
         padding: 2px 5px;
     }
 
+    .ajes-topbar-logout {
+        background: none;
+        border: none;
+        color: #fff;
+        font: inherit;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 6px 4px;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: background 0.2s ease;
+    }
+
+    .ajes-topbar-logout:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    body.ajes-logout-modal-open {
+        overflow: hidden;
+    }
+
+    .ajes-logout-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 10050;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    .ajes-logout-modal[hidden] {
+        display: none !important;
+    }
+
+    .ajes-logout-modal__backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+
+    .ajes-logout-modal__card {
+        position: relative;
+        width: 100%;
+        max-width: 420px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.22);
+        overflow: hidden;
+        animation: ajesLogoutPop 0.28s cubic-bezier(0.34, 1.15, 0.64, 1);
+    }
+
+    @keyframes ajesLogoutPop {
+        from {
+            opacity: 0;
+            transform: scale(0.94) translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .ajes-logout-modal__head {
+        background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+        color: #fff;
+        padding: 18px 22px;
+    }
+
+    .ajes-logout-modal__title {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    .ajes-logout-modal__body {
+        padding: 22px 22px 8px;
+        color: #1b5e20;
+    }
+
+    .ajes-logout-modal__lead {
+        margin: 0 0 10px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #1b5e20;
+    }
+
+    .ajes-logout-modal__muted {
+        margin: 0 0 20px;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        color: #555;
+    }
+
+    .ajes-logout-save {
+        background: #f1f8e9;
+        border: 1px solid #c8e6c9;
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 14px;
+    }
+
+    .ajes-logout-save__label {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #1b5e20;
+        margin-bottom: 6px;
+    }
+
+    .ajes-logout-save__hint {
+        margin: 0 0 14px;
+        font-size: 0.8rem;
+        line-height: 1.45;
+        color: #555;
+    }
+
+    .ajes-logout-save__choices {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .ajes-logout-choice {
+        flex: 1;
+        min-width: 120px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 2px solid #a5d6a7;
+        background: #fff;
+        color: #1b5e20;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .ajes-logout-choice:hover {
+        border-color: #2e7d32;
+        background: #e8f5e9;
+    }
+
+    .ajes-logout-choice.is-selected {
+        border-color: #1b5e20;
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        box-shadow: 0 2px 10px rgba(27, 94, 32, 0.18);
+    }
+
+    .ajes-logout-modal__actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 16px 22px 20px;
+        border-top: 1px solid #e8f5e9;
+        background: #fafafa;
+    }
+
+    .ajes-logout-btn {
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        border: none;
+        font-family: inherit;
+    }
+
+    .ajes-logout-btn--ghost {
+        background: #fff;
+        color: #2e7d32;
+        border: 1px solid #c8e6c9;
+    }
+
+    .ajes-logout-btn--ghost:hover {
+        background: #f1f8e9;
+    }
+
+    .ajes-logout-btn--primary {
+        background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(27, 94, 32, 0.35);
+    }
+
+    .ajes-logout-btn--primary:hover {
+        filter: brightness(1.05);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .ajes-logout-modal__card {
+            animation: none;
+        }
+    }
+
     /* Sidebar – left nav like reference */
     .sidebar {
         width: 240px;

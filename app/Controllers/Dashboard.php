@@ -27,14 +27,49 @@ class Dashboard extends BaseController
 
     public function admin(): string
     {
-        $users        = new UserModel();
-        $announcements = new AnnouncementModel();
+        $users = new UserModel();
+
+        $filterKey = strtolower(trim((string) service('request')->getGet('ann')));
+        if (! in_array($filterKey, ['today', 'yesterday', 'week', 'month', 'all'], true)) {
+            $filterKey = 'all';
+        }
 
         $totalUsers = $users->countAllResults();
-        $todayStart = date('Y-m-d 00:00:00');
-        $announcementsToday = $announcements->where('created_at >=', $todayStart)->countAllResults();
+        $todayRange = $this->adminAnnouncementDateRange('today');
+        $announcementsToday = $todayRange !== null
+            ? $this->adminCountAnnouncementsInRange($todayRange[0], $todayRange[1])
+            : 0;
 
-        $recentAnnouncements = $announcements->orderBy('created_at', 'DESC')->findAll(10);
+        $yesterdayRange = $this->adminAnnouncementDateRange('yesterday');
+        $weekRange      = $this->adminAnnouncementDateRange('week');
+        $monthRange     = $this->adminAnnouncementDateRange('month');
+
+        $periodCounts = [
+            'all'       => (new AnnouncementModel())->countAllResults(),
+            'today'     => $announcementsToday,
+            'yesterday' => $yesterdayRange !== null
+                ? $this->adminCountAnnouncementsInRange($yesterdayRange[0], $yesterdayRange[1])
+                : 0,
+            'week' => $weekRange !== null
+                ? $this->adminCountAnnouncementsInRange($weekRange[0], $weekRange[1])
+                : 0,
+            'month' => $monthRange !== null
+                ? $this->adminCountAnnouncementsInRange($monthRange[0], $monthRange[1])
+                : 0,
+        ];
+
+        $listRange = $filterKey === 'all' ? null : $this->adminAnnouncementDateRange($filterKey);
+        $annForList = new AnnouncementModel();
+        if ($listRange !== null) {
+            $recentAnnouncements = $annForList
+                ->where('created_at >=', $listRange[0])
+                ->where('created_at <=', $listRange[1])
+                ->orderBy('created_at', 'DESC')
+                ->findAll(200);
+        } else {
+            $recentAnnouncements = $annForList->orderBy('created_at', 'DESC')->findAll(25);
+        }
+
         $authorIds = array_filter(array_unique(array_column($recentAnnouncements, 'created_by')));
         $authors = [];
         if ($authorIds !== []) {
@@ -49,21 +84,102 @@ class Dashboard extends BaseController
             $day = date('Y-m-d', strtotime("-{$i} days"));
             $dayStart = $day . ' 00:00:00';
             $dayEnd   = $day . ' 23:59:59';
-            $count = $announcements->where('created_at >=', $dayStart)->where('created_at <=', $dayEnd)->countAllResults();
+            $count = (new AnnouncementModel())->where('created_at >=', $dayStart)->where('created_at <=', $dayEnd)->countAllResults();
             $activityDays[] = ['date' => $day, 'label' => date('M j', strtotime($day)), 'count' => $count];
         }
 
-        $data = [
-            'role'                => 'ADMIN',
-            'name'                => session()->get('name') ?? 'Administrator',
-            'total_users'         => $totalUsers,
-            'announcements_today' => $announcementsToday,
-            'active_modules'      => 4,
-            'recent_announcements'=> $recentAnnouncements,
-            'authors'             => $authors,
-            'activity_chart'     => $activityDays,
+        $filterLabels = [
+            'all'       => 'All recent',
+            'today'     => 'Today',
+            'yesterday' => 'Yesterday',
+            'week'      => 'Last week (Mon–Sun)',
+            'month'     => 'Last calendar month',
         ];
+
+        $data = [
+            'role'                 => 'ADMIN',
+            'name'                 => session()->get('name') ?? 'Administrator',
+            'total_users'          => $totalUsers,
+            'announcements_today'  => $announcementsToday,
+            'active_modules'       => 4,
+            'recent_announcements' => $recentAnnouncements,
+            'authors'              => $authors,
+            'activity_chart'       => $activityDays,
+            'ann_filter'           => $filterKey,
+            'ann_filter_label'     => $filterLabels[$filterKey] ?? 'All recent',
+            'announcement_period_counts' => $periodCounts,
+            'announcement_range_meta'    => $this->adminAnnouncementRangeMeta($filterKey, $listRange),
+        ];
+
         return view('Admin/dashboard', $data);
+    }
+
+    /**
+     * @return array{0: string, 1: string}|null [start, end] inclusive, Y-m-d H:i:s
+     */
+    private function adminAnnouncementDateRange(string $period): ?array
+    {
+        $period = strtolower($period);
+        $today  = new \DateTimeImmutable('today');
+
+        return match ($period) {
+            'today' => [
+                $today->setTime(0, 0, 0)->format('Y-m-d H:i:s'),
+                $today->setTime(23, 59, 59)->format('Y-m-d H:i:s'),
+            ],
+            'yesterday' => (static function () use ($today): array {
+                $y = $today->sub(new \DateInterval('P1D'));
+
+                return [
+                    $y->setTime(0, 0, 0)->format('Y-m-d H:i:s'),
+                    $y->setTime(23, 59, 59)->format('Y-m-d H:i:s'),
+                ];
+            })(),
+            'week' => (static function () use ($today): array {
+                $n       = (int) $today->format('N');
+                $monThis = $today->sub(new \DateInterval('P' . ($n - 1) . 'D'))->setTime(0, 0, 0);
+                $monLast = $monThis->sub(new \DateInterval('P7D'));
+                $sunLast = $monLast->add(new \DateInterval('P6D'))->setTime(23, 59, 59);
+
+                return [
+                    $monLast->format('Y-m-d H:i:s'),
+                    $sunLast->format('Y-m-d H:i:s'),
+                ];
+            })(),
+            'month' => (static function () use ($today): array {
+                $firstThis = $today->modify('first day of this month')->setTime(0, 0, 0);
+                $firstLast = $firstThis->sub(new \DateInterval('P1M'));
+                $lastLast  = $firstLast->modify('last day of this month')->setTime(23, 59, 59);
+
+                return [
+                    $firstLast->format('Y-m-d H:i:s'),
+                    $lastLast->format('Y-m-d H:i:s'),
+                ];
+            })(),
+            default => null,
+        };
+    }
+
+    private function adminCountAnnouncementsInRange(string $start, string $end): int
+    {
+        return (new AnnouncementModel())
+            ->where('created_at >=', $start)
+            ->where('created_at <=', $end)
+            ->countAllResults();
+    }
+
+    /**
+     * @param array{0: string, 1: string}|null $range
+     */
+    private function adminAnnouncementRangeMeta(string $filterKey, ?array $range): string
+    {
+        if ($range === null) {
+            return 'Showing the 25 most recent announcements.';
+        }
+        $a = date('M j, Y', strtotime($range[0]));
+        $b = date('M j, Y', strtotime($range[1]));
+
+        return "Showing announcements from {$a} – {$b}.";
     }
 
     public function principal(): string

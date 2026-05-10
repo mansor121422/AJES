@@ -3,6 +3,7 @@
 namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
+use App\Libraries\LoginLockout;
 use App\Models\ApiTokenModel;
 use App\Models\UserModel;
 use CodeIgniter\HTTP\Exceptions\HTTPException;
@@ -59,21 +60,36 @@ class Auth extends BaseController
             return $this->failResponse('Invalid credentials.', 401);
         }
 
-        if (($user['failed_attempts'] ?? 0) >= 5) {
-            return $this->failResponse('Account locked. Please contact administrator.', 403);
+        $lockedFor = LoginLockout::lockedRemainingSeconds($user['locked_until'] ?? null);
+        if ($lockedFor !== null) {
+            return $this->failResponse(
+                LoginLockout::lockoutMessage($lockedFor),
+                429,
+                ['retry_after_seconds' => $lockedFor]
+            );
         }
 
         if (! password_verify($password, $user['password_hash'])) {
-            $this->users->update($user['id'], [
-                'failed_attempts' => ($user['failed_attempts'] ?? 0) + 1,
-                'last_failed_at'  => date('Y-m-d H:i:s'),
-            ]);
+            $patch = LoginLockout::fieldsAfterFailedPassword((int) ($user['failed_attempts'] ?? 0));
+            $this->users->update($user['id'], $patch);
+
+            if ($patch['locked_until'] !== null) {
+                $sec = LoginLockout::lockedRemainingSeconds($patch['locked_until']);
+
+                return $this->failResponse(
+                    $sec !== null ? LoginLockout::lockoutMessage($sec) : 'Invalid credentials.',
+                    429,
+                    $sec !== null ? ['retry_after_seconds' => $sec] : []
+                );
+            }
+
             return $this->failResponse('Invalid credentials.', 401);
         }
 
         $this->users->update($user['id'], [
             'failed_attempts' => 0,
             'last_failed_at'  => null,
+            'locked_until'    => null,
         ]);
 
         $token = $this->tokens->createToken((int) $user['id'], 30);
@@ -147,13 +163,13 @@ class Auth extends BaseController
             ]);
     }
 
-    private function failResponse(string $message, int $code = 400): ResponseInterface
+    private function failResponse(string $message, int $code = 400, array $extra = []): ResponseInterface
     {
         return $this->response
             ->setStatusCode($code)
-            ->setJSON([
+            ->setJSON(array_merge([
                 'status'  => 'error',
                 'message' => $message,
-            ]);
+            ], $extra));
     }
 }

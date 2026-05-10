@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\PasswordReuseGuard;
 use App\Models\UserModel;
 use CodeIgniter\HTTP\RedirectResponse;
 
@@ -92,7 +93,12 @@ class Profile extends BaseController
             if ($password !== $confirmPassword) {
                 return redirect()->back()->withInput()->with('error', 'Password confirmation does not match.');
             }
-            $updates['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
+            $hist = PasswordReuseGuard::historyFromDb($user['password_history'] ?? null);
+            if (PasswordReuseGuard::isPasswordReused($password, (string) ($user['password_hash'] ?? ''), $hist)) {
+                return redirect()->back()->withInput()->with('error', 'You cannot reuse your current password or a recently used one. Please choose a different password.');
+            }
+            $updates['password_history'] = PasswordReuseGuard::appendPreviousHash((string) ($user['password_hash'] ?? ''), $hist);
+            $updates['password_hash']    = password_hash($password, PASSWORD_DEFAULT);
         }
 
         $existing = $this->users

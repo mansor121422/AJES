@@ -8,6 +8,7 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        // Dev / local default for all seeded accounts (change in production).
         $password = password_hash('123123', PASSWORD_DEFAULT);
 
         // Try to get any existing section to assign to teacher/student
@@ -19,6 +20,14 @@ class UserSeeder extends Seeder
                 'name'          => 'System Administrator',
                 'email'         => 'admin@ajes.local',
                 'username'      => 'admin',
+                'password_hash' => $password,
+                'role'          => 'ADMIN',
+                'is_active'     => 1,
+            ],
+            [
+                'name'          => 'AJES Administrator',
+                'email'         => 'ajes.admin@ajes.local',
+                'username'      => 'ajesadmin',
                 'password_hash' => $password,
                 'role'          => 'ADMIN',
                 'is_active'     => 1,

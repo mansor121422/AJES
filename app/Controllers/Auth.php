@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Libraries\LoginLockout;
+use App\Libraries\PasswordReuseGuard;
 use App\Models\UserModel;
 use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -34,22 +36,39 @@ class Auth extends BaseController
             return redirect()->back()->withInput()->with('error', 'Invalid credentials.');
         }
 
-        if (($user['failed_attempts'] ?? 0) >= 5) {
-            return redirect()->back()->with('error', 'Account locked. Please contact administrator.');
+        $lockedFor = LoginLockout::lockedRemainingSeconds($user['locked_until'] ?? null);
+        if ($lockedFor !== null) {
+            return redirect()->back()->withInput()
+                ->with('error', LoginLockout::lockoutMessage($lockedFor))
+                ->with('login_lockout_seconds', $lockedFor);
         }
 
         if (! password_verify($password, $user['password_hash'])) {
-            $this->users->update($user['id'], [
-                'failed_attempts' => ($user['failed_attempts'] ?? 0) + 1,
-                'last_failed_at'  => date('Y-m-d H:i:s'),
-            ]);
+            $patch = LoginLockout::fieldsAfterFailedPassword((int) ($user['failed_attempts'] ?? 0));
+            $this->users->update($user['id'], $patch);
 
-            return redirect()->back()->withInput()->with('error', 'Invalid credentials.');
+            $msg     = 'Invalid credentials.';
+            $lockSec = null;
+            if ($patch['locked_until'] !== null) {
+                $sec = LoginLockout::lockedRemainingSeconds($patch['locked_until']);
+                if ($sec !== null) {
+                    $msg     = LoginLockout::lockoutMessage($sec);
+                    $lockSec = $sec;
+                }
+            }
+
+            $response = redirect()->back()->withInput()->with('error', $msg);
+            if ($lockSec !== null) {
+                $response = $response->with('login_lockout_seconds', $lockSec);
+            }
+
+            return $response;
         }
 
         $this->users->update($user['id'], [
             'failed_attempts' => 0,
             'last_failed_at'  => null,
+            'locked_until'    => null,
         ]);
 
         $session->regenerate();
@@ -226,13 +245,25 @@ class Auth extends BaseController
             return redirect()->back()->withInput()->with('error', 'Passwords do not match.');
         }
 
+        $acct = $this->users->where('email', $row['email'])->first();
+        $hist = $acct ? PasswordReuseGuard::historyFromDb($acct['password_history'] ?? null) : [];
+        if ($acct && PasswordReuseGuard::isPasswordReused($password, (string) ($acct['password_hash'] ?? ''), $hist)) {
+            return redirect()->back()->withInput()->with('error', 'You cannot reuse your current password or a recently used one. Please choose a different password.');
+        }
+
         $hash = password_hash($password, PASSWORD_DEFAULT);
 
-        $this->users->where('email', $row['email'])->set([
+        $set = [
             'password_hash'   => $hash,
             'failed_attempts' => 0,
             'last_failed_at'  => null,
-        ])->update();
+            'locked_until'    => null,
+        ];
+        if ($acct) {
+            $set['password_history'] = PasswordReuseGuard::appendPreviousHash((string) ($acct['password_hash'] ?? ''), $hist);
+        }
+
+        $this->users->where('email', $row['email'])->set($set)->update();
 
         $db->table('password_resets')->where('email', $row['email'])->delete();
 

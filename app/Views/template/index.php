@@ -65,13 +65,20 @@ switch ($role) {
 
 $currentUri = uri_string();
 $sessionUserId = (int) (session()->get('user_id') ?? 0);
-$topbarPhotoUrl = null;
+$sessionUser     = null;
+$topbarPhotoUrl  = null;
 if ($sessionUserId > 0) {
     $sessionUser = (new \App\Models\UserModel())->find($sessionUserId);
-    $profilePhoto = trim((string) ($sessionUser['profile_photo'] ?? ''));
-    if ($profilePhoto !== '') {
-        $topbarPhotoUrl = base_url($profilePhoto);
+    if ($sessionUser) {
+        $profilePhoto = trim((string) ($sessionUser['profile_photo'] ?? ''));
+        if ($profilePhoto !== '') {
+            $topbarPhotoUrl = base_url($profilePhoto);
+        }
     }
+}
+$logoutPrefillUsername = '';
+if ($sessionUser) {
+    $logoutPrefillUsername = trim((string) ($sessionUser['username'] ?? $sessionUser['email'] ?? ''));
 }
 ?>
 <div class="topbar" aria-label="AJES dashboard top navigation">
@@ -98,9 +105,116 @@ if ($sessionUserId > 0) {
             <?php endif; ?>
             <span><?= esc($name ?? 'User') ?> <span class="badge"><?= esc($role) ?></span></span>
         </a>
-        <a href="<?= base_url('auth/logout') ?>" style="color: #fff; text-decoration: none; font-weight: 500;">Logout</a>
+        <button type="button" class="ajes-topbar-logout" id="ajes-logout-open">Logout</button>
     </div>
 </div>
+
+<div id="ajes-logout-modal" class="ajes-logout-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ajes-logout-title">
+    <div class="ajes-logout-modal__backdrop" data-logout-dismiss="1" tabindex="-1"></div>
+    <div class="ajes-logout-modal__card">
+        <div class="ajes-logout-modal__head">
+            <h2 id="ajes-logout-title" class="ajes-logout-modal__title">Log out?</h2>
+        </div>
+        <div class="ajes-logout-modal__body">
+            <p class="ajes-logout-modal__lead">Are you sure you want to log out?</p>
+            <p class="ajes-logout-modal__muted">If you continue, you’ll need to sign in again to use your account.</p>
+            <div class="ajes-logout-save" role="group" aria-label="Save login information">
+                <div class="ajes-logout-save__label">Save your login information on this device?</div>
+                <p class="ajes-logout-save__hint">Similar to Facebook: <strong>Save</strong> fills in your username next time. We never store your password in the browser.</p>
+                <div class="ajes-logout-save__choices">
+                    <button type="button" class="ajes-logout-choice" data-logout-save="1" id="ajes-logout-save-yes">Save</button>
+                    <button type="button" class="ajes-logout-choice is-selected" data-logout-save="0" id="ajes-logout-save-no">Don’t save</button>
+                </div>
+            </div>
+        </div>
+        <div class="ajes-logout-modal__actions">
+            <button type="button" class="ajes-logout-btn ajes-logout-btn--ghost" id="ajes-logout-cancel">Cancel</button>
+            <button type="button" class="ajes-logout-btn ajes-logout-btn--primary" id="ajes-logout-confirm">Log out</button>
+        </div>
+    </div>
+</div>
+
+<script>
+window.AJES_LOGOUT_USER = <?= json_encode($logoutPrefillUsername, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+</script>
+<script>
+(function () {
+    var openBtn = document.getElementById('ajes-logout-open');
+    var modal = document.getElementById('ajes-logout-modal');
+    if (!openBtn || !modal) return;
+
+    var cancel = document.getElementById('ajes-logout-cancel');
+    var confirmBtn = document.getElementById('ajes-logout-confirm');
+    var backdrop = modal.querySelector('[data-logout-dismiss]');
+    var choiceBtns = modal.querySelectorAll('.ajes-logout-choice');
+    var saveChoice = '0';
+    var lastFocus = null;
+
+    function setSave(v) {
+        saveChoice = v;
+        choiceBtns.forEach(function (b) {
+            var on = b.getAttribute('data-logout-save') === v;
+            b.classList.toggle('is-selected', on);
+            b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+    }
+
+    choiceBtns.forEach(function (b) {
+        b.addEventListener('click', function () {
+            setSave(b.getAttribute('data-logout-save') || '0');
+        });
+    });
+
+    function openModal() {
+        lastFocus = document.activeElement;
+        modal.hidden = false;
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('ajes-logout-modal-open');
+        setSave('0');
+        cancel.focus();
+    }
+
+    function closeModal() {
+        modal.hidden = true;
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('ajes-logout-modal-open');
+        if (lastFocus && typeof lastFocus.focus === 'function') {
+            lastFocus.focus();
+        }
+    }
+
+    openBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        openModal();
+    });
+    if (cancel) cancel.addEventListener('click', closeModal);
+    if (backdrop) backdrop.addEventListener('click', closeModal);
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function () {
+            try {
+                if (saveChoice === '1') {
+                    localStorage.setItem('ajes_save_login', '1');
+                    var u = typeof window.AJES_LOGOUT_USER === 'string' ? window.AJES_LOGOUT_USER : '';
+                    if (u) localStorage.setItem('ajes_saved_username', u);
+                } else {
+                    localStorage.setItem('ajes_save_login', '0');
+                    localStorage.removeItem('ajes_saved_username');
+                }
+            } catch (err) {}
+            window.location.href = <?= json_encode(base_url('auth/logout')) ?>;
+        });
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (modal.hidden) return;
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            closeModal();
+        }
+    });
+})();
+</script>
 <script>
 (function() {
     var bell = document.getElementById('notif-bell');

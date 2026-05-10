@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\PasswordReuseGuard;
 use App\Models\UserModel;
 use App\Models\SectionModel;
 use CodeIgniter\HTTP\RedirectResponse;
@@ -195,7 +196,12 @@ class Users extends BaseController
             if (strlen($password) < 6) {
                 return redirect()->back()->withInput()->with('error', 'Password must be at least 6 characters.');
             }
-            $data['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
+            $hist = PasswordReuseGuard::historyFromDb($user['password_history'] ?? null);
+            if (PasswordReuseGuard::isPasswordReused($password, (string) ($user['password_hash'] ?? ''), $hist)) {
+                return redirect()->back()->withInput()->with('error', 'You cannot reuse your current password or a recently used one. Please choose a different password.');
+            }
+            $data['password_history'] = PasswordReuseGuard::appendPreviousHash((string) ($user['password_hash'] ?? ''), $hist);
+            $data['password_hash']    = password_hash($password, PASSWORD_DEFAULT);
         }
         if ($role === 'TEACHER') {
             $data['section_id'] = ($sectionId !== null && $sectionId !== '') ? (int) $sectionId : null;
