@@ -1,6 +1,12 @@
 <?php
 $role = $role ?? 'ADMIN';
 $name = $name ?? 'User';
+$privilegeLabels = $privilege_labels ?? [];
+$privilegeRoleMap = $privilege_role_map ?? [];
+$selectedPrivileges = old('admin_privileges');
+if (! is_array($selectedPrivileges)) {
+    $selectedPrivileges = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -64,10 +70,39 @@ $name = $name ?? 'User';
                 <label for="role" style="color: #1b5e20;">Role</label>
                 <select id="role" name="role" required style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
                     <option value="">Select role</option>
+                    <option value="SUPER_ADMIN" <?= old('role') === 'SUPER_ADMIN' ? 'selected' : '' ?>>SUPER_ADMIN</option>
                     <option value="ADMIN" <?= old('role') === 'ADMIN' ? 'selected' : '' ?>>ADMIN</option>
+                    <option value="PRINCIPAL" <?= old('role') === 'PRINCIPAL' ? 'selected' : '' ?>>PRINCIPAL</option>
+                    <option value="VICE_PRINCIPAL" <?= old('role') === 'VICE_PRINCIPAL' ? 'selected' : '' ?>>VICE_PRINCIPAL</option>
+                    <option value="HEAD_TEACHER" <?= old('role') === 'HEAD_TEACHER' ? 'selected' : '' ?>>HEAD_TEACHER</option>
+                    <option value="ANNOUNCER" <?= old('role') === 'ANNOUNCER' ? 'selected' : '' ?>>ANNOUNCER</option>
                     <option value="TEACHER" <?= old('role') === 'TEACHER' ? 'selected' : '' ?>>TEACHER</option>
+                    <option value="GUIDANCE" <?= old('role') === 'GUIDANCE' ? 'selected' : '' ?>>GUIDANCE</option>
+                    <option value="PARENT" <?= old('role') === 'PARENT' ? 'selected' : '' ?>>PARENT</option>
                     <option value="STUDENT" <?= old('role') === 'STUDENT' ? 'selected' : '' ?>>STUDENT</option>
                 </select>
+            </div>
+            <div id="feature-privileges" style="margin-bottom: 16px; padding: 12px; border: 1px solid #c8e6c9; border-radius: 10px; background: #f8fff8;">
+                <div style="font-weight: 600; color: #1b5e20; margin-bottom: 8px;">Feature Privileges</div>
+                <small style="display:block; margin-bottom: 10px; color: #558b2f;">Choose which features this account can access. Chat is always available to all users.</small>
+                <div style="margin-bottom: 10px;">
+                    <button type="button" id="privileges-select-all" style="margin-right: 8px; padding: 6px 10px; border: 1px solid #81c784; border-radius: 6px; background: #e8f5e9; color: #1b5e20; cursor: pointer;">Select all</button>
+                    <button type="button" id="privileges-clear-all" style="padding: 6px 10px; border: 1px solid #c8e6c9; border-radius: 6px; background: #fff; color: #2e7d32; cursor: pointer;">Clear all</button>
+                </div>
+                <?php foreach ($privilegeLabels as $key => $label): ?>
+                    <?php
+                        $rolesForPrivilege = [];
+                        foreach ($privilegeRoleMap as $roleKey => $keys) {
+                            if (in_array($key, (array) $keys, true)) {
+                                $rolesForPrivilege[] = $roleKey;
+                            }
+                        }
+                    ?>
+                    <label style="display: block; margin-bottom: 6px; color: #1b5e20;">
+                        <input type="checkbox" name="admin_privileges[]" value="<?= esc($key) ?>" data-roles="<?= esc(implode(',', $rolesForPrivilege)) ?>" <?= in_array($key, $selectedPrivileges, true) ? 'checked' : '' ?>>
+                        <?= esc($label) ?>
+                    </label>
+                <?php endforeach; ?>
             </div>
             <div id="student-fields" style="display:none;">
                 <div class="form-group">
@@ -125,12 +160,33 @@ $name = $name ?? 'User';
         var roleEl = document.getElementById('role');
         var sf = document.getElementById('student-fields');
         var gradeEl = document.getElementById('grade_level');
+        var selectAllBtn = document.getElementById('privileges-select-all');
+        var clearAllBtn = document.getElementById('privileges-clear-all');
+        var privilegeChecks = document.querySelectorAll('input[name="admin_privileges[]"]');
+        var privilegeRoleMap = <?= json_encode($privilegeRoleMap, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
         function syncStudentBlock() {
             var isStudent = roleEl && roleEl.value === 'STUDENT';
             if (sf) sf.style.display = isStudent ? 'block' : 'none';
             // Hidden required fields block submit for TEACHER etc.; require grade only for STUDENT.
             if (gradeEl) gradeEl.required = !!isStudent;
+        }
+
+        function syncPrivilegesByRole() {
+            if (!roleEl) return;
+            var selectedRole = roleEl.value || '';
+            var allowed = privilegeRoleMap[selectedRole] || [];
+            privilegeChecks.forEach(function (cb) {
+                var isAllowed = allowed.indexOf(cb.value) >= 0;
+                cb.disabled = !isAllowed;
+                if (!isAllowed) {
+                    cb.checked = false;
+                }
+                var row = cb.closest('label');
+                if (row) {
+                    row.style.opacity = isAllowed ? '1' : '0.45';
+                }
+            });
         }
 
         function refreshFieldState(field) {
@@ -155,7 +211,22 @@ $name = $name ?? 'User';
             });
         }
 
-        if (roleEl) roleEl.addEventListener('change', syncStudentBlock);
+        if (roleEl) roleEl.addEventListener('change', function () {
+            syncStudentBlock();
+            syncPrivilegesByRole();
+        });
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', function () {
+                privilegeChecks.forEach(function (cb) {
+                    if (!cb.disabled) cb.checked = true;
+                });
+            });
+        }
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', function () {
+                privilegeChecks.forEach(function (cb) { cb.checked = false; });
+            });
+        }
 
         var birthdateEl = document.getElementById('birthdate');
         if (birthdateEl) {
@@ -167,6 +238,7 @@ $name = $name ?? 'User';
         }
 
         syncStudentBlock();
+        syncPrivilegesByRole();
         bindValidationStyles();
     })();
     </script>

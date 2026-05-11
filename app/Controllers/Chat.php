@@ -33,8 +33,8 @@ class Chat extends BaseController
     public function logs(): string
     {
         $role = session()->get('role');
-        if ($role !== 'ADMIN') {
-            return redirect()->to(base_url('dashboard/admin'))->with('error', 'Access denied.');
+        if (! in_array($role, ['SUPER_ADMIN', 'ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL', 'HEAD_TEACHER'], true)) {
+            return redirect()->to(base_url('chat'))->with('error', 'Access denied.');
         }
         $limit  = 500;
         $rows   = $this->messages->getAllForAdmin($limit);
@@ -577,7 +577,7 @@ class Chat extends BaseController
                 ->where('status', 'accepted')
                 ->findColumn('section_id');
             $sectionIds = array_values(array_unique(array_map('intval', $sectionIds ?? [])));
-            $staffRoles = ['TEACHER', 'GUIDANCE', 'PRINCIPAL', 'ADMIN', 'ANNOUNCER'];
+            $staffRoles = ['TEACHER', 'GUIDANCE', 'PRINCIPAL', 'VICE_PRINCIPAL', 'HEAD_TEACHER', 'ADMIN', 'SUPER_ADMIN', 'ANNOUNCER'];
 
             // Teacher can always chat with key staff roles, while students must be
             // enrolled in one of the teacher's accepted sections.

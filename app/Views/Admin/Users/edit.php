@@ -4,6 +4,16 @@ $sections = $sections ?? [];
 $role = $role ?? 'ADMIN';
 $name = $name ?? 'User';
 $is_editing_self = $is_editing_self ?? false;
+$privilegeLabels = $privilege_labels ?? [];
+$privilegeRoleMap = $privilege_role_map ?? [];
+$assignedPrivileges = $assigned_privileges ?? [];
+if (! is_array($assignedPrivileges)) {
+    $assignedPrivileges = [];
+}
+$oldPrivileges = old('admin_privileges');
+if (is_array($oldPrivileges)) {
+    $assignedPrivileges = $oldPrivileges;
+}
 $roleReadonlyStyle = $is_editing_self ? ' background: #e0e0e0; color: #666; cursor: not-allowed;' : '';
 $studentSectionLocked = (($user['role'] ?? '') === 'STUDENT' && (int) ($user['section_id'] ?? 0) > 0);
 $lockedSectionLabel = '';
@@ -60,7 +70,7 @@ if (! empty($nameParts)) {
     <div class="card">
         <div class="card-title">User #<?= esc($user['id']) ?></div>
         <?php if ($is_editing_self): ?>
-        <p style="margin-bottom: 12px; color: #795548; background: #fff3e0; padding: 10px; border-radius: 8px;">You are editing your own admin profile. Role cannot be changed.</p>
+        <p style="margin-bottom: 12px; color: #795548; background: #fff3e0; padding: 10px; border-radius: 8px;">You are editing your own profile. Role cannot be changed.</p>
         <?php endif; ?>
         <form action="<?= base_url('admin/users/update/' . $user['id']) ?>" method="post">
             <?= csrf_field() ?>
@@ -98,16 +108,42 @@ if (! empty($nameParts)) {
             <div class="form-group">
                 <label for="role" style="color: #1b5e20;">Role</label>
                 <select id="role" name="role" <?= $is_editing_self ? 'disabled' : 'required' ?> style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;<?= $roleReadonlyStyle ?>">
+                    <option value="SUPER_ADMIN" <?= ($user['role'] ?? '') === 'SUPER_ADMIN' ? 'selected' : '' ?>>SUPER_ADMIN</option>
                     <option value="ADMIN" <?= ($user['role'] ?? '') === 'ADMIN' ? 'selected' : '' ?>>ADMIN</option>
                     <option value="PRINCIPAL" <?= ($user['role'] ?? '') === 'PRINCIPAL' ? 'selected' : '' ?>>PRINCIPAL</option>
+                    <option value="VICE_PRINCIPAL" <?= ($user['role'] ?? '') === 'VICE_PRINCIPAL' ? 'selected' : '' ?>>VICE_PRINCIPAL</option>
+                    <option value="HEAD_TEACHER" <?= ($user['role'] ?? '') === 'HEAD_TEACHER' ? 'selected' : '' ?>>HEAD_TEACHER</option>
                     <option value="ANNOUNCER" <?= ($user['role'] ?? '') === 'ANNOUNCER' ? 'selected' : '' ?>>ANNOUNCER</option>
                     <option value="TEACHER" <?= ($user['role'] ?? '') === 'TEACHER' ? 'selected' : '' ?>>TEACHER</option>
                     <option value="GUIDANCE" <?= ($user['role'] ?? '') === 'GUIDANCE' ? 'selected' : '' ?>>GUIDANCE</option>
+                    <option value="PARENT" <?= ($user['role'] ?? '') === 'PARENT' ? 'selected' : '' ?>>PARENT</option>
                     <option value="STUDENT" <?= ($user['role'] ?? '') === 'STUDENT' ? 'selected' : '' ?>>STUDENT</option>
                 </select>
                 <?php if ($is_editing_self): ?>
-                <input type="hidden" name="role" value="ADMIN">
+                <input type="hidden" name="role" value="<?= esc((string) ($user['role'] ?? 'ADMIN')) ?>">
                 <?php endif; ?>
+            </div>
+            <div id="feature-privileges" style="margin-bottom: 16px; padding: 12px; border: 1px solid #c8e6c9; border-radius: 10px; background: #f8fff8;">
+                <div style="font-weight: 600; color: #1b5e20; margin-bottom: 8px;">Feature Privileges</div>
+                <small style="display:block; margin-bottom: 10px; color: #558b2f;">Choose which features this account can access. Chat is always available to all users.</small>
+                <div style="margin-bottom: 10px;">
+                    <button type="button" id="privileges-select-all" style="margin-right: 8px; padding: 6px 10px; border: 1px solid #81c784; border-radius: 6px; background: #e8f5e9; color: #1b5e20; cursor: pointer;">Select all</button>
+                    <button type="button" id="privileges-clear-all" style="padding: 6px 10px; border: 1px solid #c8e6c9; border-radius: 6px; background: #fff; color: #2e7d32; cursor: pointer;">Clear all</button>
+                </div>
+                <?php foreach ($privilegeLabels as $key => $label): ?>
+                    <?php
+                        $rolesForPrivilege = [];
+                        foreach ($privilegeRoleMap as $roleKey => $keys) {
+                            if (in_array($key, (array) $keys, true)) {
+                                $rolesForPrivilege[] = $roleKey;
+                            }
+                        }
+                    ?>
+                    <label style="display: block; margin-bottom: 6px; color: #1b5e20;">
+                        <input type="checkbox" name="admin_privileges[]" value="<?= esc($key) ?>" data-roles="<?= esc(implode(',', $rolesForPrivilege)) ?>" <?= in_array($key, $assignedPrivileges, true) ? 'checked' : '' ?>>
+                        <?= esc($label) ?>
+                    </label>
+                <?php endforeach; ?>
             </div>
             <div class="form-group" id="section-group" style="display: none;">
                 <?php if ($studentSectionLocked): ?>
@@ -177,13 +213,47 @@ if (! empty($nameParts)) {
 
     <script>
     var formEl = document.querySelector('form[action*="admin/users/update/"]');
+    var roleSelect = document.getElementById('role');
+    var selectAllBtn = document.getElementById('privileges-select-all');
+    var clearAllBtn = document.getElementById('privileges-clear-all');
+    var privilegeChecks = document.querySelectorAll('input[name="admin_privileges[]"]');
+    var privilegeRoleMap = <?= json_encode($privilegeRoleMap, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
-    document.getElementById('role').addEventListener('change', function() {
+    roleSelect.addEventListener('change', function() {
         var g = document.getElementById('section-group');
         var sf = document.getElementById('student-fields');
         g.style.display = ['TEACHER','STUDENT'].indexOf(this.value) >= 0 ? 'block' : 'none';
         sf.style.display = this.value === 'STUDENT' ? 'block' : 'none';
+        syncPrivilegesByRole();
     });
+
+    function syncPrivilegesByRole() {
+        var selectedRole = roleSelect ? roleSelect.value : '';
+        var allowed = privilegeRoleMap[selectedRole] || [];
+        privilegeChecks.forEach(function (cb) {
+            var isAllowed = allowed.indexOf(cb.value) >= 0;
+            cb.disabled = !isAllowed;
+            if (!isAllowed) {
+                cb.checked = false;
+            }
+            var row = cb.closest('label');
+            if (row) {
+                row.style.opacity = isAllowed ? '1' : '0.45';
+            }
+        });
+    }
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function () {
+            privilegeChecks.forEach(function (cb) {
+                if (!cb.disabled) cb.checked = true;
+            });
+        });
+    }
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function () {
+            privilegeChecks.forEach(function (cb) { cb.checked = false; });
+        });
+    }
 
     function refreshFieldState(field) {
         if (!field || typeof field.checkValidity !== 'function') return;
@@ -217,7 +287,8 @@ if (! empty($nameParts)) {
         birthdateEl.min = min.toISOString().split('T')[0];
     })();
 
-    document.getElementById('role').dispatchEvent(new Event('change'));
+    roleSelect.dispatchEvent(new Event('change'));
+    syncPrivilegesByRole();
     bindValidationStyles();
     </script>
 

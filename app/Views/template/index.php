@@ -1,59 +1,161 @@
 <?php
+use App\Libraries\AdminPrivilege;
+
 if (!isset($role)) {
     $role = 'STUDENT';
 }
 
 $role = strtoupper($role);
 $menuItems = [];
+$featurePrivileges = AdminPrivilege::effectiveForRole($role, session()->get('feature_privileges') ?? session()->get('admin_privileges'));
+$hasFullFeatureAccess = $featurePrivileges === [];
+$canFeature = static function (string $key) use ($hasFullFeatureAccess, $featurePrivileges): bool {
+    if ($hasFullFeatureAccess) {
+        return true;
+    }
+    return in_array($key, $featurePrivileges, true);
+};
 
 switch ($role) {
+    case 'SUPER_ADMIN':
+        $menuItems = [
+            ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'],
+        ];
+        if ($canFeature('dashboard')) {
+            array_unshift($menuItems, ['url' => 'dashboard/admin', 'label' => 'Dashboard Home', 'icon' => '📊']);
+        }
+        if ($canFeature('sections')) {
+            $menuItems[] = ['url' => 'admin/sections', 'label' => 'Sections', 'icon' => '📂'];
+        }
+        if ($canFeature('announcements')) {
+            $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
+        }
+        if ($canFeature('records')) {
+            $menuItems[] = ['url' => 'records', 'label' => 'Reports', 'icon' => '📁'];
+        }
+        if ($canFeature('chat_logs')) {
+            $menuItems[] = ['url' => 'admin/chat-logs', 'label' => 'Chat Logs', 'icon' => '📋'];
+        }
+        if ($canFeature('user_management')) {
+            $menuItems[] = ['url' => 'admin/users', 'label' => 'User Management', 'icon' => '👥'];
+        }
+        if ($canFeature('system_settings')) {
+            $menuItems[] = ['url' => 'system/settings', 'label' => 'System Settings', 'icon' => '⚙️'];
+        }
+        if ($canFeature('chatbot_management')) {
+            $menuItems[] = ['url' => 'system/chatbot', 'label' => 'Chatbot', 'icon' => '🤖'];
+        }
+        if ($canFeature('backup_restore')) {
+            $menuItems[] = ['url' => 'system/backup', 'label' => 'Backup & Restore', 'icon' => '💾'];
+        }
+        if ($canFeature('security_logs')) {
+            $menuItems[] = ['url' => 'system/security-logs', 'label' => 'Security Logs', 'icon' => '🛡️'];
+        }
+        break;
     case 'ADMIN':
         $menuItems = [
-            ['url' => 'dashboard/admin', 'label' => 'Dashboard Home', 'icon' => '📊'],
-            ['url' => 'admin/sections', 'label' => 'Sections', 'icon' => '📂'],
-            ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'],
             ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'],
-            ['url' => 'admin/chat-logs', 'label' => 'Chat Logs', 'icon' => '📋'],
-            ['url' => 'records', 'label' => 'Records', 'icon' => '📁'],
-            ['url' => 'admin/users', 'label' => 'User Management', 'icon' => '👥'],
         ];
+        if ($canFeature('dashboard')) {
+            array_unshift($menuItems, ['url' => 'dashboard/admin', 'label' => 'Dashboard Home', 'icon' => '📊']);
+        }
+        if ($canFeature('sections')) {
+            $menuItems[] = ['url' => 'admin/sections', 'label' => 'Sections', 'icon' => '📂'];
+        }
+        if ($canFeature('announcements')) {
+            $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
+        }
+        if ($canFeature('chat_logs')) {
+            $menuItems[] = ['url' => 'admin/chat-logs', 'label' => 'Chat Logs', 'icon' => '📋'];
+        }
+        if ($canFeature('records')) {
+            $menuItems[] = ['url' => 'records', 'label' => 'Records', 'icon' => '📁'];
+        }
+        if ($canFeature('user_management')) {
+            $menuItems[] = ['url' => 'admin/users', 'label' => 'User Management', 'icon' => '👥'];
+        }
         break;
     case 'STUDENT':
-        $menuItems = [
-            ['url' => 'dashboard/student', 'label' => 'Dashboard Home', 'icon' => '📊'],
-            ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'],
-            ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'],
-        ];
+        if ($canFeature('dashboard')) {
+            $menuItems[] = ['url' => 'dashboard/student', 'label' => 'Dashboard Home', 'icon' => '📊'];
+        }
+        if ($canFeature('announcements')) {
+            $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
+        }
+        $menuItems[] = ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'];
         break;
     case 'TEACHER':
-        $menuItems = [
-            ['url' => 'dashboard/teacher', 'label' => 'Dashboard Home', 'icon' => '📊'],
-            ['url' => 'announcements', 'label' => 'Create Announcement', 'icon' => '📢'],
-            ['url' => 'teacher/sections', 'label' => 'My Sections', 'icon' => '📂'],
-            ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'],
-        ];
+        if ($canFeature('dashboard')) {
+            $menuItems[] = ['url' => 'dashboard/teacher', 'label' => 'Dashboard Home', 'icon' => '📊'];
+        }
+        if ($canFeature('announcements')) {
+            $menuItems[] = ['url' => 'announcements', 'label' => 'Create Announcement', 'icon' => '📢'];
+        }
+        if ($canFeature('teacher_sections')) {
+            $menuItems[] = ['url' => 'teacher/sections', 'label' => 'My Sections', 'icon' => '📂'];
+        }
+        $menuItems[] = ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'];
         break;
     case 'PRINCIPAL':
-        $menuItems = [
-            ['url' => 'dashboard/principal', 'label' => 'Dashboard Home', 'icon' => '📊'],
-            ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'],
-            ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'],
-        ];
+        if ($canFeature('dashboard')) {
+            $menuItems[] = ['url' => 'dashboard/principal', 'label' => 'Dashboard Home', 'icon' => '📊'];
+        }
+        if ($canFeature('announcements')) {
+            $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
+        }
+        if ($canFeature('records')) {
+            $menuItems[] = ['url' => 'records', 'label' => 'Reports', 'icon' => '📁'];
+        }
+        if ($canFeature('chat_logs')) {
+            $menuItems[] = ['url' => 'admin/chat-logs', 'label' => 'Chat Monitoring', 'icon' => '📋'];
+        }
+        $menuItems[] = ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'];
+        break;
+    case 'VICE_PRINCIPAL':
+    case 'HEAD_TEACHER':
+        if ($canFeature('dashboard')) {
+            $menuItems[] = ['url' => 'dashboard/vice-principal', 'label' => 'Dashboard Home', 'icon' => '📊'];
+        }
+        if ($canFeature('announcements')) {
+            $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
+        }
+        if ($canFeature('records')) {
+            $menuItems[] = ['url' => 'records', 'label' => 'Reports', 'icon' => '📁'];
+        }
+        if ($canFeature('chat_logs')) {
+            $menuItems[] = ['url' => 'admin/chat-logs', 'label' => 'Chat Monitoring', 'icon' => '📋'];
+        }
+        $menuItems[] = ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'];
         break;
     case 'GUIDANCE':
-        $menuItems = [
-            ['url' => 'dashboard/guidance', 'label' => 'Dashboard Home', 'icon' => '📊'],
-            ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'],
-            ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'],
-            ['url' => 'records', 'label' => 'Records', 'icon' => '📁'],
-        ];
+        if ($canFeature('dashboard')) {
+            $menuItems[] = ['url' => 'dashboard/guidance', 'label' => 'Dashboard Home', 'icon' => '📊'];
+        }
+        if ($canFeature('announcements')) {
+            $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
+        }
+        $menuItems[] = ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'];
+        if ($canFeature('records')) {
+            $menuItems[] = ['url' => 'records', 'label' => 'Records', 'icon' => '📁'];
+        }
         break;
     case 'ANNOUNCER':
-        $menuItems = [
-            ['url' => 'dashboard/announcer', 'label' => 'Dashboard Home', 'icon' => '📊'],
-            ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'],
-            ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'],
-        ];
+        if ($canFeature('dashboard')) {
+            $menuItems[] = ['url' => 'dashboard/announcer', 'label' => 'Dashboard Home', 'icon' => '📊'];
+        }
+        if ($canFeature('announcements')) {
+            $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
+        }
+        $menuItems[] = ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'];
+        break;
+    case 'PARENT':
+        if ($canFeature('dashboard')) {
+            $menuItems[] = ['url' => 'dashboard/parent', 'label' => 'Dashboard Home', 'icon' => '📊'];
+        }
+        if ($canFeature('announcements')) {
+            $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
+        }
+        $menuItems[] = ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'];
         break;
     default:
         $menuItems = [

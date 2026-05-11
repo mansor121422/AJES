@@ -15,11 +15,14 @@ class Dashboard extends BaseController
         $role = session()->get('role') ?? 'GUEST';
 
         return match ($role) {
+            'SUPER_ADMIN' => $this->admin(),
             'ADMIN'      => $this->admin(),
             'PRINCIPAL'  => view('Principal/dashboard'),
+            'VICE_PRINCIPAL', 'HEAD_TEACHER' => view('Principal/dashboard'),
             'ANNOUNCER'  => view('Announcer/dashboard'),
             'TEACHER'    => $this->teacherDashboard(),
             'GUIDANCE'   => view('Guidance/dashboard'),
+            'PARENT'     => $this->student(),
             'STUDENT'    => view('Student/dashboard'),
             default      => view('Auth/login'),
         };
@@ -185,6 +188,11 @@ class Dashboard extends BaseController
     public function principal(): string
     {
         return view('Principal/dashboard');
+    }
+
+    public function vicePrincipal(): string
+    {
+        return view('VicePrincipal/dashboard');
     }
 
     public function announcer(): string
@@ -488,8 +496,13 @@ class Dashboard extends BaseController
             ->where('status !=', 'READ')
             ->countAllResults();
 
+        $sessionRole = strtoupper((string) (session()->get('role') ?? 'STUDENT'));
+        if (! in_array($sessionRole, ['STUDENT', 'PARENT'], true)) {
+            $sessionRole = 'STUDENT';
+        }
+
         $data = [
-            'role' => 'STUDENT',
+            'role' => $sessionRole,
             'name' => session()->get('name') ?? 'Student',
             'student_section' => $section,
             'announcement_count_week' => $announcementCountWeek,
@@ -499,6 +512,11 @@ class Dashboard extends BaseController
         ];
 
         return view('Student/dashboard', $data);
+    }
+
+    public function parent(): string
+    {
+        return $this->student();
     }
 }
 

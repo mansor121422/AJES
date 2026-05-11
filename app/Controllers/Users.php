@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\PasswordReuseGuard;
+use App\Libraries\AdminPrivilege;
 use App\Models\UserModel;
 use App\Models\SectionModel;
 use CodeIgniter\HTTP\RedirectResponse;
@@ -46,6 +47,8 @@ class Users extends BaseController
         $data = [
             'role' => session()->get('role') ?? 'ADMIN',
             'name' => session()->get('name') ?? 'User',
+            'privilege_labels' => AdminPrivilege::labels(),
+            'privilege_role_map' => AdminPrivilege::roleMap(),
         ];
         return view('Admin/Users/create', $data);
     }
@@ -67,6 +70,10 @@ class Users extends BaseController
 
         if ($firstName === '' || $surname === '' || $email === '' || $username === '' || $role === '') {
             return redirect()->back()->withInput()->with('error', 'First name, surname, email, username and role are required.');
+        }
+        $allowedRoles = array_keys(AdminPrivilege::roleMap());
+        if (! in_array($role, $allowedRoles, true)) {
+            return redirect()->back()->withInput()->with('error', 'Please choose a valid role.');
         }
         if (! preg_match('/^[a-zA-ZÑñ ]+$/', $firstName) || ($middleName !== '' && ! preg_match('/^[a-zA-ZÑñ ]+$/', $middleName)) || ! preg_match('/^[a-zA-ZÑñ ]+$/', $surname) || ($suffix !== '' && ! preg_match('/^[a-zA-ZÑñ. ]+$/', $suffix))) {
             return redirect()->back()->withInput()->with('error', 'First name, middle name, surname, and suffix: letters (including Ñ/ñ) and spaces only. Suffix may include dot.');
@@ -92,6 +99,11 @@ class Users extends BaseController
             'role'          => $role,
             'is_active'     => $isActive ? 1 : 0,
         ];
+        $selectedPrivileges = AdminPrivilege::normalizeForRole($role, $this->request->getPost('admin_privileges'));
+        if ($selectedPrivileges === []) {
+            return redirect()->back()->withInput()->with('error', 'Select at least one valid feature privilege for the selected role.');
+        }
+        $data['admin_privileges'] = json_encode($selectedPrivileges, JSON_UNESCAPED_SLASHES);
         if ($role === 'STUDENT') {
             $gradePick = trim((string) $this->request->getPost('grade_level'));
             if (! in_array($gradePick, ['1', '2', '3', '4', '5', '6'], true)) {
@@ -118,7 +130,7 @@ class Users extends BaseController
         }
         $currentRole = session()->get('role') ?? '';
         $currentUserId = (int) session()->get('user_id');
-        $is_editing_self = ($currentRole === 'ADMIN' && $currentUserId === (int) $id);
+        $is_editing_self = (in_array($currentRole, ['ADMIN', 'SUPER_ADMIN'], true) && $currentUserId === (int) $id);
         $sections = $this->sections->orderBy('grade_level')->orderBy('name')->findAll();
         $data = [
             'user'            => $user,
@@ -126,6 +138,9 @@ class Users extends BaseController
             'role'            => $currentRole ?: 'ADMIN',
             'name'            => session()->get('name') ?? 'User',
             'is_editing_self' => $is_editing_self,
+            'privilege_labels' => AdminPrivilege::labels(),
+            'privilege_role_map' => AdminPrivilege::roleMap(),
+            'assigned_privileges' => AdminPrivilege::normalize($user['admin_privileges'] ?? []),
         ];
         return view('Admin/Users/edit', $data);
     }
@@ -138,7 +153,7 @@ class Users extends BaseController
         }
         $currentRole = session()->get('role') ?? '';
         $currentUserId = (int) session()->get('user_id');
-        $is_editing_self = ($currentRole === 'ADMIN' && $currentUserId === $id);
+        $is_editing_self = (in_array($currentRole, ['ADMIN', 'SUPER_ADMIN'], true) && $currentUserId === $id);
 
         $firstName = trim((string) $this->request->getPost('first_name'));
         $middleName = trim((string) $this->request->getPost('middle_name'));
@@ -156,6 +171,10 @@ class Users extends BaseController
 
         if ($firstName === '' || $surname === '' || $email === '' || $username === '' || $role === '') {
             return redirect()->back()->withInput()->with('error', 'First name, surname, email, username and role are required.');
+        }
+        $allowedRoles = array_keys(AdminPrivilege::roleMap());
+        if (! in_array($role, $allowedRoles, true)) {
+            return redirect()->back()->withInput()->with('error', 'Please choose a valid role.');
         }
         if (! preg_match('/^[a-zA-ZÑñ ]+$/', $firstName) || ($middleName !== '' && ! preg_match('/^[a-zA-ZÑñ ]+$/', $middleName)) || ! preg_match('/^[a-zA-ZÑñ ]+$/', $surname) || ($suffix !== '' && ! preg_match('/^[a-zA-ZÑñ. ]+$/', $suffix))) {
             return redirect()->back()->withInput()->with('error', 'First name, middle name, surname, and suffix: letters (including Ñ/ñ) and spaces only. Suffix may include dot.');
@@ -182,6 +201,11 @@ class Users extends BaseController
             'role'      => $role,
             'is_active' => $isActive ? 1 : 0,
         ];
+        $selectedPrivileges = AdminPrivilege::normalizeForRole($role, $this->request->getPost('admin_privileges'));
+        if ($selectedPrivileges === []) {
+            return redirect()->back()->withInput()->with('error', 'Select at least one valid feature privilege for the selected role.');
+        }
+        $data['admin_privileges'] = json_encode($selectedPrivileges, JSON_UNESCAPED_SLASHES);
         if ($role === 'STUDENT') {
             $data['student_id'] = trim((string) $this->request->getPost('student_id'));
             $data['gender'] = trim((string) $this->request->getPost('gender'));
@@ -218,6 +242,10 @@ class Users extends BaseController
             $data['section_id'] = null;
         }
         $this->users->update($id, $data);
+
+        if ($currentUserId === (int) $id) {
+            session()->set('feature_privileges', AdminPrivilege::normalize($data['admin_privileges'] ?? []));
+        }
 
         if ($password !== '' && $currentUserId === (int) $id) {
             session()->destroy();

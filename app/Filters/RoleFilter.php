@@ -17,7 +17,15 @@ class RoleFilter implements FilterInterface
             return redirect()->to('/')->with('error', 'Please log in first.');
         }
 
-        if ($arguments && ! in_array($role, $arguments, true)) {
+        $role = strtoupper((string) $role);
+        $allowed = array_map(static fn ($r): string => strtoupper((string) $r), is_array($arguments) ? $arguments : []);
+
+        // SUPER_ADMIN can pass all role checks.
+        if ($role === 'SUPER_ADMIN') {
+            return null;
+        }
+
+        if ($allowed && ! in_array($role, $allowed, true)) {
             return redirect()->to('/')->with('error', 'You are not allowed to access that page.');
         }
 

@@ -19,6 +19,10 @@ $routes->post('auth/reset-password/(:segment)', 'Auth::resetPassword/$1');
 // REST API for Android / mobile (token-based; web login unchanged)
 $routes->post('api/login', 'Api\Auth::login');
 $routes->post('api/logout', 'Api\Auth::logout');
+$routes->get('api/announcements', 'Api\Announcements::index', ['filter' => 'auth']);
+$routes->post('api/announcements', 'Api\Announcements::store', ['filter' => 'auth']);
+$routes->get('api/profile', 'Api\Profile::show', ['filter' => 'auth']);
+$routes->post('api/profile', 'Api\Profile::update', ['filter' => 'auth']);
 $routes->get('api/chat/users', 'Chat::getChatUsersApi', ['filter' => 'auth']);
 $routes->post('api/chat/typing', 'Chat::setTypingApi', ['filter' => 'auth']);
 $routes->get('api/chat/typing', 'Chat::getTypingApi', ['filter' => 'auth']);
@@ -26,21 +30,23 @@ $routes->get('api/chat/typing', 'Chat::getTypingApi', ['filter' => 'auth']);
 // Dashboards (protected with filters)
 $routes->group('dashboard', ['filter' => 'auth'], static function (RouteCollection $routes): void {
     $routes->get('/', 'Dashboard::index');
-    $routes->get('admin', 'Dashboard::admin', ['filter' => 'role:ADMIN']);
-    $routes->get('principal', 'Dashboard::principal', ['filter' => 'role:PRINCIPAL']);
-    $routes->get('announcer', 'Dashboard::announcer', ['filter' => 'role:ANNOUNCER']);
-    $routes->get('teacher', 'Dashboard::teacher', ['filter' => 'role:TEACHER']);
-    $routes->get('guidance', 'Dashboard::guidance', ['filter' => 'role:GUIDANCE']);
-    $routes->get('student', 'Dashboard::student', ['filter' => 'role:STUDENT']);
+    $routes->get('admin', 'Dashboard::admin', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:dashboard']]);
+    $routes->get('principal', 'Dashboard::principal', ['filter' => ['role:PRINCIPAL', 'privilege:dashboard']]);
+    $routes->get('vice-principal', 'Dashboard::vicePrincipal', ['filter' => ['role:VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:dashboard']]);
+    $routes->get('announcer', 'Dashboard::announcer', ['filter' => ['role:ANNOUNCER', 'privilege:dashboard']]);
+    $routes->get('teacher', 'Dashboard::teacher', ['filter' => ['role:TEACHER', 'privilege:dashboard']]);
+    $routes->get('guidance', 'Dashboard::guidance', ['filter' => ['role:GUIDANCE', 'privilege:dashboard']]);
+    $routes->get('student', 'Dashboard::student', ['filter' => ['role:STUDENT', 'privilege:dashboard']]);
+    $routes->get('parent', 'Dashboard::parent', ['filter' => ['role:PARENT', 'privilege:dashboard']]);
 });
 
 // Announcements
-$routes->get('announcements', 'Announcements::index', ['filter' => 'auth']);
-$routes->get('announcements/create', 'Announcements::create', ['filter' => 'auth']);
-$routes->post('announcements/store', 'Announcements::store', ['filter' => 'auth']);
-$routes->get('announcements/edit/(:num)', 'Announcements::edit/$1', ['filter' => 'auth']);
-$routes->post('announcements/update/(:num)', 'Announcements::update/$1', ['filter' => 'auth']);
-$routes->get('announcements/delete/(:num)', 'Announcements::delete/$1', ['filter' => 'auth']);
+$routes->get('announcements', 'Announcements::index', ['filter' => ['auth', 'privilege:announcements']]);
+$routes->get('announcements/create', 'Announcements::create', ['filter' => ['auth', 'privilege:announcements']]);
+$routes->post('announcements/store', 'Announcements::store', ['filter' => ['auth', 'privilege:announcements']]);
+$routes->get('announcements/edit/(:num)', 'Announcements::edit/$1', ['filter' => ['auth', 'privilege:announcements']]);
+$routes->post('announcements/update/(:num)', 'Announcements::update/$1', ['filter' => ['auth', 'privilege:announcements']]);
+$routes->get('announcements/delete/(:num)', 'Announcements::delete/$1', ['filter' => ['auth', 'privilege:announcements']]);
 
 // Chat (all authenticated roles)
 $routes->get('chat', 'Chat::index', ['filter' => 'auth']);
@@ -63,42 +69,50 @@ $routes->post('profile', 'Profile::update', ['filter' => 'auth']);
 
 // Admin: Sections CRUD and invite teachers
 $routes->group('admin', ['filter' => 'auth'], static function (RouteCollection $routes): void {
-    $routes->get('sections', 'Sections::index', ['filter' => 'role:ADMIN']);
-    $routes->get('sections/create', 'Sections::create', ['filter' => 'role:ADMIN']);
-    $routes->post('sections/store', 'Sections::store', ['filter' => 'role:ADMIN']);
-    $routes->get('sections/edit/(:num)', 'Sections::edit/$1', ['filter' => 'role:ADMIN']);
-    $routes->post('sections/update/(:num)', 'Sections::update/$1', ['filter' => 'role:ADMIN']);
-    $routes->get('sections/delete/(:num)', 'Sections::delete/$1', ['filter' => 'role:ADMIN']);
-    $routes->get('sections/(:num)/teachers', 'Sections::sectionTeachers/$1', ['filter' => 'role:ADMIN']);
-    $routes->post('sections/invite', 'Sections::invite', ['filter' => 'role:ADMIN']);
-    $routes->post('sections/assignment/update/(:num)', 'Sections::updateTeacherAssignment/$1', ['filter' => 'role:ADMIN']);
-    $routes->get('sections/assignment/delete/(:num)', 'Sections::deleteTeacherAssignment/$1', ['filter' => 'role:ADMIN']);
-    $routes->get('users', 'Users::index', ['filter' => 'role:ADMIN']);
-    $routes->get('users/create', 'Users::create', ['filter' => 'role:ADMIN']);
-    $routes->post('users/store', 'Users::store', ['filter' => 'role:ADMIN']);
-    $routes->get('users/edit/(:num)', 'Users::edit/$1', ['filter' => 'role:ADMIN']);
-    $routes->post('users/update/(:num)', 'Users::update/$1', ['filter' => 'role:ADMIN']);
-    $routes->get('users/delete/(:num)', 'Users::delete/$1', ['filter' => 'role:ADMIN']);
-    $routes->get('users/restore/(:num)', 'Users::restore/$1', ['filter' => 'role:ADMIN']);
-    $routes->get('chat-logs', 'Chat::logs', ['filter' => 'role:ADMIN']);
+    $routes->get('sections', 'Sections::index', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
+    $routes->get('sections/create', 'Sections::create', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
+    $routes->post('sections/store', 'Sections::store', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
+    $routes->get('sections/edit/(:num)', 'Sections::edit/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
+    $routes->post('sections/update/(:num)', 'Sections::update/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
+    $routes->get('sections/delete/(:num)', 'Sections::delete/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
+    $routes->get('sections/(:num)/teachers', 'Sections::sectionTeachers/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
+    $routes->post('sections/invite', 'Sections::invite', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
+    $routes->post('sections/assignment/update/(:num)', 'Sections::updateTeacherAssignment/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
+    $routes->get('sections/assignment/delete/(:num)', 'Sections::deleteTeacherAssignment/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
+    $routes->get('users', 'Users::index', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management']]);
+    $routes->get('users/create', 'Users::create', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management']]);
+    $routes->post('users/store', 'Users::store', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management']]);
+    $routes->get('users/edit/(:num)', 'Users::edit/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management']]);
+    $routes->post('users/update/(:num)', 'Users::update/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management']]);
+    $routes->get('users/delete/(:num)', 'Users::delete/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management']]);
+    $routes->get('users/restore/(:num)', 'Users::restore/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management']]);
+    $routes->get('chat-logs', 'Chat::logs', ['filter' => ['role:ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:chat_logs']]);
 });
 
 // Teacher: accept section invite, my sections, add students
 $routes->group('teacher', ['filter' => 'auth'], static function (RouteCollection $routes): void {
-    $routes->get('sections', 'TeacherSections::index', ['filter' => 'role:TEACHER']);
-    $routes->get('sections/accept/(:num)', 'TeacherSections::accept/$1', ['filter' => 'role:TEACHER']);
-    $routes->get('sections/leave/(:num)', 'TeacherSections::removeAssignment/$1', ['filter' => 'role:TEACHER']);
-    $routes->get('sections/(:num)/schedule', 'TeacherSections::sectionSchedule/$1', ['filter' => 'role:TEACHER']);
-    $routes->get('sections/(:num)/students', 'TeacherSections::sectionStudents/$1', ['filter' => 'role:TEACHER']);
-    $routes->post('sections/add-student', 'TeacherSections::addStudent', ['filter' => 'role:TEACHER']);
+    $routes->get('sections', 'TeacherSections::index', ['filter' => ['role:TEACHER', 'privilege:teacher_sections']]);
+    $routes->get('sections/accept/(:num)', 'TeacherSections::accept/$1', ['filter' => ['role:TEACHER', 'privilege:teacher_sections']]);
+    $routes->get('sections/leave/(:num)', 'TeacherSections::removeAssignment/$1', ['filter' => ['role:TEACHER', 'privilege:teacher_sections']]);
+    $routes->get('sections/(:num)/schedule', 'TeacherSections::sectionSchedule/$1', ['filter' => ['role:TEACHER', 'privilege:teacher_sections']]);
+    $routes->get('sections/(:num)/students', 'TeacherSections::sectionStudents/$1', ['filter' => ['role:TEACHER', 'privilege:teacher_sections']]);
+    $routes->post('sections/add-student', 'TeacherSections::addStudent', ['filter' => ['role:TEACHER', 'privilege:teacher_sections']]);
 });
 
 // Records module (restricted to GUIDANCE and ADMIN for now)
 $routes->group('records', ['filter' => 'auth'], static function (RouteCollection $routes): void {
-    $routes->get('/', 'Records::index', ['filter' => 'role:GUIDANCE,ADMIN']);
-    $routes->get('create', 'Records::create', ['filter' => 'role:GUIDANCE,ADMIN']);
-    $routes->post('store', 'Records::store', ['filter' => 'role:GUIDANCE,ADMIN']);
-    $routes->get('edit/(:num)', 'Records::edit/$1', ['filter' => 'role:GUIDANCE,ADMIN']);
-    $routes->post('update/(:num)', 'Records::update/$1', ['filter' => 'role:GUIDANCE,ADMIN']);
-    $routes->get('delete/(:num)', 'Records::delete/$1', ['filter' => 'role:GUIDANCE,ADMIN']);
+    $routes->get('/', 'Records::index', ['filter' => ['role:GUIDANCE,ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:records']]);
+    $routes->get('create', 'Records::create', ['filter' => ['role:GUIDANCE,ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:records']]);
+    $routes->post('store', 'Records::store', ['filter' => ['role:GUIDANCE,ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:records']]);
+    $routes->get('edit/(:num)', 'Records::edit/$1', ['filter' => ['role:GUIDANCE,ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:records']]);
+    $routes->post('update/(:num)', 'Records::update/$1', ['filter' => ['role:GUIDANCE,ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:records']]);
+    $routes->get('delete/(:num)', 'Records::delete/$1', ['filter' => ['role:GUIDANCE,ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:records']]);
+});
+
+// Super Admin system operations
+$routes->group('system', ['filter' => ['auth', 'role:SUPER_ADMIN']], static function (RouteCollection $routes): void {
+    $routes->get('settings', 'SystemAdmin::settings', ['filter' => 'privilege:system_settings']);
+    $routes->get('chatbot', 'SystemAdmin::chatbot', ['filter' => 'privilege:chatbot_management']);
+    $routes->get('backup', 'SystemAdmin::backup', ['filter' => 'privilege:backup_restore']);
+    $routes->get('security-logs', 'SystemAdmin::securityLogs', ['filter' => 'privilege:security_logs']);
 });

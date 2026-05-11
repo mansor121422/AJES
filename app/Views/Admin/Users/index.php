@@ -1,3 +1,4 @@
+<?php use App\Libraries\AdminPrivilege; ?>
 <?php
 $users = $users ?? [];
 $show_deleted = $show_deleted ?? false;
@@ -48,21 +49,41 @@ $deleted_count = $deleted_count ?? 0;
                     <th>Username</th>
                     <th>Email</th>
                     <th>Role</th>
+                    <th>Privileges</th>
                     <th>Active</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($users)): ?>
-                    <tr><td colspan="7"><?= $show_deleted ? 'No deleted users.' : 'No users.' ?></td></tr>
+                    <tr><td colspan="8"><?= $show_deleted ? 'No deleted users.' : 'No users.' ?></td></tr>
                 <?php else: ?>
                     <?php foreach ($users as $u): ?>
+                        <?php
+                            $rawPrivileges = AdminPrivilege::normalize($u['admin_privileges'] ?? []);
+                            $privilegeLabels = AdminPrivilege::labels();
+                            $displayPrivileges = [];
+                            foreach ($rawPrivileges as $key) {
+                                if (isset($privilegeLabels[$key])) {
+                                    $displayPrivileges[] = $privilegeLabels[$key];
+                                }
+                            }
+                        ?>
                         <tr>
                             <td><?= esc($u['id']) ?></td>
                             <td><?= esc($u['name']) ?></td>
                             <td><?= esc($u['username']) ?></td>
                             <td><?= esc($u['email']) ?></td>
                             <td><span class="status-badge status-badge-approved"><?= esc($u['role']) ?></span></td>
+                            <td>
+                                <?php if (($u['role'] ?? '') !== 'ADMIN'): ?>
+                                    —
+                                <?php elseif ($displayPrivileges === []): ?>
+                                    Full access
+                                <?php else: ?>
+                                    <?= esc(implode(', ', $displayPrivileges)) ?>
+                                <?php endif; ?>
+                            </td>
                             <td><?= ! empty($u['is_active']) ? 'Yes' : 'No' ?></td>
                             <td>
                                 <?php if ($show_deleted): ?>

@@ -43,6 +43,7 @@ class UserModel extends Model
         'contact_number',
         'bio',
         'profile_photo',
+        'admin_privileges',
         'deleted_at',
     ];
 

@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\LoginLockout;
+use App\Libraries\AdminPrivilege;
 use App\Libraries\PasswordReuseGuard;
 use App\Models\UserModel;
 use CodeIgniter\HTTP\RedirectResponse;
@@ -77,6 +78,7 @@ class Auth extends BaseController
             'user_id' => $user['id'],
             'name'    => $user['name'],
             'role'    => $user['role'],
+            'feature_privileges' => AdminPrivilege::effectiveForRole((string) ($user['role'] ?? ''), $user['admin_privileges'] ?? []),
         ]);
 
         // Presence update should never break login.
@@ -90,7 +92,7 @@ class Auth extends BaseController
             log_message('error', 'Presence update failed on login for user_id=' . (int) $user['id'] . ': ' . $e->getMessage());
         }
 
-        return redirect()->to($this->redirectForRole($user['role']));
+        return redirect()->to($this->redirectForRole($user['role'], $user['admin_privileges'] ?? null));
     }
 
     public function logout(): RedirectResponse
@@ -271,14 +273,54 @@ class Auth extends BaseController
         return redirect()->to('/?password_changed=1');
     }
 
-    protected function redirectForRole(string $role): string
+    protected function redirectForRole(string $role, mixed $adminPrivileges = null): string
     {
+        $granted = AdminPrivilege::normalize($adminPrivileges);
+        if ($granted !== []) {
+            if ($role === 'ADMIN' && in_array('user_management', $granted, true)) {
+                return base_url('admin/users');
+            }
+            if (in_array('dashboard', $granted, true)) {
+                return match ($role) {
+                    'SUPER_ADMIN' => base_url('dashboard/admin'),
+                    'ADMIN'      => base_url('dashboard/admin'),
+                    'PRINCIPAL'  => base_url('dashboard/principal'),
+                    'VICE_PRINCIPAL', 'HEAD_TEACHER' => base_url('dashboard/vice-principal'),
+                    'ANNOUNCER'  => base_url('dashboard/announcer'),
+                    'TEACHER'    => base_url('dashboard/teacher'),
+                    'GUIDANCE'   => base_url('dashboard/guidance'),
+                    'PARENT'     => base_url('dashboard/parent'),
+                    'STUDENT'    => base_url('dashboard/student'),
+                    default      => base_url('dashboard'),
+                };
+            }
+            if ($role === 'ADMIN' && in_array('sections', $granted, true)) {
+                return base_url('admin/sections');
+            }
+            if ($role === 'TEACHER' && in_array('teacher_sections', $granted, true)) {
+                return base_url('teacher/sections');
+            }
+            if (in_array('announcements', $granted, true)) {
+                return base_url('announcements');
+            }
+            if (in_array('records', $granted, true)) {
+                return base_url('records');
+            }
+            if ($role === 'ADMIN' && in_array('chat_logs', $granted, true)) {
+                return base_url('admin/chat-logs');
+            }
+            return base_url('chat');
+        }
+
         return match ($role) {
+            'SUPER_ADMIN' => base_url('dashboard/admin'),
             'ADMIN'      => base_url('dashboard/admin'),
             'PRINCIPAL'  => base_url('dashboard/principal'),
+            'VICE_PRINCIPAL', 'HEAD_TEACHER' => base_url('dashboard/vice-principal'),
             'ANNOUNCER'  => base_url('dashboard/announcer'),
             'TEACHER'    => base_url('dashboard/teacher'),
             'GUIDANCE'   => base_url('dashboard/guidance'),
+            'PARENT'     => base_url('dashboard/parent'),
             'STUDENT'    => base_url('dashboard/student'),
             default      => base_url('dashboard'),
         };

@@ -161,7 +161,7 @@ class Announcements extends BaseController
 
             $sectionId = $chosenSectionId;
             $audienceType = 'section';
-        } elseif (in_array($role, ['PRINCIPAL', 'ANNOUNCER', 'ADMIN'], true)) {
+        } elseif (in_array($role, ['PRINCIPAL', 'VICE_PRINCIPAL', 'HEAD_TEACHER', 'ANNOUNCER', 'ADMIN', 'SUPER_ADMIN'], true)) {
             $audienceType = strtolower(trim((string) $this->request->getPost('audience_type')));
             $allowed = ['school-wide', 'teachers-only', 'staff-only', 'students-only'];
             if (! in_array($audienceType, $allowed, true)) {
@@ -269,12 +269,12 @@ class Announcements extends BaseController
     private function canManageAnnouncements(): bool
     {
         $role = session()->get('role');
-        return in_array($role, ['ADMIN', 'PRINCIPAL', 'ANNOUNCER', 'TEACHER'], true);
+        return in_array($role, ['SUPER_ADMIN', 'ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL', 'HEAD_TEACHER', 'ANNOUNCER', 'TEACHER'], true);
     }
 
     private function audienceOptionsForRole(string $role): array
     {
-        if (! in_array($role, ['PRINCIPAL', 'ANNOUNCER', 'ADMIN'], true)) {
+        if (! in_array($role, ['PRINCIPAL', 'VICE_PRINCIPAL', 'HEAD_TEACHER', 'ANNOUNCER', 'ADMIN', 'SUPER_ADMIN'], true)) {
             return [];
         }
 
@@ -312,7 +312,7 @@ class Announcements extends BaseController
         }
 
         if ($audienceType === 'staff-only') {
-            return $fetchByRoles(['TEACHER', 'GUIDANCE', 'PRINCIPAL', 'ANNOUNCER', 'ADMIN']);
+            return $fetchByRoles(['TEACHER', 'GUIDANCE', 'PRINCIPAL', 'VICE_PRINCIPAL', 'HEAD_TEACHER', 'ANNOUNCER', 'ADMIN', 'SUPER_ADMIN']);
         }
 
         if ($audienceType === 'students-only') {

@@ -4,6 +4,7 @@ namespace App\Filters;
 
 use App\Models\ApiTokenModel;
 use App\Models\UserModel;
+use App\Libraries\AdminPrivilege;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -55,6 +56,7 @@ class AuthFilter implements FilterInterface
                         'user_id' => (int) $user['id'],
                         'name'    => $user['name'] ?? $user['username'] ?? 'User',
                         'role'    => $user['role'] ?? 'STUDENT',
+                        'feature_privileges' => AdminPrivilege::effectiveForRole((string) ($user['role'] ?? ''), $user['admin_privileges'] ?? []),
                     ]);
                     $this->touchPresence((int) $user['id']);
                     return null;
@@ -62,8 +64,11 @@ class AuthFilter implements FilterInterface
             }
         }
 
-        // API request (JSON or Bearer expected) → 401
-        if ($token !== '' || str_contains($request->getHeaderLine('Accept'), 'application/json')) {
+        // API routes or JSON/Bearer clients → never 302 to the login page (mobile would show "HTTP 302").
+        $path = $request->getUri()->getPath();
+        $isApiPath = str_contains($path, '/api/');
+
+        if ($token !== '' || str_contains($request->getHeaderLine('Accept'), 'application/json') || $isApiPath) {
             return service('response')
                 ->setStatusCode(401)
                 ->setJSON([
