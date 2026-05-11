@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Libraries\DataEncryptor;
 use CodeIgniter\Model;
 
 class UserModel extends Model
@@ -44,8 +45,15 @@ class UserModel extends Model
         'bio',
         'profile_photo',
         'admin_privileges',
+        'mfa_enabled',
+        'mfa_code',
+        'mfa_expires_at',
         'deleted_at',
     ];
+
+    protected $beforeInsert = ['encryptSensitive'];
+    protected $beforeUpdate = ['encryptSensitive'];
+    protected $afterFind    = ['decryptSensitive'];
 
     /** Full name: Surname, First name MI Suffix (or name if not set). */
     public static function fullName(array $user): string
@@ -73,6 +81,40 @@ class UserModel extends Model
             ->groupEnd()
             ->where('is_active', 1)
             ->first() ?: null;
+    }
+
+    // ------------------------------------------------------------------
+    // Model-event callbacks for transparent column-level encryption
+    // ------------------------------------------------------------------
+
+    protected function encryptSensitive(array $eventData): array
+    {
+        if (isset($eventData['data']) && is_array($eventData['data'])) {
+            $eventData['data'] = DataEncryptor::encryptFields(
+                $eventData['data'],
+                DataEncryptor::sensitiveUserFields()
+            );
+        }
+
+        return $eventData;
+    }
+
+    protected function decryptSensitive(array $eventData): array
+    {
+        $fields = DataEncryptor::sensitiveUserFields();
+
+        if (isset($eventData['data']) && is_array($eventData['data'])) {
+            if (isset($eventData['data'][0]) && is_array($eventData['data'][0])) {
+                foreach ($eventData['data'] as &$row) {
+                    $row = DataEncryptor::decryptFields($row, $fields);
+                }
+                unset($row);
+            } else {
+                $eventData['data'] = DataEncryptor::decryptFields($eventData['data'], $fields);
+            }
+        }
+
+        return $eventData;
     }
 }
 

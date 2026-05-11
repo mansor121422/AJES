@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Libraries\PasswordReuseGuard;
 use App\Libraries\AdminPrivilege;
+use App\Libraries\AuditLogger;
+use App\Libraries\SecureHash;
 use App\Models\UserModel;
 use App\Models\SectionModel;
 use CodeIgniter\HTTP\RedirectResponse;
@@ -95,9 +97,10 @@ class Users extends BaseController
             'name'          => $name,
             'email'         => $email,
             'username'      => $username,
-            'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+            'password_hash' => SecureHash::make($password),
             'role'          => $role,
             'is_active'     => $isActive ? 1 : 0,
+            'mfa_enabled'   => (int) $this->request->getPost('mfa_enabled'),
         ];
         $selectedPrivileges = AdminPrivilege::normalizeForRole($role, $this->request->getPost('admin_privileges'));
         if ($selectedPrivileges === []) {
@@ -119,6 +122,8 @@ class Users extends BaseController
             $data['guardian_contact'] = trim((string) $this->request->getPost('guardian_contact'));
         }
         $this->users->insert($data);
+        $newId = $this->users->getInsertID();
+        AuditLogger::userCreated((int) $newId, $name, $role);
         return redirect()->to(base_url('admin/users'))->with('success', 'User created.');
     }
 
@@ -195,11 +200,12 @@ class Users extends BaseController
         }
 
         $data = [
-            'name'      => $name,
-            'email'     => $email,
-            'username'  => $username,
-            'role'      => $role,
-            'is_active' => $isActive ? 1 : 0,
+            'name'        => $name,
+            'email'       => $email,
+            'username'    => $username,
+            'role'        => $role,
+            'is_active'   => $isActive ? 1 : 0,
+            'mfa_enabled' => (int) $this->request->getPost('mfa_enabled'),
         ];
         $selectedPrivileges = AdminPrivilege::normalizeForRole($role, $this->request->getPost('admin_privileges'));
         if ($selectedPrivileges === []) {
@@ -225,7 +231,7 @@ class Users extends BaseController
                 return redirect()->back()->withInput()->with('error', 'You cannot reuse your current password or a recently used one. Please choose a different password.');
             }
             $data['password_history'] = PasswordReuseGuard::appendPreviousHash((string) ($user['password_hash'] ?? ''), $hist);
-            $data['password_hash']    = password_hash($password, PASSWORD_DEFAULT);
+            $data['password_hash']    = SecureHash::make($password);
         }
         if ($role === 'TEACHER') {
             $data['section_id'] = ($sectionId !== null && $sectionId !== '') ? (int) $sectionId : null;
@@ -242,6 +248,12 @@ class Users extends BaseController
             $data['section_id'] = null;
         }
         $this->users->update($id, $data);
+
+        $oldRole = $user['role'] ?? '';
+        if ($oldRole !== '' && $oldRole !== $role) {
+            AuditLogger::roleChanged($id, $oldRole, $role);
+        }
+        AuditLogger::userUpdated($id, 'Updated user "' . $name . '" (role: ' . $role . ').');
 
         if ($currentUserId === (int) $id) {
             session()->set('feature_privileges', AdminPrivilege::normalize($data['admin_privileges'] ?? []));
@@ -286,6 +298,7 @@ class Users extends BaseController
         }
         $this->users->update($id, ['is_active' => 0]);
         $this->users->delete($id);
+        AuditLogger::userDeleted($id, $user['name'] ?? $user['username'] ?? '');
         return redirect()->to(base_url('admin/users'))->with('success', 'User archived. You can restore them from Deleted users.');
     }
 
@@ -296,6 +309,7 @@ class Users extends BaseController
             return redirect()->to(base_url('admin/users'))->with('error', 'User not found or not deleted.');
         }
         $this->users->update($id, ['deleted_at' => null, 'is_active' => 1]);
+        AuditLogger::userRestored($id, $user['name'] ?? $user['username'] ?? '');
         return redirect()->to(base_url('admin/users'))->with('success', 'User restored.');
     }
 }

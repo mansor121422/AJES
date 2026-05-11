@@ -10,3 +10,8 @@ writable/uploads/*
 !writable/logs/index.html
 !writable/session/index.html
 !writable/uploads/index.html
+
+# Database dumps (Lab 4 scripts — do not commit backups)
+writable/backups/*.sql
+writable/backups/*.sql.gz
+!writable/backups/index.html

@@ -22,11 +22,15 @@ class PrivilegeFilter implements FilterInterface
             return null;
         }
 
+        // Support privilege:feature:action format (e.g. privilege:user_management:delete)
+        $action = is_array($arguments) && isset($arguments[1]) ? (string) $arguments[1] : '';
+        $check  = $action !== '' ? $required . ':' . $action : $required;
+
         $assigned = $session->get('feature_privileges');
         if ($assigned === null) {
             $assigned = $session->get('admin_privileges');
         }
-        if (AdminPrivilege::canAccess($role, $assigned, $required)) {
+        if (AdminPrivilege::canAccess($role, $assigned, $check)) {
             return null;
         }
 

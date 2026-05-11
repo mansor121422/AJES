@@ -16,6 +16,14 @@ $routes->post('auth/forgot-password', 'Auth::sendResetLink');
 $routes->get('auth/reset-password/(:segment)', 'Auth::showResetForm/$1');
 $routes->post('auth/reset-password/(:segment)', 'Auth::resetPassword/$1');
 
+// MFA (Two-Factor Authentication)
+$routes->get('auth/mfa', 'Auth::showMfa');
+$routes->post('auth/mfa/verify', 'Auth::verifyMfa');
+$routes->get('auth/mfa/resend', 'Auth::resendMfa');
+
+// JWT API login (stateless token-based auth)
+$routes->post('auth/api-login', 'Auth::apiLogin');
+
 // REST API for Android / mobile (token-based; web login unchanged)
 $routes->post('api/login', 'Api\Auth::login');
 $routes->post('api/logout', 'Api\Auth::logout');
@@ -37,7 +45,6 @@ $routes->group('dashboard', ['filter' => 'auth'], static function (RouteCollecti
     $routes->get('teacher', 'Dashboard::teacher', ['filter' => ['role:TEACHER', 'privilege:dashboard']]);
     $routes->get('guidance', 'Dashboard::guidance', ['filter' => ['role:GUIDANCE', 'privilege:dashboard']]);
     $routes->get('student', 'Dashboard::student', ['filter' => ['role:STUDENT', 'privilege:dashboard']]);
-    $routes->get('parent', 'Dashboard::parent', ['filter' => ['role:PARENT', 'privilege:dashboard']]);
 });
 
 // Announcements
@@ -54,6 +61,7 @@ $routes->post('chat/send', 'Chat::send', ['filter' => 'auth']);
 $routes->post('chat/unsend', 'Chat::unsend', ['filter' => 'auth']);
 $routes->get('chat/messages', 'Chat::getMessages', ['filter' => 'auth']);
 $routes->get('chat/media/(:segment)', 'Chat::media/$1', ['filter' => 'auth']);
+$routes->get('chatlogs', 'Chat::logs', ['filter' => ['auth', 'role:ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:chat_logs']]);
 
 // Notifications (bell – count, list, mark read)
 $routes->get('notifications', 'Notifications::index', ['filter' => 'auth']);
@@ -79,13 +87,14 @@ $routes->group('admin', ['filter' => 'auth'], static function (RouteCollection $
     $routes->post('sections/invite', 'Sections::invite', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
     $routes->post('sections/assignment/update/(:num)', 'Sections::updateTeacherAssignment/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
     $routes->get('sections/assignment/delete/(:num)', 'Sections::deleteTeacherAssignment/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
-    $routes->get('users', 'Users::index', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management']]);
-    $routes->get('users/create', 'Users::create', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management']]);
-    $routes->post('users/store', 'Users::store', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management']]);
-    $routes->get('users/edit/(:num)', 'Users::edit/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management']]);
-    $routes->post('users/update/(:num)', 'Users::update/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management']]);
-    $routes->get('users/delete/(:num)', 'Users::delete/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management']]);
-    $routes->get('users/restore/(:num)', 'Users::restore/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management']]);
+    $routes->get('users', 'Users::index', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management,read']]);
+    $routes->get('users/create', 'Users::create', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management,create']]);
+    $routes->post('users/store', 'Users::store', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management,create']]);
+    $routes->get('users/edit/(:num)', 'Users::edit/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management,update']]);
+    $routes->post('users/update/(:num)', 'Users::update/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management,update']]);
+    $routes->get('users/delete/(:num)', 'Users::delete/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management,delete']]);
+    $routes->get('users/restore/(:num)', 'Users::restore/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management,update']]);
+    // Backward-compatible legacy URL.
     $routes->get('chat-logs', 'Chat::logs', ['filter' => ['role:ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:chat_logs']]);
 });
 
@@ -109,8 +118,9 @@ $routes->group('records', ['filter' => 'auth'], static function (RouteCollection
     $routes->get('delete/(:num)', 'Records::delete/$1', ['filter' => ['role:GUIDANCE,ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:records']]);
 });
 
-// Super Admin system operations
-$routes->group('system', ['filter' => ['auth', 'role:SUPER_ADMIN']], static function (RouteCollection $routes): void {
+// Technical/system operations (Admin and Super Admin)
+// Use "sysadmin" prefix to avoid collision with project "/system" directory.
+$routes->group('sysadmin', ['filter' => ['auth', 'role:ADMIN,SUPER_ADMIN']], static function (RouteCollection $routes): void {
     $routes->get('settings', 'SystemAdmin::settings', ['filter' => 'privilege:system_settings']);
     $routes->get('chatbot', 'SystemAdmin::chatbot', ['filter' => 'privilege:chatbot_management']);
     $routes->get('backup', 'SystemAdmin::backup', ['filter' => 'privilege:backup_restore']);

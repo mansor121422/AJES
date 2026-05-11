@@ -3,13 +3,17 @@ $role = $role ?? 'ADMIN';
 $name = $name ?? 'Administrator';
 $logs = $logs ?? [];
 $users = $users ?? [];
+$currentPage = (int) ($current_page ?? 1);
+$totalPages = (int) ($total_pages ?? 1);
+$totalRows = (int) ($total_rows ?? 0);
+$perPage = (int) ($per_page ?? 10);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Logs - AJES Admin</title>
+    <title>Chat Logs - AJES</title>
     <?php include(APPPATH . 'Views/template.php'); ?>
     <style>
         .chat-logs-table { width: 100%; }
@@ -31,6 +35,10 @@ $users = $users ?? [];
 
     <div class="card">
         <div class="card-title">All messages (newest first)</div>
+        <p style="margin: 6px 0 12px; color: #558b2f; font-size: 0.9rem;">
+            Showing <?= esc((string) count($logs)) ?> of <?= esc((string) $totalRows) ?> messages
+            (Page <?= esc((string) $currentPage) ?> of <?= esc((string) $totalPages) ?>, <?= esc((string) $perPage) ?> per page).
+        </p>
         <table class="chat-logs-table recent-table">
             <thead>
                 <tr>
@@ -77,6 +85,27 @@ $users = $users ?? [];
                 <?php endif; ?>
             </tbody>
         </table>
+        <?php if ($totalPages > 1): ?>
+            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:12px;">
+                <?php if ($currentPage > 1): ?>
+                    <a href="<?= base_url('chatlogs?page=' . ($currentPage - 1)) ?>" class="link-details">Previous</a>
+                <?php endif; ?>
+                <?php
+                $start = max(1, $currentPage - 2);
+                $end = min($totalPages, $currentPage + 2);
+                for ($p = $start; $p <= $end; $p++):
+                ?>
+                    <?php if ($p === $currentPage): ?>
+                        <span style="padding:4px 8px; border-radius:6px; background:#2e7d32; color:#fff; font-weight:600;"><?= esc((string) $p) ?></span>
+                    <?php else: ?>
+                        <a href="<?= base_url('chatlogs?page=' . $p) ?>" class="link-details"><?= esc((string) $p) ?></a>
+                    <?php endif; ?>
+                <?php endfor; ?>
+                <?php if ($currentPage < $totalPages): ?>
+                    <a href="<?= base_url('chatlogs?page=' . ($currentPage + 1)) ?>" class="link-details">Next</a>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
     </div>
 </body>
 </html>

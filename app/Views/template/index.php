@@ -34,22 +34,22 @@ switch ($role) {
             $menuItems[] = ['url' => 'records', 'label' => 'Reports', 'icon' => '📁'];
         }
         if ($canFeature('chat_logs')) {
-            $menuItems[] = ['url' => 'admin/chat-logs', 'label' => 'Chat Logs', 'icon' => '📋'];
+            $menuItems[] = ['url' => 'chatlogs', 'label' => 'Chat Logs', 'icon' => '📋'];
         }
         if ($canFeature('user_management')) {
             $menuItems[] = ['url' => 'admin/users', 'label' => 'User Management', 'icon' => '👥'];
         }
         if ($canFeature('system_settings')) {
-            $menuItems[] = ['url' => 'system/settings', 'label' => 'System Settings', 'icon' => '⚙️'];
+            $menuItems[] = ['url' => 'sysadmin/settings', 'label' => 'System Settings', 'icon' => '⚙️'];
         }
         if ($canFeature('chatbot_management')) {
-            $menuItems[] = ['url' => 'system/chatbot', 'label' => 'Chatbot', 'icon' => '🤖'];
+            $menuItems[] = ['url' => 'sysadmin/chatbot', 'label' => 'Chatbot', 'icon' => '🤖'];
         }
         if ($canFeature('backup_restore')) {
-            $menuItems[] = ['url' => 'system/backup', 'label' => 'Backup & Restore', 'icon' => '💾'];
+            $menuItems[] = ['url' => 'sysadmin/backup', 'label' => 'Backup & Restore', 'icon' => '💾'];
         }
         if ($canFeature('security_logs')) {
-            $menuItems[] = ['url' => 'system/security-logs', 'label' => 'Security Logs', 'icon' => '🛡️'];
+            $menuItems[] = ['url' => 'sysadmin/security-logs', 'label' => 'Security Logs', 'icon' => '🛡️'];
         }
         break;
     case 'ADMIN':
@@ -66,13 +66,25 @@ switch ($role) {
             $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
         }
         if ($canFeature('chat_logs')) {
-            $menuItems[] = ['url' => 'admin/chat-logs', 'label' => 'Chat Logs', 'icon' => '📋'];
+            $menuItems[] = ['url' => 'chatlogs', 'label' => 'Chat Logs', 'icon' => '📋'];
         }
         if ($canFeature('records')) {
             $menuItems[] = ['url' => 'records', 'label' => 'Records', 'icon' => '📁'];
         }
         if ($canFeature('user_management')) {
             $menuItems[] = ['url' => 'admin/users', 'label' => 'User Management', 'icon' => '👥'];
+        }
+        if ($canFeature('system_settings')) {
+            $menuItems[] = ['url' => 'sysadmin/settings', 'label' => 'System Settings', 'icon' => '⚙️'];
+        }
+        if ($canFeature('chatbot_management')) {
+            $menuItems[] = ['url' => 'sysadmin/chatbot', 'label' => 'Chatbot', 'icon' => '🤖'];
+        }
+        if ($canFeature('backup_restore')) {
+            $menuItems[] = ['url' => 'sysadmin/backup', 'label' => 'Backup & Restore', 'icon' => '💾'];
+        }
+        if ($canFeature('security_logs')) {
+            $menuItems[] = ['url' => 'sysadmin/security-logs', 'label' => 'Security Logs', 'icon' => '🛡️'];
         }
         break;
     case 'STUDENT':
@@ -107,7 +119,7 @@ switch ($role) {
             $menuItems[] = ['url' => 'records', 'label' => 'Reports', 'icon' => '📁'];
         }
         if ($canFeature('chat_logs')) {
-            $menuItems[] = ['url' => 'admin/chat-logs', 'label' => 'Chat Monitoring', 'icon' => '📋'];
+            $menuItems[] = ['url' => 'chatlogs', 'label' => 'Chat Monitoring', 'icon' => '📋'];
         }
         $menuItems[] = ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'];
         break;
@@ -123,7 +135,7 @@ switch ($role) {
             $menuItems[] = ['url' => 'records', 'label' => 'Reports', 'icon' => '📁'];
         }
         if ($canFeature('chat_logs')) {
-            $menuItems[] = ['url' => 'admin/chat-logs', 'label' => 'Chat Monitoring', 'icon' => '📋'];
+            $menuItems[] = ['url' => 'chatlogs', 'label' => 'Chat Monitoring', 'icon' => '📋'];
         }
         $menuItems[] = ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'];
         break;
@@ -142,15 +154,6 @@ switch ($role) {
     case 'ANNOUNCER':
         if ($canFeature('dashboard')) {
             $menuItems[] = ['url' => 'dashboard/announcer', 'label' => 'Dashboard Home', 'icon' => '📊'];
-        }
-        if ($canFeature('announcements')) {
-            $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
-        }
-        $menuItems[] = ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'];
-        break;
-    case 'PARENT':
-        if ($canFeature('dashboard')) {
-            $menuItems[] = ['url' => 'dashboard/parent', 'label' => 'Dashboard Home', 'icon' => '📊'];
         }
         if ($canFeature('announcements')) {
             $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
@@ -419,8 +422,19 @@ window.AJES_LOGOUT_USER = <?= json_encode($logoutPrefillUsername, JSON_HEX_TAG |
             <span>AJES CRIER</span>
         </div>
         <nav class="menu">
-            <?php foreach ($menuItems as $item):
-                $isActive = (strpos($currentUri, $item['url']) === 0);
+            <?php
+            $isMenuActive = static function (string $current, string $menuUrl): bool {
+                $current = trim($current, '/');
+                $menuUrl = trim($menuUrl, '/');
+
+                if ($current === $menuUrl) {
+                    return true;
+                }
+
+                return $menuUrl !== '' && strpos($current, $menuUrl . '/') === 0;
+            };
+            foreach ($menuItems as $item):
+                $isActive = $isMenuActive($currentUri, (string) ($item['url'] ?? ''));
             ?>
                 <a href="<?= base_url($item['url']) ?>" class="<?= $isActive ? 'active' : '' ?>">
                     <span class="menu-icon"><?= $item['icon'] ?? '•' ?></span>
@@ -428,9 +442,6 @@ window.AJES_LOGOUT_USER = <?= json_encode($logoutPrefillUsername, JSON_HEX_TAG |
                 </a>
             <?php endforeach; ?>
         </nav>
-        <div class="sidebar-footer">
-            <a href="<?= base_url('profile') ?>">⚙️ Profile Settings</a>
-        </div>
     </aside>
     <main class="content">
 <script>

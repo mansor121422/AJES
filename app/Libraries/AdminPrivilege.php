@@ -5,13 +5,20 @@ namespace App\Libraries;
 class AdminPrivilege
 {
     /**
-     * Legacy full ADMIN set before new system features were introduced.
+     * Historical full ADMIN set before system modules were introduced.
      *
      * @return list<string>
      */
-    private static function legacyAdminFullSet(): array
+    private static function historicalAdminBaseSet(): array
     {
-        return ['dashboard', 'sections', 'announcements', 'records', 'user_management', 'chat_logs'];
+        return [
+            'dashboard',
+            'sections',
+            'announcements',
+            'records',
+            'user_management',
+            'chat_logs',
+        ];
     }
 
     /**
@@ -21,14 +28,14 @@ class AdminPrivilege
     {
         return [
             'SUPER_ADMIN' => array_keys(self::labels()),
-            'ADMIN' => ['dashboard', 'sections', 'announcements', 'records', 'user_management', 'chat_logs'],
-            'PRINCIPAL' => ['dashboard', 'announcements'],
+            // ADMIN is the technical/system administrator with full feature scope.
+            'ADMIN' => array_keys(self::labels()),
+            'PRINCIPAL' => ['dashboard', 'announcements', 'records', 'chat_logs'],
             'VICE_PRINCIPAL' => ['dashboard', 'announcements', 'records', 'chat_logs'],
             'HEAD_TEACHER' => ['dashboard', 'announcements', 'records', 'chat_logs'],
             'ANNOUNCER' => ['dashboard', 'announcements'],
             'TEACHER' => ['dashboard', 'announcements', 'teacher_sections'],
             'GUIDANCE' => ['dashboard', 'announcements', 'records'],
-            'PARENT' => ['dashboard', 'announcements'],
             'STUDENT' => ['dashboard', 'announcements'],
         ];
     }
@@ -114,22 +121,78 @@ class AdminPrivilege
         return array_values(array_filter($clean, static fn (string $key): bool => in_array($key, $allowed, true)));
     }
 
+    /**
+     * CRUD actions that can be assigned per feature.
+     */
+    public static function crudActions(): array
+    {
+        return ['read', 'create', 'update', 'delete'];
+    }
+
+    /**
+     * Features that support CRUD-level permission granularity.
+     */
+    public static function crudFeatures(): array
+    {
+        return ['user_management', 'sections', 'records', 'announcements'];
+    }
+
+    /**
+     * Check if a role/user can access a feature, optionally at a specific CRUD action level.
+     *
+     * Usage:
+     *   canAccess('ADMIN', $privs, 'user_management')          — feature-level check
+     *   canAccess('ADMIN', $privs, 'user_management:delete')    — action-level check
+     */
     public static function canAccess(string $role, mixed $assignedPrivileges, string $requiredPrivilege): bool
     {
+        $normalizedRole = strtoupper(trim($role));
         $required = trim($requiredPrivilege);
         if ($required === '') {
             return true;
         }
 
-        $granted = self::effectiveForRole($role, $assignedPrivileges);
+        $feature = $required;
+        $action  = '';
+        if (str_contains($required, ':')) {
+            [$feature, $action] = explode(':', $required, 2);
+        }
 
-        // Backward compatibility: existing users with empty privilege list
-        // keep full access until they are explicitly configured.
+        $granted = self::effectiveForRole($normalizedRole, $assignedPrivileges);
+
         if ($granted === []) {
+            return in_array($normalizedRole, ['ADMIN', 'SUPER_ADMIN'], true);
+        }
+
+        if (! in_array($feature, $granted, true)) {
+            return false;
+        }
+
+        // If no specific action is requested, feature-level access is enough.
+        if ($action === '') {
             return true;
         }
 
-        return in_array($required, $granted, true);
+        // ADMIN/SUPER_ADMIN: all CRUD actions are implicitly granted.
+        if (in_array($normalizedRole, ['ADMIN', 'SUPER_ADMIN'], true)) {
+            return true;
+        }
+
+        // Check for explicit action grant (e.g. "user_management:delete" in privileges).
+        if (in_array($feature . ':' . $action, $granted, true)) {
+            return true;
+        }
+
+        // If no action-level entries exist for this feature, the feature grant implies all actions.
+        $hasAnyAction = false;
+        foreach ($granted as $g) {
+            if (str_starts_with($g, $feature . ':')) {
+                $hasAnyAction = true;
+                break;
+            }
+        }
+
+        return ! $hasAnyAction;
     }
 
     /**
@@ -145,13 +208,19 @@ class AdminPrivilege
         $granted = self::normalize($assignedPrivileges);
 
         if ($granted === []) {
-            return [];
+            // Backward compatibility:
+            // - ADMIN/SUPER_ADMIN with empty stored privileges => full access marker ([]).
+            // - Other roles with empty stored privileges => fall back to role default privileges.
+            if (in_array($normalizedRole, ['ADMIN', 'SUPER_ADMIN'], true)) {
+                return [];
+            }
+            return self::allowedForRole($normalizedRole);
         }
 
         if (in_array($normalizedRole, ['ADMIN', 'SUPER_ADMIN'], true)) {
-            $legacySet = self::legacyAdminFullSet();
-            $isLegacyFullAdmin = count(array_diff($legacySet, $granted)) === 0;
-            if ($isLegacyFullAdmin) {
+            $historicalSet = self::historicalAdminBaseSet();
+            $isHistoricalFullAdmin = count(array_diff($historicalSet, $granted)) === 0;
+            if ($isHistoricalFullAdmin) {
                 $granted = array_values(array_unique(array_merge($granted, self::allowedForRole($normalizedRole))));
             }
         }

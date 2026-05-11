@@ -111,15 +111,6 @@ class UserSeeder extends Seeder
                 'admin_privileges' => $allAdminPrivileges,
                 'is_active'     => 1,
             ],
-            [
-                'name'          => 'Sample Parent',
-                'email'         => 'parent1@ajes.local',
-                'username'      => 'parent1',
-                'password_hash' => $password,
-                'role'          => 'PARENT',
-                'admin_privileges' => $allAdminPrivileges,
-                'is_active'     => 1,
-            ],
         ];
 
         foreach ($users as $user) {

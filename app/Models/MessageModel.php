@@ -82,11 +82,16 @@ class MessageModel extends Model
      * Get all messages for admin chat logs (includes soft-deleted / unsent for everyone).
      * Ordered newest first.
      */
-    public function getAllForAdmin(int $limit = 500): array
+    public function getAllForAdmin(int $limit = 500, int $offset = 0): array
     {
         return $this->withDeleted()
             ->orderBy('created_at', 'DESC')
-            ->findAll($limit);
+            ->findAll($limit, $offset);
+    }
+
+    public function countAllForAdmin(): int
+    {
+        return $this->withDeleted()->countAllResults();
     }
 
     /**

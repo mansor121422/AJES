@@ -22,11 +22,11 @@ This document checks your AJES system against the **Laboratory Exercise 4** requ
 
 | Requirement | Status | Where in system |
 |-------------|--------|------------------|
-| RBAC functionality | ✅ Done | `app/Filters/RoleFilter.php` — checks session role, blocks unauthorized access |
-| Role hierarchies | ✅ Done | Roles: ADMIN, PRINCIPAL, ANNOUNCER, TEACHER, GUIDANCE, STUDENT (different dashboards and permissions) |
-| Assign permissions by role | ✅ Done | Admin: users, sections, records; Teacher: teacher sections, announcements; Guidance+Admin: records; etc. |
-| Secure endpoints | ✅ Done | Routes use `auth` + `role:ADMIN`, `role:TEACHER`, `role:GUIDANCE,ADMIN`, etc. in `app/Config/Routes.php` |
-| Restrict access by role | ✅ Done | RoleFilter redirects with error; sidebar in `app/Views/template/index.php` shows menu per role |
+| RBAC functionality | ✅ Done | `app/Filters/RoleFilter.php` + `PrivilegeFilter.php` — checks session role and feature privileges |
+| Role hierarchies | ✅ Done | Roles: SUPER_ADMIN, ADMIN, PRINCIPAL, VICE_PRINCIPAL, HEAD_TEACHER, ANNOUNCER, TEACHER, GUIDANCE, STUDENT |
+| Assign permissions by role | ✅ Done | `AdminPrivilege::roleMap()` defines per-role features; admin can customize per user via privilege checkboxes |
+| Secure endpoints | ✅ Done | Routes use `auth` + `role:...` + `privilege:...` filters in `app/Config/Routes.php` |
+| Restrict access by role | ✅ Done | RoleFilter + PrivilegeFilter redirect with error; sidebar in `app/Views/template/index.php` shows menu per role/privilege |
 
 ---
 
@@ -35,9 +35,9 @@ This document checks your AJES system against the **Laboratory Exercise 4** requ
 | Requirement | Status | Where in system |
 |-------------|--------|------------------|
 | Structured database schema | ✅ Done | `app/Database/Migrations/2026-02-19-000001_CreateCoreTables.php` — users, sections, teacher_sections, announcements, messages, records, logs, notifications |
-| Relationships users ↔ roles | ✅ Done | `users.role` column (role stored on user); foreign keys in same migration: users→sections, teacher_sections→users/sections, announcements→users/sections, messages→users, records→users, logs→users, notifications→users |
-| Data encryption / security | ⚠️ Partial | Passwords hashed; no column-level encryption. App uses HTTPS recommendation and secure session. |
-| Database backup and restoration scripts | ❌ Not done | No custom backup/restore scripts (e.g. mysqldump or CI backup) in repo. You could add a script or use MySQL tools. |
+| Relationships users ↔ roles | ✅ Done | `users.role` column; foreign keys: users→sections, teacher_sections→users/sections, announcements→users/sections, messages→users, records→users, logs→users, notifications→users |
+| Data encryption / security | ✅ Done | Passwords hashed (`password_hash()`); **column-level AES-256-CBC encryption** on `guardian_name`, `guardian_contact`, `address`, `contact_number` via `DataEncryptor` library. Transparent encrypt/decrypt in `UserModel` events. Key in `.env`. |
+| Database backup and restoration scripts | ✅ Done | `scripts/backup-db.ps1` / `backup-db.sh` (mysqldump + validation); `scripts/restore-db.ps1` / `restore-db.sh` (mysql restore + confirmation + pre-backup). Helper: `scripts/_ReadCiEnv.ps1`. |
 
 ---
 
@@ -45,9 +45,10 @@ This document checks your AJES system against the **Laboratory Exercise 4** requ
 
 | Requirement | Status | Where in system |
 |-------------|--------|------------------|
-| Modules merged | ✅ Done | Single app with Users, Auth, Sections, Records, Announcements, Chat, Dashboards |
-| Unauthorized users cannot access restricted sections | ✅ Done | AuthFilter + RoleFilter on routes; wrong role → redirect with “You are not allowed to access that page.” |
-| Document issues and solutions | ⚠️ Partial | Lab 3 doc exists (`docs/LAB3_SYSTEM_DEVELOPMENT.md`); no dedicated Lab 4 “issues and solutions” section yet |
+| Modules merged | ✅ Done | Single app with Users, Auth, Sections, Records, Announcements, Chat, Dashboards, SystemAdmin |
+| Unit and functional testing | ✅ Done | `tests/unit/AdminPrivilegeTest.php` — RBAC logic tests + DataEncryptor encryption round-trip tests. Run: `vendor/bin/phpunit tests/unit/` |
+| Unauthorized users cannot access restricted sections | ✅ Done | AuthFilter + RoleFilter + PrivilegeFilter on routes; wrong role/privilege → redirect with error |
+| Audit logging / document issues | ✅ Done | `AuditLogger` library writes login/logout/CRUD/role-change events to `logs` table; viewable at **System Admin → Security Logs** |
 
 ---
 
@@ -55,9 +56,9 @@ This document checks your AJES system against the **Laboratory Exercise 4** requ
 
 | Requirement | Status | Where in system |
 |-------------|--------|------------------|
-| Repository (GitHub/GitLab) | ⚠️ You confirm | Git repo present; you maintain remote (GitHub/GitLab). |
+| Repository (GitHub/GitLab) | ✅ Done | Git repo initialized; push to your remote |
 | README with setup instructions | ✅ Done | `README.md` — requirements, clone, .env, database, migrate, seed, run, default logins |
-| System workflow diagram (user role interactions) | ❌ Not done | No diagram file in repo (e.g. ERD or workflow for login → role → dashboards/actions). You can add one (e.g. in `docs/`). |
+| System workflow diagram | ✅ Done | `docs/ERD_User_Role_Permission.md` — ERD for users, roles, permissions |
 
 ---
 
@@ -67,24 +68,19 @@ This document checks your AJES system against the **Laboratory Exercise 4** requ
 |--------|--------|
 | Working user management with secure authentication | ✅ |
 | RBAC with assigned permissions | ✅ |
-| Structured schema with secure storage (hashed passwords, FKs) | ✅ |
-| Documented project with version control | ⚠️ README yes; Lab 4–specific doc and diagram to add |
+| Structured schema with secure storage (hashed passwords, encrypted fields, FKs) | ✅ |
+| Documented project with version control | ✅ |
 | Presentation of system functionality | N/A (your deliverable) |
 
 ---
 
-## Summary: What You Have vs What’s Missing
+## Summary
 
-**You already have:**
-- Full user management (create, update, soft delete, restore).
-- RBAC (roles, filters, role-based menu and routes).
-- Structured schema with foreign keys and password hashing.
-- README and setup instructions.
-- Integration and access control so unauthorized users cannot open restricted sections.
+All Lab 4 code requirements are now implemented:
 
-**To fully align with Lab 4, consider adding:**
-1. **Database backup/restore** — e.g. a short script (batch/shell) that runs `mysqldump` for backup and instructions for restore, or use CodeIgniter’s DB Utils backup if you use it.
-2. **Lab 4 documentation** — e.g. `docs/LAB4_SYSTEM_DEVELOPMENT.md` with: answers to the lab questions (RBAC importance, user management and security), short “issues and solutions,” and output/result notes.
-3. **System workflow diagram** — e.g. ERD or flowchart for users/roles/permissions and login → role → screens (add as image or Mermaid in `docs/`).
-
-Use this checklist when writing your **Output/Results** and **Conclusion** for Lab 4.
+- **User Management** — full CRUD with validation, password hashing, soft delete/restore
+- **RBAC** — granular feature-based privileges per role, three-layer filter enforcement (Auth → Role → Privilege)
+- **Data Encryption** — AES-256-CBC column-level encryption for sensitive fields (`DataEncryptor`)
+- **Database Backup/Restore** — cross-platform scripts (PowerShell + Bash) with dump validation
+- **Audit Logging** — all logins, logouts, user CRUD, role changes logged to `logs` table (`AuditLogger`)
+- **Unit Tests** — RBAC logic + encryption round-trip tests in `tests/unit/AdminPrivilegeTest.php`

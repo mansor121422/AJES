@@ -5,6 +5,7 @@ namespace App\Filters;
 use App\Models\ApiTokenModel;
 use App\Models\UserModel;
 use App\Libraries\AdminPrivilege;
+use App\Libraries\JwtAuth;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -46,6 +47,24 @@ class AuthFilter implements FilterInterface
         }
 
         if ($token !== '') {
+            // Try JWT first
+            $jwtPayload = JwtAuth::decode($token);
+            if ($jwtPayload !== null && isset($jwtPayload['sub'])) {
+                $userModel = new UserModel();
+                $user = $userModel->find((int) $jwtPayload['sub']);
+                if ($user) {
+                    $session->set([
+                        'user_id' => (int) $user['id'],
+                        'name'    => $user['name'] ?? $user['username'] ?? 'User',
+                        'role'    => $user['role'] ?? 'STUDENT',
+                        'feature_privileges' => AdminPrivilege::effectiveForRole((string) ($user['role'] ?? ''), $user['admin_privileges'] ?? []),
+                    ]);
+                    $this->touchPresence((int) $user['id']);
+                    return null;
+                }
+            }
+
+            // Fall back to legacy API token
             $tokenModel = new ApiTokenModel();
             $userId     = $tokenModel->getUserIdByToken($token);
             if ($userId !== null) {

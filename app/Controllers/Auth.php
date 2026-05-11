@@ -4,7 +4,10 @@ namespace App\Controllers;
 
 use App\Libraries\LoginLockout;
 use App\Libraries\AdminPrivilege;
+use App\Libraries\AuditLogger;
+use App\Libraries\JwtAuth;
 use App\Libraries\PasswordReuseGuard;
+use App\Libraries\SecureHash;
 use App\Models\UserModel;
 use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -45,6 +48,7 @@ class Auth extends BaseController
         }
 
         if (! password_verify($password, $user['password_hash'])) {
+            AuditLogger::loginFailed($login);
             $patch = LoginLockout::fieldsAfterFailedPassword((int) ($user['failed_attempts'] ?? 0));
             $this->users->update($user['id'], $patch);
 
@@ -72,6 +76,158 @@ class Auth extends BaseController
             'locked_until'    => null,
         ]);
 
+        // Transparent rehash: upgrade bcrypt hashes to Argon2id when available.
+        if (SecureHash::needsRehash($user['password_hash'])) {
+            $this->users->update($user['id'], [
+                'password_hash' => SecureHash::make($password),
+            ]);
+        }
+
+        // ── MFA check ──
+        if (! empty($user['mfa_enabled'])) {
+            $session->regenerate();
+            $session->set('mfa_pending_user_id', (int) $user['id']);
+            $this->generateAndSendMfaCode($user);
+            return redirect()->to(base_url('auth/mfa'));
+        }
+
+        return $this->completeLogin($user, $session);
+    }
+
+    /**
+     * Generate a 6-digit OTP, store it, and send via email (dev fallback shows code on screen).
+     */
+    private function generateAndSendMfaCode(array $user): void
+    {
+        $code    = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $expires = date('Y-m-d H:i:s', time() + 300); // 5 minutes
+
+        $this->users->update($user['id'], [
+            'mfa_code'       => $code,
+            'mfa_expires_at' => $expires,
+        ]);
+
+        $email = $user['email'] ?? '';
+        if ($email === '') {
+            session()->setFlashdata('dev_mfa_code', $code);
+            return;
+        }
+
+        $logoUrl = rtrim(config('App')->baseURL, '/') . 'public/assets/images/ajes-logo.png';
+        $html = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>'
+            . '<body style="margin:0;padding:0;font-family:\'Segoe UI\',system-ui,sans-serif;background:#e8f5e9;">'
+            . '<table width="100%" cellspacing="0" cellpadding="0" style="background:#e8f5e9;padding:32px 16px;"><tr><td align="center">'
+            . '<table cellspacing="0" cellpadding="0" style="max-width:420px;width:100%;background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(27,94,32,0.15);overflow:hidden;">'
+            . '<tr><td style="padding:28px 24px;text-align:center;background:linear-gradient(135deg,#2e7d32 0%,#1b5e20 100%);">'
+            . '<img src="' . esc($logoUrl) . '" alt="AJES" style="max-width:80px;height:auto;">'
+            . '<p style="margin:10px 0 0;color:#fff;font-size:17px;font-weight:700;">AJES CRIER</p>'
+            . '<p style="margin:4px 0 0;color:#c8e6c9;font-size:12px;">Two-Factor Authentication</p>'
+            . '</td></tr>'
+            . '<tr><td style="padding:28px 24px;text-align:center;">'
+            . '<p style="margin:0 0 8px;color:#333;font-size:14px;">Your verification code is:</p>'
+            . '<p style="margin:0 0 16px;font-size:2.2rem;font-weight:800;letter-spacing:0.35em;color:#1b5e20;">' . esc($code) . '</p>'
+            . '<p style="margin:0;color:#888;font-size:12px;">This code expires in 5 minutes.</p>'
+            . '</td></tr></table></td></tr></table></body></html>';
+
+        try {
+            $emailService = service('email');
+            $from = (string) env('EMAIL_FROM', (string) env('SMTP_USER', ''));
+            if ($from !== '') {
+                $emailService->setFrom($from, (string) env('EMAIL_FROM_NAME', 'AJES CRIER'));
+            }
+            $emailService->setTo($email);
+            $emailService->setSubject('AJES Login Verification Code');
+            $emailService->setMailType('html');
+            $emailService->setMessage($html);
+            $sent = $emailService->send();
+
+            if (! $sent) {
+                session()->setFlashdata('dev_mfa_code', $code);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'MFA email failed: ' . $e->getMessage());
+            session()->setFlashdata('dev_mfa_code', $code);
+        }
+    }
+
+    /**
+     * Show the MFA verification form.
+     */
+    public function showMfa(): string|ResponseInterface
+    {
+        if (! session()->get('mfa_pending_user_id')) {
+            return redirect()->to(base_url('/'));
+        }
+
+        return view('Auth/mfa_verify');
+    }
+
+    /**
+     * Verify the submitted MFA code.
+     */
+    public function verifyMfa(): RedirectResponse
+    {
+        $session = session();
+        $userId  = (int) $session->get('mfa_pending_user_id');
+
+        if (! $userId) {
+            return redirect()->to(base_url('/'))->with('error', 'Session expired. Please log in again.');
+        }
+
+        $code = trim((string) $this->request->getPost('mfa_code'));
+        if ($code === '' || strlen($code) !== 6) {
+            return redirect()->to(base_url('auth/mfa'))->with('error', 'Please enter the 6-digit code.');
+        }
+
+        $user = $this->users->find($userId);
+        if (! $user) {
+            $session->remove('mfa_pending_user_id');
+            return redirect()->to(base_url('/'))->with('error', 'User not found.');
+        }
+
+        if (($user['mfa_code'] ?? '') !== $code) {
+            AuditLogger::log('MFA_FAILED', $userId, 'users', $userId, 'Invalid MFA code entered.');
+            return redirect()->to(base_url('auth/mfa'))->with('error', 'Invalid verification code.');
+        }
+
+        if (isset($user['mfa_expires_at']) && $user['mfa_expires_at'] < date('Y-m-d H:i:s')) {
+            return redirect()->to(base_url('auth/mfa'))->with('error', 'Code expired. Click "Resend code" to get a new one.');
+        }
+
+        $this->users->update($userId, [
+            'mfa_code'       => null,
+            'mfa_expires_at' => null,
+        ]);
+
+        $session->remove('mfa_pending_user_id');
+        AuditLogger::log('MFA_SUCCESS', $userId, 'users', $userId, 'MFA verification passed.');
+
+        return $this->completeLogin($user, $session);
+    }
+
+    /**
+     * Resend the MFA code.
+     */
+    public function resendMfa(): RedirectResponse
+    {
+        $userId = (int) session()->get('mfa_pending_user_id');
+        if (! $userId) {
+            return redirect()->to(base_url('/'));
+        }
+
+        $user = $this->users->find($userId);
+        if ($user) {
+            $this->generateAndSendMfaCode($user);
+        }
+
+        return redirect()->to(base_url('auth/mfa'))->with('success', 'A new code has been sent.');
+    }
+
+    /**
+     * Finalize login: set session, presence, audit log, redirect.
+     */
+    private function completeLogin(array $user, \CodeIgniter\Session\Session $session): RedirectResponse
+    {
         $session->regenerate();
 
         $session->set([
@@ -81,8 +237,8 @@ class Auth extends BaseController
             'feature_privileges' => AdminPrivilege::effectiveForRole((string) ($user['role'] ?? ''), $user['admin_privileges'] ?? []),
         ]);
 
-        // Presence update should never break login.
-        // (If migrations weren't run yet, columns may not exist.)
+        AuditLogger::loginSuccess((int) $user['id'], $user['username'] ?? '');
+
         try {
             $this->users->update($user['id'], [
                 'is_online'   => 1,
@@ -95,19 +251,65 @@ class Auth extends BaseController
         return redirect()->to($this->redirectForRole($user['role'], $user['admin_privileges'] ?? null));
     }
 
+    // ── JWT API Login ──
+
+    /**
+     * POST /auth/api-login — returns a JWT for stateless API access.
+     */
+    public function apiLogin(): ResponseInterface
+    {
+        $request = service('request');
+        $login   = trim((string) $request->getPost('username'));
+        $password = (string) $request->getPost('password');
+
+        if ($login === '' || $password === '') {
+            return $this->response->setStatusCode(400)->setJSON([
+                'status' => 'error',
+                'message' => 'Username and password are required.',
+            ]);
+        }
+
+        $user = $this->users->findByLogin($login);
+        if (! $user || ! password_verify($password, $user['password_hash'])) {
+            return $this->response->setStatusCode(401)->setJSON([
+                'status' => 'error',
+                'message' => 'Invalid credentials.',
+            ]);
+        }
+
+        if (! empty($user['locked_until']) && $user['locked_until'] > date('Y-m-d H:i:s')) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'status' => 'error',
+                'message' => 'Account temporarily locked.',
+            ]);
+        }
+
+        AuditLogger::loginSuccess((int) $user['id'], $user['username'] ?? $login);
+
+        $token = JwtAuth::encode($user);
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'token'  => $token,
+            'user'   => [
+                'id'       => (int) $user['id'],
+                'name'     => $user['name'] ?? '',
+                'username' => $user['username'] ?? '',
+                'role'     => $user['role'] ?? '',
+            ],
+        ]);
+    }
+
     public function logout(): RedirectResponse
     {
         $session = session();
 
-        // Presence: mark user offline on logout (best-effort).
         $userId = (int) $session->get('user_id');
         if ($userId > 0) {
+            AuditLogger::logout($userId);
             try {
                 $this->users->update($userId, [
                     'is_online'   => 0,
-                    // Set last_seen_at to the actual logout moment.
-                    // UI decides Online only when is_online=1, so this will show
-                    // "Last seen X seconds/minutes ago" immediately after logout.
                     'last_seen_at'=> date('Y-m-d H:i:s'),
                 ]);
             } catch (\Throwable $e) {
@@ -196,8 +398,6 @@ class Auth extends BaseController
             $debug = strip_tags($emailService->printDebugger([]));
             log_message('error', 'Forgot password email failed: ' . $debug);
 
-            // Development fallback: still allow password reset even when SMTP fails.
-            // This keeps local/XAMPP workflow usable while mail credentials are being configured.
             if (ENVIRONMENT === 'development') {
                 session()->setFlashdata('success', 'Email send failed on this local setup. Use the temporary reset link below.');
                 session()->setFlashdata('dev_reset_link', $resetLink);
@@ -253,7 +453,7 @@ class Auth extends BaseController
             return redirect()->back()->withInput()->with('error', 'You cannot reuse your current password or a recently used one. Please choose a different password.');
         }
 
-        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $hash = SecureHash::make($password);
 
         $set = [
             'password_hash'   => $hash,
@@ -266,6 +466,10 @@ class Auth extends BaseController
         }
 
         $this->users->where('email', $row['email'])->set($set)->update();
+
+        if ($acct) {
+            AuditLogger::passwordReset((int) $acct['id']);
+        }
 
         $db->table('password_resets')->where('email', $row['email'])->delete();
 
@@ -289,7 +493,6 @@ class Auth extends BaseController
                     'ANNOUNCER'  => base_url('dashboard/announcer'),
                     'TEACHER'    => base_url('dashboard/teacher'),
                     'GUIDANCE'   => base_url('dashboard/guidance'),
-                    'PARENT'     => base_url('dashboard/parent'),
                     'STUDENT'    => base_url('dashboard/student'),
                     default      => base_url('dashboard'),
                 };
@@ -320,10 +523,9 @@ class Auth extends BaseController
             'ANNOUNCER'  => base_url('dashboard/announcer'),
             'TEACHER'    => base_url('dashboard/teacher'),
             'GUIDANCE'   => base_url('dashboard/guidance'),
-            'PARENT'     => base_url('dashboard/parent'),
             'STUDENT'    => base_url('dashboard/student'),
+            'PARENT'     => base_url('dashboard/student'),
             default      => base_url('dashboard'),
         };
     }
 }
-

@@ -67,7 +67,7 @@ PROMPT;
     /**
      * Roles that will trigger AI responses when messaging PRINCIPAL
      */
-    public array $triggerRoles = ['STUDENT', 'PARENT'];
+    public array $triggerRoles = ['STUDENT'];
 
     /**
      * Roles that will receive AI auto-replies (the receiver role)

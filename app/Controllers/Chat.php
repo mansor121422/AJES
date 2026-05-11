@@ -36,8 +36,18 @@ class Chat extends BaseController
         if (! in_array($role, ['SUPER_ADMIN', 'ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL', 'HEAD_TEACHER'], true)) {
             return redirect()->to(base_url('chat'))->with('error', 'Access denied.');
         }
-        $limit  = 500;
-        $rows   = $this->messages->getAllForAdmin($limit);
+        $perPage = 10;
+        $page = max(1, (int) $this->request->getGet('page'));
+        $offset = ($page - 1) * $perPage;
+
+        $totalRows = $this->messages->countAllForAdmin();
+        $totalPages = max(1, (int) ceil($totalRows / $perPage));
+        if ($page > $totalPages) {
+            $page = $totalPages;
+            $offset = ($page - 1) * $perPage;
+        }
+
+        $rows = $this->messages->getAllForAdmin($perPage, $offset);
         $userIds = [];
         foreach ($rows as $m) {
             $userIds[(int) $m['sender_id']] = true;
@@ -50,10 +60,14 @@ class Chat extends BaseController
             $users[$id] = $u ? ($u['name'] ?? $u['username'] ?? 'User #' . $id) : 'User #' . $id;
         }
         $data = [
-            'role'    => 'ADMIN',
+            'role'    => session()->get('role') ?? 'ADMIN',
             'name'    => session()->get('name') ?? 'Administrator',
             'logs'    => $rows,
             'users'   => $users,
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total_rows' => $totalRows,
+            'total_pages' => $totalPages,
         ];
         return view('Chat/logs', $data);
     }

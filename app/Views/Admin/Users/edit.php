@@ -116,7 +116,6 @@ if (! empty($nameParts)) {
                     <option value="ANNOUNCER" <?= ($user['role'] ?? '') === 'ANNOUNCER' ? 'selected' : '' ?>>ANNOUNCER</option>
                     <option value="TEACHER" <?= ($user['role'] ?? '') === 'TEACHER' ? 'selected' : '' ?>>TEACHER</option>
                     <option value="GUIDANCE" <?= ($user['role'] ?? '') === 'GUIDANCE' ? 'selected' : '' ?>>GUIDANCE</option>
-                    <option value="PARENT" <?= ($user['role'] ?? '') === 'PARENT' ? 'selected' : '' ?>>PARENT</option>
                     <option value="STUDENT" <?= ($user['role'] ?? '') === 'STUDENT' ? 'selected' : '' ?>>STUDENT</option>
                 </select>
                 <?php if ($is_editing_self): ?>
@@ -205,6 +204,12 @@ if (! empty($nameParts)) {
                 <label style="color: #1b5e20;">
                     <input type="checkbox" name="is_active" value="1" <?= ! empty($user['is_active']) ? 'checked' : '' ?>> Active
                 </label>
+            </div>
+            <div class="form-group">
+                <label style="color: #1b5e20;">
+                    <input type="checkbox" name="mfa_enabled" value="1" <?= ! empty($user['mfa_enabled']) ? 'checked' : '' ?>> Enable Two-Factor Authentication (MFA)
+                </label>
+                <small style="color: #666; display: block; margin-top: 4px;">When enabled, a 6-digit email code is required after the password on every login.</small>
             </div>
             <button type="submit" class="login-button" style="display: inline-flex; width: auto; padding: 10px 24px;">Update</button>
             <a href="<?= base_url('admin/users') ?>" style="margin-left: 12px; color: #2e7d32;">Cancel</a>

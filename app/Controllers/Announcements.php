@@ -22,26 +22,48 @@ class Announcements extends BaseController
     {
         $role   = strtoupper((string) (session()->get('role') ?? ''));
         $userId = (int) (session()->get('user_id') ?? 0);
+        $dateFromRaw = trim((string) $this->request->getGet('date_from'));
+        $dateToRaw   = trim((string) $this->request->getGet('date_to'));
+
+        $dateFrom = preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFromRaw) ? $dateFromRaw : '';
+        $dateTo   = preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateToRaw) ? $dateToRaw : '';
+        if ($dateFrom !== '' && $dateTo !== '' && $dateFrom > $dateTo) {
+            [$dateFrom, $dateTo] = [$dateTo, $dateFrom];
+        }
 
         if ($role === 'STUDENT' && $userId > 0) {
             $db = \Config\Database::connect();
-            $list = $db->table('announcements a')
+            $builder = $db->table('announcements a')
                 ->select('a.*')
                 ->join('notifications n', 'n.reference_id = a.id AND n.reference_table = "announcements" AND n.type = "announcement"', 'inner')
                 ->where('n.user_id', $userId)
                 ->where('a.deleted_at', null)
                 ->groupBy('a.id')
-                ->orderBy('a.created_at', 'DESC')
-                ->get()
-                ->getResultArray();
+                ->orderBy('a.created_at', 'DESC');
+            if ($dateFrom !== '') {
+                $builder->where('a.created_at >=', $dateFrom . ' 00:00:00');
+            }
+            if ($dateTo !== '') {
+                $builder->where('a.created_at <=', $dateTo . ' 23:59:59');
+            }
+            $list = $builder->get()->getResultArray();
         } else {
-            $list = $this->announcements->orderBy('created_at', 'DESC')->findAll();
+            $builder = $this->announcements->orderBy('created_at', 'DESC');
+            if ($dateFrom !== '') {
+                $builder->where('created_at >=', $dateFrom . ' 00:00:00');
+            }
+            if ($dateTo !== '') {
+                $builder->where('created_at <=', $dateTo . ' 23:59:59');
+            }
+            $list = $builder->findAll();
         }
 
         $data = [
             'announcements' => $list,
             'role'          => session()->get('role') ?? 'ADMIN',
             'name'          => session()->get('name') ?? 'User',
+            'date_from'     => $dateFrom,
+            'date_to'       => $dateTo,
         ];
         return view('Announcements/index', $data);
     }

@@ -3,6 +3,8 @@ $role          = $role ?? 'ADMIN';
 $name          = $name ?? 'User';
 $announcements = $announcements ?? [];
 $canManage     = in_array($role, ['ADMIN', 'PRINCIPAL', 'ANNOUNCER', 'TEACHER'], true);
+$dateFrom      = $date_from ?? '';
+$dateTo        = $date_to ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -32,6 +34,20 @@ $canManage     = in_array($role, ['ADMIN', 'PRINCIPAL', 'ANNOUNCER', 'TEACHER'],
                 : 'New announcements notify users based on audience.' ?>
         </p>
         <?php if ($canManage): ?>
+            <form method="get" action="<?= base_url('announcements') ?>" style="display:flex; gap:8px; flex-wrap:wrap; align-items:end; margin-bottom:12px;">
+                <div>
+                    <label for="date_from" style="display:block; font-size:0.85rem; color:#1b5e20; margin-bottom:4px;">From</label>
+                    <input type="date" id="date_from" name="date_from" value="<?= esc((string) $dateFrom) ?>" style="padding:8px 10px; border:1px solid #c8e6c9; border-radius:8px;">
+                </div>
+                <div>
+                    <label for="date_to" style="display:block; font-size:0.85rem; color:#1b5e20; margin-bottom:4px;">To</label>
+                    <input type="date" id="date_to" name="date_to" value="<?= esc((string) $dateTo) ?>" style="padding:8px 10px; border:1px solid #c8e6c9; border-radius:8px;">
+                </div>
+                <button type="submit" class="login-button" style="display:inline-flex; width:auto; padding:9px 16px;">Filter</button>
+                <?php if ($dateFrom !== '' || $dateTo !== ''): ?>
+                    <a href="<?= base_url('announcements') ?>" style="color:#2e7d32; padding-bottom:8px;">Reset</a>
+                <?php endif; ?>
+            </form>
             <a href="<?= base_url('announcements/create') ?>" class="login-button" style="display: inline-flex; width: auto; padding: 10px 20px; text-decoration: none; margin-bottom: 16px;">Create announcement</a>
         <?php endif; ?>
         <table class="recent-table">

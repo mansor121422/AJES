@@ -22,7 +22,7 @@ class Dashboard extends BaseController
             'ANNOUNCER'  => view('Announcer/dashboard'),
             'TEACHER'    => $this->teacherDashboard(),
             'GUIDANCE'   => view('Guidance/dashboard'),
-            'PARENT'     => $this->student(),
+            'PARENT'     => $this->student(), // Backward-compat for legacy accounts.
             'STUDENT'    => view('Student/dashboard'),
             default      => view('Auth/login'),
         };
@@ -497,7 +497,7 @@ class Dashboard extends BaseController
             ->countAllResults();
 
         $sessionRole = strtoupper((string) (session()->get('role') ?? 'STUDENT'));
-        if (! in_array($sessionRole, ['STUDENT', 'PARENT'], true)) {
+        if (! in_array($sessionRole, ['STUDENT'], true)) {
             $sessionRole = 'STUDENT';
         }
 
@@ -516,6 +516,7 @@ class Dashboard extends BaseController
 
     public function parent(): string
     {
+        // Legacy endpoint support; parent role is deprecated.
         return $this->student();
     }
 }

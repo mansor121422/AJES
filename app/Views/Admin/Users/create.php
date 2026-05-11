@@ -78,7 +78,6 @@ if (! is_array($selectedPrivileges)) {
                     <option value="ANNOUNCER" <?= old('role') === 'ANNOUNCER' ? 'selected' : '' ?>>ANNOUNCER</option>
                     <option value="TEACHER" <?= old('role') === 'TEACHER' ? 'selected' : '' ?>>TEACHER</option>
                     <option value="GUIDANCE" <?= old('role') === 'GUIDANCE' ? 'selected' : '' ?>>GUIDANCE</option>
-                    <option value="PARENT" <?= old('role') === 'PARENT' ? 'selected' : '' ?>>PARENT</option>
                     <option value="STUDENT" <?= old('role') === 'STUDENT' ? 'selected' : '' ?>>STUDENT</option>
                 </select>
             </div>
@@ -148,6 +147,12 @@ if (! is_array($selectedPrivileges)) {
                 <label style="color: #1b5e20;">
                     <input type="checkbox" name="is_active" value="1" <?= old('is_active', '1') ? 'checked' : '' ?>> Active
                 </label>
+            </div>
+            <div class="form-group">
+                <label style="color: #1b5e20;">
+                    <input type="checkbox" name="mfa_enabled" value="1" <?= old('mfa_enabled') ? 'checked' : '' ?>> Enable Two-Factor Authentication (MFA)
+                </label>
+                <small style="color: #666; display: block; margin-top: 4px;">When enabled, the user must enter a 6-digit email code after their password on every login.</small>
             </div>
             <button type="submit" class="login-button" style="display: inline-flex; width: auto; padding: 10px 24px;">Create user</button>
             <a href="<?= base_url('admin/users') ?>" style="margin-left: 12px; color: #2e7d32;">Cancel</a>
