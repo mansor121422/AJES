@@ -5,6 +5,8 @@ namespace App\Controllers;
 use App\Libraries\LoginLockout;
 use App\Libraries\AdminPrivilege;
 use App\Libraries\AuditLogger;
+use App\Libraries\ActivityLogger;
+use App\Libraries\SessionTracker;
 use App\Libraries\JwtAuth;
 use App\Libraries\PasswordReuseGuard;
 use App\Libraries\SecureHash;
@@ -238,6 +240,8 @@ class Auth extends BaseController
         ]);
 
         AuditLogger::loginSuccess((int) $user['id'], $user['username'] ?? '');
+        SessionTracker::start((int) $user['id']);
+        ActivityLogger::log('LOGIN', 'auth', 'User "' . ($user['username'] ?? '') . '" logged in.', (int) $user['id']);
 
         try {
             $this->users->update($user['id'], [
@@ -307,6 +311,8 @@ class Auth extends BaseController
         $userId = (int) $session->get('user_id');
         if ($userId > 0) {
             AuditLogger::logout($userId);
+            SessionTracker::end($userId);
+            ActivityLogger::log('LOGOUT', 'auth', null, $userId);
             try {
                 $this->users->update($userId, [
                     'is_online'   => 0,

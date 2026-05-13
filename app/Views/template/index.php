@@ -486,5 +486,3 @@ window.AJES_LOGOUT_USER = <?= json_encode($logoutPrefillUsername, JSON_HEX_TAG |
     }, true);
 })();
 </script>
-        <!-- React entry script compiled by Vite (frontend/) into public/react/main.js -->
-<script type="module" src="<?= base_url('react/main.js') ?>"></script>

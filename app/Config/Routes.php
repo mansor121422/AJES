@@ -125,4 +125,8 @@ $routes->group('sysadmin', ['filter' => ['auth', 'role:ADMIN,SUPER_ADMIN']], sta
     $routes->get('chatbot', 'SystemAdmin::chatbot', ['filter' => 'privilege:chatbot_management']);
     $routes->get('backup', 'SystemAdmin::backup', ['filter' => 'privilege:backup_restore']);
     $routes->get('security-logs', 'SystemAdmin::securityLogs', ['filter' => 'privilege:security_logs']);
+    $routes->get('active-sessions', 'SystemAdmin::activeSessions', ['filter' => 'privilege:security_logs']);
+    $routes->get('audit-report', 'SystemAdmin::auditReport', ['filter' => 'privilege:security_logs']);
+    $routes->get('activity-logs', 'SystemAdmin::activityLogs', ['filter' => 'privilege:security_logs']);
+    $routes->get('transaction-logs', 'SystemAdmin::transactionLogs', ['filter' => 'privilege:security_logs']);
 });

@@ -3,6 +3,10 @@
 namespace App\Controllers;
 
 use App\Libraries\AuditLogger;
+use App\Libraries\ActivityLogger;
+use App\Libraries\SessionTracker;
+use App\Libraries\IntrusionDetector;
+use App\Libraries\TransactionManager;
 
 class SystemAdmin extends BaseController
 {
@@ -115,6 +119,38 @@ class SystemAdmin extends BaseController
             'warning_count' => $warningCount,
             'audit_logs' => AuditLogger::recent(50),
         ];
+        return view('SystemAdmin/index', $data);
+    }
+
+    public function activeSessions(): string
+    {
+        $data = $this->pageData('active-sessions');
+        $data['sessions'] = SessionTracker::activeSessions();
+        return view('SystemAdmin/index', $data);
+    }
+
+    public function auditReport(): string
+    {
+        $data = $this->pageData('audit-report');
+        $days = (int) ($this->request->getGet('days') ?? 7);
+        if ($days < 1) {
+            $days = 7;
+        }
+        $data['audit_report'] = IntrusionDetector::auditReport($days);
+        return view('SystemAdmin/index', $data);
+    }
+
+    public function activityLogs(): string
+    {
+        $data = $this->pageData('activity-logs');
+        $data['activity_logs'] = ActivityLogger::recent(100);
+        return view('SystemAdmin/index', $data);
+    }
+
+    public function transactionLogs(): string
+    {
+        $data = $this->pageData('transaction-logs');
+        $data['transaction_logs'] = TransactionManager::recent(50);
         return view('SystemAdmin/index', $data);
     }
 

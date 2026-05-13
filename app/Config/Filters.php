@@ -16,6 +16,7 @@ use App\Filters\AuthFilter;
 use App\Filters\RoleFilter;
 use App\Filters\ApiTokenAuthFilter;
 use App\Filters\PrivilegeFilter;
+use App\Filters\ActivityLogFilter;
 
 class Filters extends BaseFilters
 {
@@ -42,6 +43,7 @@ class Filters extends BaseFilters
         'role'          => RoleFilter::class,
         'privilege'     => PrivilegeFilter::class,
         'api_token'     => ApiTokenAuthFilter::class,
+        'activity_log'  => ActivityLogFilter::class,
     ];
 
     /**
@@ -83,6 +85,7 @@ class Filters extends BaseFilters
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',
+            'activity_log',
         ],
         'after' => [
             // 'honeypot',

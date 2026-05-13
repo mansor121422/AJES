@@ -5,7 +5,9 @@ namespace App\Controllers;
 use App\Libraries\PasswordReuseGuard;
 use App\Libraries\AdminPrivilege;
 use App\Libraries\AuditLogger;
+use App\Libraries\ActivityLogger;
 use App\Libraries\SecureHash;
+use App\Libraries\TransactionManager;
 use App\Models\UserModel;
 use App\Models\SectionModel;
 use CodeIgniter\HTTP\RedirectResponse;
@@ -121,9 +123,18 @@ class Users extends BaseController
             $data['guardian_name'] = trim((string) $this->request->getPost('guardian_name'));
             $data['guardian_contact'] = trim((string) $this->request->getPost('guardian_contact'));
         }
-        $this->users->insert($data);
-        $newId = $this->users->getInsertID();
-        AuditLogger::userCreated((int) $newId, $name, $role);
+        try {
+            $newId = TransactionManager::run('USER_CREATE', function ($db) use ($data, $name, $role) {
+                $this->users->insert($data);
+                $id = $this->users->getInsertID();
+                AuditLogger::userCreated((int) $id, $name, $role);
+                ActivityLogger::log('USER_CREATE', 'users', 'Created user "' . $name . '" (role: ' . $role . ').');
+                return (int) $id;
+            }, 'users');
+        } catch (\Throwable $e) {
+            return redirect()->back()->withInput()->with('error', 'Failed to create user: ' . $e->getMessage());
+        }
+
         return redirect()->to(base_url('admin/users'))->with('success', 'User created.');
     }
 
@@ -247,13 +258,20 @@ class Users extends BaseController
         } else {
             $data['section_id'] = null;
         }
-        $this->users->update($id, $data);
+        try {
+            TransactionManager::run('USER_UPDATE', function ($db) use ($id, $data, $user, $name, $role) {
+                $this->users->update($id, $data);
 
-        $oldRole = $user['role'] ?? '';
-        if ($oldRole !== '' && $oldRole !== $role) {
-            AuditLogger::roleChanged($id, $oldRole, $role);
+                $oldRole = $user['role'] ?? '';
+                if ($oldRole !== '' && $oldRole !== $role) {
+                    AuditLogger::roleChanged($id, $oldRole, $role);
+                }
+                AuditLogger::userUpdated($id, 'Updated user "' . $name . '" (role: ' . $role . ').');
+                ActivityLogger::log('USER_UPDATE', 'users', 'Updated user "' . $name . '" (ID: ' . $id . ').');
+            }, 'users', $id);
+        } catch (\Throwable $e) {
+            return redirect()->back()->withInput()->with('error', 'Failed to update user: ' . $e->getMessage());
         }
-        AuditLogger::userUpdated($id, 'Updated user "' . $name . '" (role: ' . $role . ').');
 
         if ($currentUserId === (int) $id) {
             session()->set('feature_privileges', AdminPrivilege::normalize($data['admin_privileges'] ?? []));
@@ -296,9 +314,18 @@ class Users extends BaseController
         if (($user['role'] ?? '') === 'ADMIN') {
             return redirect()->to(base_url('admin/users'))->with('error', 'Admin accounts cannot be deleted.');
         }
-        $this->users->update($id, ['is_active' => 0]);
-        $this->users->delete($id);
-        AuditLogger::userDeleted($id, $user['name'] ?? $user['username'] ?? '');
+        try {
+            $userName = $user['name'] ?? $user['username'] ?? '';
+            TransactionManager::run('USER_DELETE', function ($db) use ($id, $userName) {
+                $this->users->update($id, ['is_active' => 0]);
+                $this->users->delete($id);
+                AuditLogger::userDeleted($id, $userName);
+                ActivityLogger::log('USER_DELETE', 'users', 'Archived user "' . $userName . '" (ID: ' . $id . ').');
+            }, 'users', $id);
+        } catch (\Throwable $e) {
+            return redirect()->to(base_url('admin/users'))->with('error', 'Failed to delete user: ' . $e->getMessage());
+        }
+
         return redirect()->to(base_url('admin/users'))->with('success', 'User archived. You can restore them from Deleted users.');
     }
 
@@ -308,8 +335,17 @@ class Users extends BaseController
         if (! $user) {
             return redirect()->to(base_url('admin/users'))->with('error', 'User not found or not deleted.');
         }
-        $this->users->update($id, ['deleted_at' => null, 'is_active' => 1]);
-        AuditLogger::userRestored($id, $user['name'] ?? $user['username'] ?? '');
+        try {
+            $userName = $user['name'] ?? $user['username'] ?? '';
+            TransactionManager::run('USER_RESTORE', function ($db) use ($id, $userName) {
+                $this->users->update($id, ['deleted_at' => null, 'is_active' => 1]);
+                AuditLogger::userRestored($id, $userName);
+                ActivityLogger::log('USER_RESTORE', 'users', 'Restored user "' . $userName . '" (ID: ' . $id . ').');
+            }, 'users', $id);
+        } catch (\Throwable $e) {
+            return redirect()->to(base_url('admin/users'))->with('error', 'Failed to restore user: ' . $e->getMessage());
+        }
+
         return redirect()->to(base_url('admin/users'))->with('success', 'User restored.');
     }
 }

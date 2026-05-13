@@ -5,8 +5,7 @@ namespace App\Libraries;
 /**
  * Writes security-relevant events to the `logs` table.
  *
- * Schema (from CreateCoreTables migration):
- *   id, user_id, action_type, related_table, related_id, details, created_at
+ * Schema: id, user_id, action_type, related_table, related_id, details, ip_address, created_at
  */
 class AuditLogger
 {
@@ -21,16 +20,26 @@ class AuditLogger
             $userId = (int) (session()->get('user_id') ?? 0) ?: null;
         }
 
+        $ip = '';
+        try {
+            $ip = service('request')->getIPAddress();
+        } catch (\Throwable $e) {
+        }
+
         try {
             $db = \Config\Database::connect();
-            $db->table('logs')->insert([
+            $row = [
                 'user_id'       => $userId,
                 'action_type'   => $actionType,
                 'related_table' => $relatedTable,
                 'related_id'    => $relatedId,
                 'details'       => $details,
                 'created_at'    => date('Y-m-d H:i:s'),
-            ]);
+            ];
+            if ($ip !== '') {
+                $row['ip_address'] = DataEncryptor::encrypt($ip);
+            }
+            $db->table('logs')->insert($row);
         } catch (\Throwable $e) {
             log_message('error', 'AuditLogger: ' . $e->getMessage());
         }
@@ -43,7 +52,15 @@ class AuditLogger
 
     public static function loginFailed(string $login): void
     {
-        self::log('LOGIN_FAILED', null, 'users', null, 'Failed login attempt for "' . $login . '".');
+        $ip = '';
+        try {
+            $ip = service('request')->getIPAddress();
+        } catch (\Throwable $e) {
+        }
+
+        self::log('LOGIN_FAILED', null, 'users', null, 'Failed login attempt for "' . $login . '" from IP ' . $ip . '.');
+
+        IntrusionDetector::onLoginFailed($login, $ip);
     }
 
     public static function logout(int $userId): void
@@ -90,13 +107,22 @@ class AuditLogger
     {
         try {
             $db = \Config\Database::connect();
-            return $db->table('logs')
+            $rows = $db->table('logs')
                 ->select('logs.*, users.name as user_name, users.username')
                 ->join('users', 'users.id = logs.user_id', 'left')
                 ->orderBy('logs.created_at', 'DESC')
                 ->limit($limit)
                 ->get()
                 ->getResultArray();
+
+            foreach ($rows as &$r) {
+                if (! empty($r['ip_address'])) {
+                    $r['ip_address'] = DataEncryptor::decrypt($r['ip_address']);
+                }
+            }
+            unset($r);
+
+            return $rows;
         } catch (\Throwable $e) {
             log_message('error', 'AuditLogger::recent: ' . $e->getMessage());
             return [];

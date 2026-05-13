@@ -9,10 +9,14 @@ $backupData = $backup_data ?? [];
 $securityData = $security_data ?? [];
 
 $titles = [
-    'settings' => 'System Settings',
-    'chatbot' => 'Chatbot Management',
-    'backup' => 'Backup & Restore',
-    'security-logs' => 'Security Logs',
+    'settings'         => 'System Settings',
+    'chatbot'          => 'Chatbot Management',
+    'backup'           => 'Backup & Restore',
+    'security-logs'    => 'Security Logs',
+    'active-sessions'  => 'Active Sessions',
+    'audit-report'     => 'Audit Report',
+    'activity-logs'    => 'Activity Logs',
+    'transaction-logs' => 'Transaction Logs',
 ];
 $title = $titles[$tab] ?? 'System Panel';
 ?>
@@ -27,6 +31,29 @@ $title = $titles[$tab] ?? 'System Panel';
     <?php include(APPPATH . 'Views/template/index.php'); ?>
 
     <h1 class="dashboard-header"><?= esc($title) ?></h1>
+
+    <!-- Lab 6 sub-nav for security/audit tabs -->
+    <?php
+    $labTabs = [
+        'security-logs'   => 'Security Logs',
+        'active-sessions' => 'Active Sessions',
+        'audit-report'    => 'Audit Report',
+        'activity-logs'   => 'Activity Logs',
+        'transaction-logs'=> 'Transaction Logs',
+    ];
+    $isLabTab = in_array($tab, array_keys($labTabs), true);
+    ?>
+    <?php if ($isLabTab): ?>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
+        <?php foreach ($labTabs as $tabKey => $tabLabel): ?>
+            <a href="<?= base_url('sysadmin/' . $tabKey) ?>"
+               style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;
+                      <?= $tab === $tabKey ? 'background:#1b5e20;color:#fff;' : 'background:#e8f5e9;color:#2e7d32;' ?>">
+                <?= esc($tabLabel) ?>
+            </a>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
 
     <div class="card">
         <div class="card-title">Admin System Control</div>
@@ -84,6 +111,7 @@ $title = $titles[$tab] ?? 'System Panel';
                     </tbody>
                 </table>
             <?php endif; ?>
+
         <?php elseif ($tab === 'security-logs'): ?>
             <p><strong>Log Directory:</strong> <?= esc((string) ($securityData['log_dir'] ?? '')) ?></p>
             <p><strong>Detected Log Files:</strong> <?= esc((string) $logCount) ?></p>
@@ -94,20 +122,23 @@ $title = $titles[$tab] ?? 'System Panel';
                 <h3 style="margin-top:18px; color:#1b5e20;">Audit Trail</h3>
                 <div style="overflow-x:auto;">
                 <table class="recent-table" style="margin-top:8px; width:100%;">
-                    <thead><tr><th>Time</th><th>Action</th><th>User</th><th>Details</th></tr></thead>
+                    <thead><tr><th>Time</th><th>Action</th><th>User</th><th>IP</th><th>Details</th></tr></thead>
                     <tbody>
                         <?php foreach ($auditLogs as $log): ?>
                             <?php
                                 $actionColors = [
-                                    'LOGIN_SUCCESS' => '#2e7d32',
-                                    'LOGIN_FAILED'  => '#c62828',
-                                    'LOGOUT'        => '#6a6a6a',
-                                    'USER_CREATED'  => '#1565c0',
-                                    'USER_UPDATED'  => '#e65100',
-                                    'USER_DELETED'  => '#b71c1c',
-                                    'USER_RESTORED' => '#2e7d32',
+                                    'LOGIN_SUCCESS'  => '#2e7d32',
+                                    'LOGIN_FAILED'   => '#c62828',
+                                    'LOGOUT'         => '#6a6a6a',
+                                    'USER_CREATED'   => '#1565c0',
+                                    'USER_UPDATED'   => '#e65100',
+                                    'USER_DELETED'   => '#b71c1c',
+                                    'USER_RESTORED'  => '#2e7d32',
                                     'PASSWORD_RESET' => '#6a1b9a',
-                                    'ROLE_CHANGED'  => '#ef6c00',
+                                    'ROLE_CHANGED'   => '#ef6c00',
+                                    'SECURITY_ALERT' => '#d50000',
+                                    'MFA_SUCCESS'    => '#00695c',
+                                    'MFA_FAILED'     => '#c62828',
                                 ];
                                 $color = $actionColors[$log['action_type'] ?? ''] ?? '#333';
                                 $who = esc((string) ($log['user_name'] ?? $log['username'] ?? '—'));
@@ -116,7 +147,8 @@ $title = $titles[$tab] ?? 'System Panel';
                                 <td style="white-space:nowrap;"><?= esc((string) ($log['created_at'] ?? '')) ?></td>
                                 <td><span style="color:<?= $color ?>;font-weight:600;"><?= esc((string) ($log['action_type'] ?? '')) ?></span></td>
                                 <td><?= $who ?></td>
-                                <td style="max-width:340px;word-break:break-word;"><?= esc((string) ($log['details'] ?? '')) ?></td>
+                                <td style="font-size:12px;"><?= esc((string) ($log['ip_address'] ?? '')) ?></td>
+                                <td style="max-width:300px;word-break:break-word;"><?= esc((string) ($log['details'] ?? '')) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -142,6 +174,156 @@ $title = $titles[$tab] ?? 'System Panel';
                     </tbody>
                 </table>
             <?php endif; ?>
+
+        <?php elseif ($tab === 'active-sessions'): ?>
+            <?php $sessions = $sessions ?? []; ?>
+            <p style="margin-bottom:12px;"><strong>Currently Online:</strong> <?= count($sessions) ?> active session(s)</p>
+            <?php if ($sessions !== []): ?>
+                <div style="overflow-x:auto;">
+                <table class="recent-table" style="width:100%;">
+                    <thead><tr><th>User</th><th>Role</th><th>IP Address</th><th>Session Start</th><th>Last Activity</th><th>User Agent</th></tr></thead>
+                    <tbody>
+                        <?php foreach ($sessions as $s): ?>
+                            <tr>
+                                <td style="font-weight:600;"><?= esc((string) ($s['user_name'] ?? $s['username'] ?? '')) ?></td>
+                                <td><span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;"><?= esc((string) ($s['role'] ?? '')) ?></span></td>
+                                <td style="font-family:monospace;font-size:12px;"><?= esc((string) ($s['ip_address'] ?? '')) ?></td>
+                                <td style="white-space:nowrap;"><?= esc((string) ($s['started_at'] ?? '')) ?></td>
+                                <td style="white-space:nowrap;"><?= esc((string) ($s['last_activity'] ?? '')) ?></td>
+                                <td style="max-width:200px;font-size:11px;word-break:break-word;"><?= esc(mb_substr((string) ($s['user_agent'] ?? ''), 0, 80)) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                </div>
+            <?php else: ?>
+                <p style="color:#888;">No active sessions detected.</p>
+            <?php endif; ?>
+
+        <?php elseif ($tab === 'audit-report'): ?>
+            <?php $report = $audit_report ?? []; ?>
+            <?php if ($report !== []): ?>
+                <p style="margin-bottom:16px;">Showing data for the last <strong><?= esc((string) ($report['days'] ?? 7)) ?> days</strong>.
+                    <a href="<?= base_url('sysadmin/audit-report?days=1') ?>" style="margin-left:8px;color:#2e7d32;">1d</a>
+                    <a href="<?= base_url('sysadmin/audit-report?days=7') ?>" style="margin-left:4px;color:#2e7d32;">7d</a>
+                    <a href="<?= base_url('sysadmin/audit-report?days=30') ?>" style="margin-left:4px;color:#2e7d32;">30d</a>
+                </p>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));gap:12px;margin-bottom:20px;">
+                    <div style="background:#e8f5e9;padding:16px;border-radius:10px;text-align:center;">
+                        <div style="font-size:2rem;font-weight:800;color:#1b5e20;"><?= esc((string) ($report['total_logins'] ?? 0)) ?></div>
+                        <div style="font-size:12px;color:#558b2f;">Successful Logins</div>
+                    </div>
+                    <div style="background:#ffebee;padding:16px;border-radius:10px;text-align:center;">
+                        <div style="font-size:2rem;font-weight:800;color:#c62828;"><?= esc((string) ($report['failed_logins'] ?? 0)) ?></div>
+                        <div style="font-size:12px;color:#b71c1c;">Failed Login Attempts</div>
+                    </div>
+                    <div style="background:#fff3e0;padding:16px;border-radius:10px;text-align:center;">
+                        <div style="font-size:2rem;font-weight:800;color:#e65100;"><?= esc((string) ($report['security_alerts'] ?? 0)) ?></div>
+                        <div style="font-size:12px;color:#bf360c;">Security Alerts</div>
+                    </div>
+                    <div style="background:#e0f2f1;padding:16px;border-radius:10px;text-align:center;">
+                        <div style="font-size:2rem;font-weight:800;color:#00695c;"><?= esc((string) ($report['mfa_events'] ?? 0)) ?></div>
+                        <div style="font-size:12px;color:#004d40;">MFA Events</div>
+                    </div>
+                    <div style="background:#e8eaf6;padding:16px;border-radius:10px;text-align:center;">
+                        <div style="font-size:2rem;font-weight:800;color:#283593;"><?= esc((string) ($report['user_changes'] ?? 0)) ?></div>
+                        <div style="font-size:12px;color:#1a237e;">User Changes</div>
+                    </div>
+                </div>
+
+                <?php $mostActive = (array) ($report['most_active'] ?? []); ?>
+                <?php if ($mostActive !== []): ?>
+                    <h3 style="margin-top:8px;color:#1b5e20;">Most Active Users</h3>
+                    <table class="recent-table" style="margin-top:8px;max-width:400px;">
+                        <thead><tr><th>User</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            <?php foreach ($mostActive as $mu): ?>
+                                <tr>
+                                    <td><?= esc((string) ($mu['name'] ?? $mu['username'] ?? '')) ?></td>
+                                    <td style="font-weight:700;color:#1b5e20;"><?= esc((string) ($mu['action_count'] ?? 0)) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+
+                <?php $daily = (array) ($report['daily_breakdown'] ?? []); ?>
+                <?php if ($daily !== []): ?>
+                    <h3 style="margin-top:20px;color:#1b5e20;">Daily Breakdown</h3>
+                    <div style="overflow-x:auto;">
+                    <table class="recent-table" style="margin-top:8px;width:100%;">
+                        <thead><tr><th>Date</th><th>Action Type</th><th>Count</th></tr></thead>
+                        <tbody>
+                            <?php foreach ($daily as $d): ?>
+                                <tr>
+                                    <td style="white-space:nowrap;"><?= esc((string) ($d['log_date'] ?? '')) ?></td>
+                                    <td><?= esc((string) ($d['action_type'] ?? '')) ?></td>
+                                    <td style="font-weight:700;"><?= esc((string) ($d['cnt'] ?? 0)) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    </div>
+                <?php endif; ?>
+            <?php else: ?>
+                <p style="color:#888;">No audit data available.</p>
+            <?php endif; ?>
+
+        <?php elseif ($tab === 'activity-logs'): ?>
+            <?php $actLogs = $activity_logs ?? []; ?>
+            <p style="margin-bottom:12px;">Showing last <strong><?= count($actLogs) ?></strong> activity entries. Sensitive fields (IP, details) are encrypted at rest.</p>
+            <?php if ($actLogs !== []): ?>
+                <div style="overflow-x:auto;">
+                <table class="recent-table" style="width:100%;">
+                    <thead><tr><th>Time</th><th>Action</th><th>User</th><th>URL</th><th>Method</th><th>IP</th><th>Details</th></tr></thead>
+                    <tbody>
+                        <?php foreach ($actLogs as $al): ?>
+                            <tr>
+                                <td style="white-space:nowrap;font-size:12px;"><?= esc((string) ($al['created_at'] ?? '')) ?></td>
+                                <td><span style="font-weight:600;color:#1b5e20;"><?= esc((string) ($al['action'] ?? '')) ?></span></td>
+                                <td><?= esc((string) ($al['user_name'] ?? $al['username'] ?? '—')) ?></td>
+                                <td style="max-width:200px;word-break:break-word;font-size:11px;"><?= esc((string) ($al['url'] ?? '')) ?></td>
+                                <td style="font-size:11px;"><?= esc((string) ($al['method'] ?? '')) ?></td>
+                                <td style="font-family:monospace;font-size:11px;"><?= esc((string) ($al['ip_address'] ?? '')) ?></td>
+                                <td style="max-width:200px;word-break:break-word;font-size:11px;"><?= esc((string) ($al['details'] ?? '')) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                </div>
+            <?php else: ?>
+                <p style="color:#888;">No activity logs recorded yet.</p>
+            <?php endif; ?>
+
+        <?php elseif ($tab === 'transaction-logs'): ?>
+            <?php $txLogs = $transaction_logs ?? []; ?>
+            <p style="margin-bottom:12px;">Business transaction log — every CRUD operation is wrapped in a DB transaction with ACID guarantees.</p>
+            <?php if ($txLogs !== []): ?>
+                <div style="overflow-x:auto;">
+                <table class="recent-table" style="width:100%;">
+                    <thead><tr><th>Time</th><th>Operation</th><th>User</th><th>Table</th><th>ID</th><th>Status</th><th>Duration</th><th>Error</th></tr></thead>
+                    <tbody>
+                        <?php foreach ($txLogs as $tx): ?>
+                            <?php $isOk = ($tx['status'] ?? '') === 'COMMITTED'; ?>
+                            <tr>
+                                <td style="white-space:nowrap;font-size:12px;"><?= esc((string) ($tx['created_at'] ?? '')) ?></td>
+                                <td style="font-weight:600;"><?= esc((string) ($tx['operation'] ?? '')) ?></td>
+                                <td><?= esc((string) ($tx['user_name'] ?? $tx['username'] ?? '—')) ?></td>
+                                <td style="font-size:12px;"><?= esc((string) ($tx['target_table'] ?? '')) ?></td>
+                                <td style="font-size:12px;"><?= esc((string) ($tx['target_id'] ?? '')) ?></td>
+                                <td><span style="color:<?= $isOk ? '#2e7d32' : '#c62828' ?>;font-weight:700;"><?= esc((string) ($tx['status'] ?? '')) ?></span></td>
+                                <td style="font-size:12px;"><?= esc((string) ($tx['duration_ms'] ?? '')) ?>ms</td>
+                                <td style="max-width:200px;word-break:break-word;font-size:11px;color:#c62828;"><?= esc((string) ($tx['error'] ?? '')) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                </div>
+            <?php else: ?>
+                <p style="color:#888;">No transaction logs recorded yet.</p>
+            <?php endif; ?>
+
         <?php endif; ?>
     </div>
 

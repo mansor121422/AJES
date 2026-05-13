@@ -12,18 +12,22 @@ class DataEncryptor
 
     private static function getKey(): string
     {
-        $key = env('encryption.key', env('ENCRYPTION_KEY', ''));
+        $key = env('ENCRYPTION_KEY', '');
+        if ($key === '' || $key === false) {
+            $key = env('encryption.key', '');
+        }
         if ($key === '' || $key === false) {
             $key = config('Encryption')->key ?? '';
         }
-        if (is_string($key) && str_starts_with($key, 'hex2bin:')) {
-            $key = hex2bin(substr($key, 7));
-        }
-        if (is_string($key) && str_starts_with($key, 'base64:')) {
-            $key = base64_decode(substr($key, 7));
+        if (is_string($key)) {
+            if (preg_match('/hex2bin:([0-9a-fA-F]+)/', $key, $m)) {
+                $key = hex2bin($m[1]);
+            } elseif (preg_match('/base64:(.+)/', $key, $m)) {
+                $key = base64_decode($m[1]);
+            }
         }
         if (! is_string($key) || strlen($key) < 16) {
-            throw new \RuntimeException('Encryption key not configured. Set encryption.key in .env (min 16 bytes).');
+            throw new \RuntimeException('Encryption key not configured. Set ENCRYPTION_KEY in .env (min 16 bytes).');
         }
 
         return hash('sha256', $key, true);
