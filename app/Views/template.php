@@ -209,20 +209,6 @@
         margin-bottom: 14px;
     }
 
-    .ajes-logout-save__label {
-        font-size: 0.92rem;
-        font-weight: 700;
-        color: #1b5e20;
-        margin-bottom: 6px;
-    }
-
-    .ajes-logout-save__hint {
-        margin: 0 0 14px;
-        font-size: 0.8rem;
-        line-height: 1.45;
-        color: #555;
-    }
-
     .ajes-logout-save__choices {
         display: flex;
         gap: 10px;
@@ -299,14 +285,20 @@
         }
     }
 
-    /* Sidebar – left nav like reference */
+    /* Sidebar – fixed so it stays visible while main content scrolls */
     .sidebar {
+        position: fixed;
+        top: 56px;
+        left: 0;
+        bottom: 0;
         width: 240px;
         min-width: 240px;
         background: #fff;
-        padding: 72px 0 16px;
+        padding: 16px 0;
         box-shadow: 2px 0 12px rgba(0,0,0,0.06);
-        position: relative;
+        z-index: 90;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .sidebar-brand {
@@ -401,6 +393,7 @@
     /* Content area – enter animation on each navigation */
     main.content {
         flex: 1;
+        margin-left: 240px;
         padding: 72px 24px 24px;
         min-width: 0;
         animation: ajesContentEnter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;

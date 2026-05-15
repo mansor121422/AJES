@@ -1,21 +1,17 @@
 <?php
+use App\Libraries\RoleRegistry;
+
 $user = $user ?? [];
 $sections = $sections ?? [];
 $role = $role ?? 'ADMIN';
 $name = $name ?? 'User';
 $is_editing_self = $is_editing_self ?? false;
-$privilegeLabels = $privilege_labels ?? [];
-$privilegeRoleMap = $privilege_role_map ?? [];
-$assignedPrivileges = $assigned_privileges ?? [];
-if (! is_array($assignedPrivileges)) {
-    $assignedPrivileges = [];
-}
-$oldPrivileges = old('admin_privileges');
-if (is_array($oldPrivileges)) {
-    $assignedPrivileges = $oldPrivileges;
-}
-$roleReadonlyStyle = $is_editing_self ? ' background: #e0e0e0; color: #666; cursor: not-allowed;' : '';
-$studentSectionLocked = (($user['role'] ?? '') === 'STUDENT' && (int) ($user['section_id'] ?? 0) > 0);
+$roleOptions = $role_options ?? [];
+$roleDashboardTypes = $role_dashboard_types ?? [];
+
+$userRoleSlug = strtoupper((string) ($user['role'] ?? 'STAFF'));
+$selectedRoleSlug = strtoupper((string) old('role', $userRoleSlug));
+$studentSectionLocked = ($userRoleSlug === 'STUDENT' && (int) ($user['section_id'] ?? 0) > 0);
 $lockedSectionLabel = '';
 if ($studentSectionLocked) {
     foreach ($sections as $s) {
@@ -44,6 +40,7 @@ if (! empty($nameParts)) {
         $middleNameValue = implode(' ', $nameParts);
     }
 }
+$roleDisplayName = RoleRegistry::displayName($userRoleSlug);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -68,103 +65,82 @@ if (! empty($nameParts)) {
     <?php endif; ?>
 
     <div class="card">
-        <div class="card-title">User #<?= esc($user['id']) ?></div>
+        <div class="card-title">User #<?= esc($user['id']) ?> &middot; <?= esc($roleDisplayName) ?></div>
+        <p style="margin-bottom: 16px; color: #558b2f;">
+            Privileges come from the selected role. Manage roles under
+            <a href="<?= base_url('admin/users?section=roles') ?>" style="color: #2e7d32;">Roles &amp; privileges</a>.
+        </p>
         <?php if ($is_editing_self): ?>
         <p style="margin-bottom: 12px; color: #795548; background: #fff3e0; padding: 10px; border-radius: 8px;">You are editing your own profile. Role cannot be changed.</p>
         <?php endif; ?>
         <form action="<?= base_url('admin/users/update/' . $user['id']) ?>" method="post">
             <?= csrf_field() ?>
+
             <div class="form-group">
                 <label for="first_name" style="color: #1b5e20;">First name</label>
-                <input type="text" id="first_name" name="first_name" required value="<?= esc(old('first_name', $firstNameValue)) ?>" pattern="[A-Za-zÑñ ]+" title="First name must contain letters (including Ñ/ñ) and spaces only. Numbers and special characters are not allowed." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <input type="text" id="first_name" name="first_name" required value="<?= esc(old('first_name', $firstNameValue)) ?>" pattern="[A-Za-zÑñ ]+" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
             </div>
             <div class="form-group">
                 <label for="middle_name" style="color: #1b5e20;">Middle name</label>
-                <input type="text" id="middle_name" name="middle_name" value="<?= esc(old('middle_name', $middleNameValue)) ?>" placeholder="Middle name (optional)" pattern="[A-Za-zÑñ ]*" title="Middle name must contain letters (including Ñ/ñ) and spaces only. Numbers and special characters are not allowed." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <input type="text" id="middle_name" name="middle_name" value="<?= esc(old('middle_name', $middleNameValue)) ?>" placeholder="Middle name (optional)" pattern="[A-Za-zÑñ ]*" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
             </div>
             <div class="form-group">
                 <label for="surname" style="color: #1b5e20;">Surname</label>
-                <input type="text" id="surname" name="surname" required value="<?= esc(old('surname', $surnameValue)) ?>" pattern="[A-Za-zÑñ ]+" title="Surname must contain letters (including Ñ/ñ) and spaces only. Numbers and special characters are not allowed." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
-                <small style="color: #666;">Name fields: letters (including Ñ/ñ) and spaces only. No numbers or special characters.</small>
+                <input type="text" id="surname" name="surname" required value="<?= esc(old('surname', $surnameValue)) ?>" pattern="[A-Za-zÑñ ]+" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
             </div>
             <div class="form-group">
                 <label for="suffix" style="color: #1b5e20;">Suffix (optional)</label>
-                <input type="text" id="suffix" name="suffix" value="<?= esc(old('suffix', $suffixValue)) ?>" placeholder="e.g. Jr., Sr., III" pattern="[A-Za-zÑñ. ]*" title="Suffix must contain letters (including Ñ/ñ), spaces, or dot only." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                <input type="text" id="suffix" name="suffix" value="<?= esc(old('suffix', $suffixValue)) ?>" placeholder="e.g. Jr., Sr., III" pattern="[A-Za-zÑñ. ]*" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
             </div>
             <div class="form-group">
                 <label for="email" style="color: #1b5e20;">Email</label>
-                <input type="email" id="email" name="email" required value="<?= esc(old('email', $user['email'])) ?>" pattern="[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" title="Letters, numbers, and @ only (e.g. user@domain.com)" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
-                <small style="color: #666;">Letters, numbers, at @ lang (hal. user@domain.com)</small>
+                <input type="email" id="email" name="email" required value="<?= esc(old('email', $user['email'])) ?>" pattern="[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
             </div>
             <div class="form-group">
                 <label for="username" style="color: #1b5e20;">Username</label>
-                <input type="text" id="username" name="username" required value="<?= esc(old('username', $user['username'])) ?>" pattern="[a-zA-Z0-9_]+" title="Letters, numbers, and underscore only. No special characters." style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
-                <small style="color: #666;">Letters, numbers, at underscore lang. Walang special characters.</small>
+                <input type="text" id="username" name="username" required value="<?= esc(old('username', $user['username'])) ?>" pattern="[a-zA-Z0-9_]+" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
             </div>
             <div class="form-group">
                 <label for="password" style="color: #1b5e20;">Password (leave blank to keep)</label>
                 <input type="password" id="password" name="password" placeholder="Leave blank to keep current" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
             </div>
+
             <div class="form-group">
                 <label for="role" style="color: #1b5e20;">Role</label>
-                <select id="role" name="role" <?= $is_editing_self ? 'disabled' : 'required' ?> style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;<?= $roleReadonlyStyle ?>">
-                    <option value="SUPER_ADMIN" <?= ($user['role'] ?? '') === 'SUPER_ADMIN' ? 'selected' : '' ?>>SUPER_ADMIN</option>
-                    <option value="ADMIN" <?= ($user['role'] ?? '') === 'ADMIN' ? 'selected' : '' ?>>ADMIN</option>
-                    <option value="PRINCIPAL" <?= ($user['role'] ?? '') === 'PRINCIPAL' ? 'selected' : '' ?>>PRINCIPAL</option>
-                    <option value="VICE_PRINCIPAL" <?= ($user['role'] ?? '') === 'VICE_PRINCIPAL' ? 'selected' : '' ?>>VICE_PRINCIPAL</option>
-                    <option value="HEAD_TEACHER" <?= ($user['role'] ?? '') === 'HEAD_TEACHER' ? 'selected' : '' ?>>HEAD_TEACHER</option>
-                    <option value="ANNOUNCER" <?= ($user['role'] ?? '') === 'ANNOUNCER' ? 'selected' : '' ?>>ANNOUNCER</option>
-                    <option value="TEACHER" <?= ($user['role'] ?? '') === 'TEACHER' ? 'selected' : '' ?>>TEACHER</option>
-                    <option value="GUIDANCE" <?= ($user['role'] ?? '') === 'GUIDANCE' ? 'selected' : '' ?>>GUIDANCE</option>
-                    <option value="STUDENT" <?= ($user['role'] ?? '') === 'STUDENT' ? 'selected' : '' ?>>STUDENT</option>
-                </select>
                 <?php if ($is_editing_self): ?>
-                <input type="hidden" name="role" value="<?= esc((string) ($user['role'] ?? 'ADMIN')) ?>">
-                <?php endif; ?>
-            </div>
-            <div id="feature-privileges" style="margin-bottom: 16px; padding: 12px; border: 1px solid #c8e6c9; border-radius: 10px; background: #f8fff8;">
-                <div style="font-weight: 600; color: #1b5e20; margin-bottom: 8px;">Feature Privileges</div>
-                <small style="display:block; margin-bottom: 10px; color: #558b2f;">Choose which features this account can access. Chat is always available to all users.</small>
-                <div style="margin-bottom: 10px;">
-                    <button type="button" id="privileges-select-all" style="margin-right: 8px; padding: 6px 10px; border: 1px solid #81c784; border-radius: 6px; background: #e8f5e9; color: #1b5e20; cursor: pointer;">Select all</button>
-                    <button type="button" id="privileges-clear-all" style="padding: 6px 10px; border: 1px solid #c8e6c9; border-radius: 6px; background: #fff; color: #2e7d32; cursor: pointer;">Clear all</button>
-                </div>
-                <?php foreach ($privilegeLabels as $key => $label): ?>
-                    <?php
-                        $rolesForPrivilege = [];
-                        foreach ($privilegeRoleMap as $roleKey => $keys) {
-                            if (in_array($key, (array) $keys, true)) {
-                                $rolesForPrivilege[] = $roleKey;
-                            }
-                        }
-                    ?>
-                    <label style="display: block; margin-bottom: 6px; color: #1b5e20;">
-                        <input type="checkbox" name="admin_privileges[]" value="<?= esc($key) ?>" data-roles="<?= esc(implode(',', $rolesForPrivilege)) ?>" <?= in_array($key, $assignedPrivileges, true) ? 'checked' : '' ?>>
-                        <?= esc($label) ?>
-                    </label>
-                <?php endforeach; ?>
-            </div>
-            <div class="form-group" id="section-group" style="display: none;">
-                <?php if ($studentSectionLocked): ?>
-                    <span style="display: block; color: #1b5e20; font-weight: 600; margin-bottom: 4px;">Section</span>
+                    <input type="text" id="role" value="<?= esc($roleDisplayName) ?>" readonly style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px; background: #f1f8e9;">
+                    <input type="hidden" name="role" value="<?= esc($userRoleSlug) ?>">
                 <?php else: ?>
-                    <label for="section_id" style="color: #1b5e20;">Section</label>
-                <?php endif; ?>
-                <?php if ($studentSectionLocked): ?>
-                    <p style="margin: 0; padding: 10px 12px; background: #f1f8e9; border: 1px solid #c8e6c9; border-radius: 8px; color: #1b5e20;">
-                        <?= $lockedSectionLabel !== '' ? $lockedSectionLabel : 'Assigned section' ?>
-                        <span style="display: block; font-size: 0.82rem; color: #558b2f; margin-top: 6px;">This student must stay in this section — it cannot be changed here.</span>
-                    </p>
-                    <input type="hidden" name="section_id" value="<?= (int) $user['section_id'] ?>">
-                <?php else: ?>
-                    <select id="section_id" name="section_id" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
-                        <option value="">— None —</option>
-                        <?php foreach ($sections as $s): ?>
-                            <option value="<?= (int) $s['id'] ?>" <?= (string) ($user['section_id'] ?? '') === (string) $s['id'] ? 'selected' : '' ?>><?= esc($s['grade_level'] . ' - ' . $s['name']) ?></option>
+                    <select id="role" name="role" required style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                        <option value="">— Select role —</option>
+                        <?php foreach ($roleOptions as $slug => $label): ?>
+                            <option value="<?= esc($slug) ?>" <?= $selectedRoleSlug === $slug ? 'selected' : '' ?>><?= esc($label) ?></option>
                         <?php endforeach; ?>
                     </select>
                 <?php endif; ?>
             </div>
+
+            <div id="section-group" style="display:none;">
+                <div class="form-group">
+                    <?php if ($studentSectionLocked): ?>
+                        <span style="display: block; color: #1b5e20; font-weight: 600; margin-bottom: 4px;">Section</span>
+                        <p style="margin: 0; padding: 10px 12px; background: #f1f8e9; border: 1px solid #c8e6c9; border-radius: 8px; color: #1b5e20;">
+                            <?= $lockedSectionLabel !== '' ? $lockedSectionLabel : 'Assigned section' ?>
+                            <span style="display: block; font-size: 0.82rem; color: #558b2f; margin-top: 6px;">This student must stay in this section.</span>
+                        </p>
+                        <input type="hidden" name="section_id" value="<?= (int) $user['section_id'] ?>">
+                    <?php else: ?>
+                        <label for="section_id" style="color: #1b5e20;">Section</label>
+                        <select id="section_id" name="section_id" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                            <option value="">— None —</option>
+                            <?php foreach ($sections as $s): ?>
+                                <option value="<?= (int) $s['id'] ?>" <?= (string) ($user['section_id'] ?? '') === (string) $s['id'] ? 'selected' : '' ?>><?= esc($s['grade_level'] . ' - ' . $s['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <div id="student-fields" style="display:none;">
                 <div class="form-group">
                     <label for="student_id" style="color: #1b5e20;">Student ID / LRN</label>
@@ -185,7 +161,6 @@ if (! empty($nameParts)) {
                 <div class="form-group">
                     <label for="birthdate" style="color: #1b5e20;">Birthdate</label>
                     <input type="date" id="birthdate" name="birthdate" value="<?= esc(old('birthdate', $user['birthdate'] ?? '')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
-                    <small style="color: #666;">Student must be at least 6 years old.</small>
                 </div>
                 <div class="form-group">
                     <label for="address" style="color: #1b5e20;">Address</label>
@@ -200,6 +175,7 @@ if (! empty($nameParts)) {
                     <input type="text" id="guardian_contact" name="guardian_contact" value="<?= esc(old('guardian_contact', $user['guardian_contact'] ?? '')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
                 </div>
             </div>
+
             <div class="form-group">
                 <label style="color: #1b5e20;">
                     <input type="checkbox" name="is_active" value="1" <?= ! empty($user['is_active']) ? 'checked' : '' ?>> Active
@@ -209,7 +185,6 @@ if (! empty($nameParts)) {
                 <label style="color: #1b5e20;">
                     <input type="checkbox" name="mfa_enabled" value="1" <?= ! empty($user['mfa_enabled']) ? 'checked' : '' ?>> Enable Two-Factor Authentication (MFA)
                 </label>
-                <small style="color: #666; display: block; margin-top: 4px;">When enabled, a 6-digit email code is required after the password on every login.</small>
             </div>
             <button type="submit" class="login-button" style="display: inline-flex; width: auto; padding: 10px 24px;">Update</button>
             <a href="<?= base_url('admin/users') ?>" style="margin-left: 12px; color: #2e7d32;">Cancel</a>
@@ -217,84 +192,35 @@ if (! empty($nameParts)) {
     </div>
 
     <script>
-    var formEl = document.querySelector('form[action*="admin/users/update/"]');
-    var roleSelect = document.getElementById('role');
-    var selectAllBtn = document.getElementById('privileges-select-all');
-    var clearAllBtn = document.getElementById('privileges-clear-all');
-    var privilegeChecks = document.querySelectorAll('input[name="admin_privileges[]"]');
-    var privilegeRoleMap = <?= json_encode($privilegeRoleMap, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    (function () {
+        var roleEl = document.getElementById('role');
+        var sectionGroup = document.getElementById('section-group');
+        var studentFields = document.getElementById('student-fields');
+        var roleDashboardTypes = <?= json_encode($roleDashboardTypes, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 
-    roleSelect.addEventListener('change', function() {
-        var g = document.getElementById('section-group');
-        var sf = document.getElementById('student-fields');
-        g.style.display = ['TEACHER','STUDENT'].indexOf(this.value) >= 0 ? 'block' : 'none';
-        sf.style.display = this.value === 'STUDENT' ? 'block' : 'none';
-        syncPrivilegesByRole();
-    });
-
-    function syncPrivilegesByRole() {
-        var selectedRole = roleSelect ? roleSelect.value : '';
-        var allowed = privilegeRoleMap[selectedRole] || [];
-        privilegeChecks.forEach(function (cb) {
-            var isAllowed = allowed.indexOf(cb.value) >= 0;
-            cb.disabled = !isAllowed;
-            if (!isAllowed) {
-                cb.checked = false;
-            }
-            var row = cb.closest('label');
-            if (row) {
-                row.style.opacity = isAllowed ? '1' : '0.45';
-            }
-        });
-    }
-    if (selectAllBtn) {
-        selectAllBtn.addEventListener('click', function () {
-            privilegeChecks.forEach(function (cb) {
-                if (!cb.disabled) cb.checked = true;
-            });
-        });
-    }
-    if (clearAllBtn) {
-        clearAllBtn.addEventListener('click', function () {
-            privilegeChecks.forEach(function (cb) { cb.checked = false; });
-        });
-    }
-
-    function refreshFieldState(field) {
-        if (!field || typeof field.checkValidity !== 'function') return;
-        if (field.checkValidity()) {
-            field.classList.remove('invalid-field');
-        } else {
-            field.classList.add('invalid-field');
+        function dashboardTypeForRole(slug) {
+            if (!slug) return '';
+            return roleDashboardTypes[slug] || '';
         }
-    }
 
-    function bindValidationStyles() {
-        if (!formEl) return;
-        var fields = formEl.querySelectorAll('input, select, textarea');
-        fields.forEach(function(field) {
-            field.addEventListener('input', function() { refreshFieldState(field); });
-            field.addEventListener('change', function() { refreshFieldState(field); });
-            field.addEventListener('blur', function() { refreshFieldState(field); });
-        });
-        formEl.addEventListener('submit', function() {
-            fields.forEach(function(field) { refreshFieldState(field); });
-        });
-    }
+        function syncRoleFields() {
+            var slug = roleEl ? (roleEl.value || roleEl.getAttribute('value') || '') : '';
+            if (roleEl && roleEl.tagName === 'INPUT' && roleEl.readOnly) {
+                var hidden = document.querySelector('input[type="hidden"][name="role"]');
+                if (hidden) slug = hidden.value;
+            }
+            var dashType = dashboardTypeForRole(slug);
+            var isTeacher = dashType === 'teacher' || slug === 'TEACHER';
+            var isStudent = dashType === 'student' || slug === 'STUDENT';
+            if (sectionGroup) sectionGroup.style.display = (isTeacher || isStudent) ? 'block' : 'none';
+            if (studentFields) studentFields.style.display = isStudent ? 'block' : 'none';
+        }
 
-    (function() {
-        var birthdateEl = document.getElementById('birthdate');
-        if (!birthdateEl) return;
-        var today = new Date();
-        var max = new Date(today.getFullYear() - 6, today.getMonth(), today.getDate());
-        var min = new Date(today.getFullYear() - 25, today.getMonth(), today.getDate());
-        birthdateEl.max = max.toISOString().split('T')[0];
-        birthdateEl.min = min.toISOString().split('T')[0];
+        if (roleEl && roleEl.tagName === 'SELECT') {
+            roleEl.addEventListener('change', syncRoleFields);
+        }
+        syncRoleFields();
     })();
-
-    roleSelect.dispatchEvent(new Event('change'));
-    syncPrivilegesByRole();
-    bindValidationStyles();
     </script>
 
     </main>

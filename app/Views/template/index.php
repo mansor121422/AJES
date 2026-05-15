@@ -1,5 +1,6 @@
 <?php
 use App\Libraries\AdminPrivilege;
+use App\Libraries\RoleRegistry;
 
 if (!isset($role)) {
     $role = 'STUDENT';
@@ -124,9 +125,23 @@ switch ($role) {
         $menuItems[] = ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'];
         break;
     case 'VICE_PRINCIPAL':
-    case 'HEAD_TEACHER':
         if ($canFeature('dashboard')) {
             $menuItems[] = ['url' => 'dashboard/vice-principal', 'label' => 'Dashboard Home', 'icon' => '📊'];
+        }
+        if ($canFeature('announcements')) {
+            $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
+        }
+        if ($canFeature('records')) {
+            $menuItems[] = ['url' => 'records', 'label' => 'Reports', 'icon' => '📁'];
+        }
+        if ($canFeature('chat_logs')) {
+            $menuItems[] = ['url' => 'chatlogs', 'label' => 'Chat Monitoring', 'icon' => '📋'];
+        }
+        $menuItems[] = ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'];
+        break;
+    case 'HEAD_TEACHER':
+        if ($canFeature('dashboard')) {
+            $menuItems[] = ['url' => 'dashboard/head-teacher', 'label' => 'Dashboard Home', 'icon' => '📊'];
         }
         if ($canFeature('announcements')) {
             $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
@@ -161,11 +176,50 @@ switch ($role) {
         $menuItems[] = ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'];
         break;
     default:
-        $menuItems = [
-            ['url' => 'dashboard/student', 'label' => 'Dashboard Home', 'icon' => '📊'],
-            ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'],
-            ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'],
-        ];
+        $dashType = RoleRegistry::dashboardType($role);
+        $dashUrl = match ($dashType) {
+            'admin'          => 'dashboard/admin',
+            'principal'      => 'dashboard/principal',
+            'vice_principal' => 'dashboard/vice-principal',
+            'head_teacher'   => 'dashboard/head-teacher',
+            'teacher'        => 'dashboard/teacher',
+            'student'        => 'dashboard/student',
+            'guidance'       => 'dashboard/guidance',
+            'announcer'      => 'dashboard/announcer',
+            default          => 'dashboard',
+        };
+        if ($canFeature('dashboard')) {
+            $menuItems[] = ['url' => $dashUrl, 'label' => 'Dashboard Home', 'icon' => '📊'];
+        }
+        if ($canFeature('announcements')) {
+            $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
+        }
+        if ($canFeature('sections')) {
+            $menuItems[] = ['url' => 'admin/sections', 'label' => 'Sections', 'icon' => '📂'];
+        }
+        if ($canFeature('records')) {
+            $menuItems[] = ['url' => 'records', 'label' => 'Reports', 'icon' => '📁'];
+        }
+        if ($canFeature('chat_logs')) {
+            $menuItems[] = ['url' => 'chatlogs', 'label' => 'Chat Monitoring', 'icon' => '📋'];
+        }
+        if ($canFeature('user_management')) {
+            $menuItems[] = ['url' => 'admin/users', 'label' => 'User Management', 'icon' => '👥'];
+        }
+        if ($canFeature('system_settings')) {
+            $menuItems[] = ['url' => 'sysadmin/settings', 'label' => 'System Settings', 'icon' => '⚙️'];
+        }
+        if ($canFeature('chatbot_management')) {
+            $menuItems[] = ['url' => 'sysadmin/chatbot', 'label' => 'Chatbot', 'icon' => '🤖'];
+        }
+        if ($canFeature('backup_restore')) {
+            $menuItems[] = ['url' => 'sysadmin/backup', 'label' => 'Backup & Restore', 'icon' => '💾'];
+        }
+        if ($canFeature('security_logs')) {
+            $menuItems[] = ['url' => 'sysadmin/security-logs', 'label' => 'Security Logs', 'icon' => '🛡️'];
+        }
+        $menuItems[] = ['url' => 'chat', 'label' => 'Chat', 'icon' => '💬'];
+        break;
 }
 
 $currentUri = uri_string();
@@ -224,11 +278,9 @@ if ($sessionUser) {
             <p class="ajes-logout-modal__lead">Are you sure you want to log out?</p>
             <p class="ajes-logout-modal__muted">If you continue, you’ll need to sign in again to use your account.</p>
             <div class="ajes-logout-save" role="group" aria-label="Save login information">
-                <div class="ajes-logout-save__label">Save your login information on this device?</div>
-                <p class="ajes-logout-save__hint">Similar to Facebook: <strong>Save</strong> fills in your username next time. We never store your password in the browser.</p>
                 <div class="ajes-logout-save__choices">
                     <button type="button" class="ajes-logout-choice" data-logout-save="1" id="ajes-logout-save-yes">Save</button>
-                    <button type="button" class="ajes-logout-choice is-selected" data-logout-save="0" id="ajes-logout-save-no">Don’t save</button>
+                    <button type="button" class="ajes-logout-choice is-selected" data-logout-save="0" id="ajes-logout-save-no">Don't save</button>
                 </div>
             </div>
         </div>

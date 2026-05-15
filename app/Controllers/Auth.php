@@ -485,28 +485,17 @@ class Auth extends BaseController
 
     protected function redirectForRole(string $role, mixed $adminPrivileges = null): string
     {
-        $granted = AdminPrivilege::normalize($adminPrivileges);
-        if ($granted !== []) {
-            if ($role === 'ADMIN' && in_array('user_management', $granted, true)) {
+        $normalizedRole = strtoupper(trim($role));
+        $granted = AdminPrivilege::effectiveForRole($normalizedRole, $adminPrivileges);
+
+        if ($granted !== [] && ! in_array('dashboard', $granted, true)) {
+            if (in_array('user_management', $granted, true)) {
                 return base_url('admin/users');
             }
-            if (in_array('dashboard', $granted, true)) {
-                return match ($role) {
-                    'SUPER_ADMIN' => base_url('dashboard/admin'),
-                    'ADMIN'      => base_url('dashboard/admin'),
-                    'PRINCIPAL'  => base_url('dashboard/principal'),
-                    'VICE_PRINCIPAL', 'HEAD_TEACHER' => base_url('dashboard/vice-principal'),
-                    'ANNOUNCER'  => base_url('dashboard/announcer'),
-                    'TEACHER'    => base_url('dashboard/teacher'),
-                    'GUIDANCE'   => base_url('dashboard/guidance'),
-                    'STUDENT'    => base_url('dashboard/student'),
-                    default      => base_url('dashboard'),
-                };
-            }
-            if ($role === 'ADMIN' && in_array('sections', $granted, true)) {
+            if (in_array('sections', $granted, true)) {
                 return base_url('admin/sections');
             }
-            if ($role === 'TEACHER' && in_array('teacher_sections', $granted, true)) {
+            if (in_array('teacher_sections', $granted, true)) {
                 return base_url('teacher/sections');
             }
             if (in_array('announcements', $granted, true)) {
@@ -515,23 +504,13 @@ class Auth extends BaseController
             if (in_array('records', $granted, true)) {
                 return base_url('records');
             }
-            if ($role === 'ADMIN' && in_array('chat_logs', $granted, true)) {
-                return base_url('admin/chat-logs');
+            if (in_array('chat_logs', $granted, true)) {
+                return base_url('chatlogs');
             }
+
             return base_url('chat');
         }
 
-        return match ($role) {
-            'SUPER_ADMIN' => base_url('dashboard/admin'),
-            'ADMIN'      => base_url('dashboard/admin'),
-            'PRINCIPAL'  => base_url('dashboard/principal'),
-            'VICE_PRINCIPAL', 'HEAD_TEACHER' => base_url('dashboard/vice-principal'),
-            'ANNOUNCER'  => base_url('dashboard/announcer'),
-            'TEACHER'    => base_url('dashboard/teacher'),
-            'GUIDANCE'   => base_url('dashboard/guidance'),
-            'STUDENT'    => base_url('dashboard/student'),
-            'PARENT'     => base_url('dashboard/student'),
-            default      => base_url('dashboard'),
-        };
+        return \App\Libraries\RoleRegistry::dashboardUrl($normalizedRole, $adminPrivileges);
     }
 }

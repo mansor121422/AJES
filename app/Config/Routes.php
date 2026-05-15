@@ -31,20 +31,25 @@ $routes->get('api/announcements', 'Api\Announcements::index', ['filter' => 'auth
 $routes->post('api/announcements', 'Api\Announcements::store', ['filter' => 'auth']);
 $routes->get('api/profile', 'Api\Profile::show', ['filter' => 'auth']);
 $routes->post('api/profile', 'Api\Profile::update', ['filter' => 'auth']);
+$routes->get('api/notifications', 'Api\Notifications::index', ['filter' => 'auth']);
+$routes->post('api/notifications/mark-read', 'Api\Notifications::markRead', ['filter' => 'auth']);
+$routes->post('api/notifications/mark-all-read', 'Api\Notifications::markAllRead', ['filter' => 'auth']);
 $routes->get('api/chat/users', 'Chat::getChatUsersApi', ['filter' => 'auth']);
 $routes->post('api/chat/typing', 'Chat::setTypingApi', ['filter' => 'auth']);
 $routes->get('api/chat/typing', 'Chat::getTypingApi', ['filter' => 'auth']);
+$routes->get('api/mobile/summary', 'Api\Mobile::summary', ['filter' => 'auth']);
 
 // Dashboards (protected with filters)
 $routes->group('dashboard', ['filter' => 'auth'], static function (RouteCollection $routes): void {
     $routes->get('/', 'Dashboard::index');
-    $routes->get('admin', 'Dashboard::admin', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:dashboard']]);
-    $routes->get('principal', 'Dashboard::principal', ['filter' => ['role:PRINCIPAL', 'privilege:dashboard']]);
-    $routes->get('vice-principal', 'Dashboard::vicePrincipal', ['filter' => ['role:VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:dashboard']]);
-    $routes->get('announcer', 'Dashboard::announcer', ['filter' => ['role:ANNOUNCER', 'privilege:dashboard']]);
-    $routes->get('teacher', 'Dashboard::teacher', ['filter' => ['role:TEACHER', 'privilege:dashboard']]);
-    $routes->get('guidance', 'Dashboard::guidance', ['filter' => ['role:GUIDANCE', 'privilege:dashboard']]);
-    $routes->get('student', 'Dashboard::student', ['filter' => ['role:STUDENT', 'privilege:dashboard']]);
+    $routes->get('admin', 'Dashboard::admin', ['filter' => 'privilege:dashboard']);
+    $routes->get('principal', 'Dashboard::principal', ['filter' => 'privilege:dashboard']);
+    $routes->get('vice-principal', 'Dashboard::vicePrincipal', ['filter' => 'privilege:dashboard']);
+    $routes->get('head-teacher', 'Dashboard::headTeacher', ['filter' => 'privilege:dashboard']);
+    $routes->get('announcer', 'Dashboard::announcer', ['filter' => 'privilege:dashboard']);
+    $routes->get('teacher', 'Dashboard::teacher', ['filter' => 'privilege:dashboard']);
+    $routes->get('guidance', 'Dashboard::guidance', ['filter' => 'privilege:dashboard']);
+    $routes->get('student', 'Dashboard::student', ['filter' => 'privilege:dashboard']);
 });
 
 // Announcements
@@ -61,7 +66,7 @@ $routes->post('chat/send', 'Chat::send', ['filter' => 'auth']);
 $routes->post('chat/unsend', 'Chat::unsend', ['filter' => 'auth']);
 $routes->get('chat/messages', 'Chat::getMessages', ['filter' => 'auth']);
 $routes->get('chat/media/(:segment)', 'Chat::media/$1', ['filter' => 'auth']);
-$routes->get('chatlogs', 'Chat::logs', ['filter' => ['auth', 'role:ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:chat_logs']]);
+$routes->get('chatlogs', 'Chat::logs', ['filter' => ['auth', 'privilege:chat_logs']]);
 
 // Notifications (bell – count, list, mark read)
 $routes->get('notifications', 'Notifications::index', ['filter' => 'auth']);
@@ -77,25 +82,31 @@ $routes->post('profile', 'Profile::update', ['filter' => 'auth']);
 
 // Admin: Sections CRUD and invite teachers
 $routes->group('admin', ['filter' => 'auth'], static function (RouteCollection $routes): void {
-    $routes->get('sections', 'Sections::index', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
-    $routes->get('sections/create', 'Sections::create', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
-    $routes->post('sections/store', 'Sections::store', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
-    $routes->get('sections/edit/(:num)', 'Sections::edit/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
-    $routes->post('sections/update/(:num)', 'Sections::update/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
-    $routes->get('sections/delete/(:num)', 'Sections::delete/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
-    $routes->get('sections/(:num)/teachers', 'Sections::sectionTeachers/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
-    $routes->post('sections/invite', 'Sections::invite', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
-    $routes->post('sections/assignment/update/(:num)', 'Sections::updateTeacherAssignment/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
-    $routes->get('sections/assignment/delete/(:num)', 'Sections::deleteTeacherAssignment/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:sections']]);
-    $routes->get('users', 'Users::index', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management,read']]);
-    $routes->get('users/create', 'Users::create', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management,create']]);
-    $routes->post('users/store', 'Users::store', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management,create']]);
-    $routes->get('users/edit/(:num)', 'Users::edit/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management,update']]);
-    $routes->post('users/update/(:num)', 'Users::update/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management,update']]);
-    $routes->get('users/delete/(:num)', 'Users::delete/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management,delete']]);
-    $routes->get('users/restore/(:num)', 'Users::restore/$1', ['filter' => ['role:ADMIN,SUPER_ADMIN', 'privilege:user_management,update']]);
+    $routes->get('sections', 'Sections::index', ['filter' => 'privilege:sections']);
+    $routes->get('sections/create', 'Sections::create', ['filter' => 'privilege:sections']);
+    $routes->post('sections/store', 'Sections::store', ['filter' => 'privilege:sections']);
+    $routes->get('sections/edit/(:num)', 'Sections::edit/$1', ['filter' => 'privilege:sections']);
+    $routes->post('sections/update/(:num)', 'Sections::update/$1', ['filter' => 'privilege:sections']);
+    $routes->get('sections/delete/(:num)', 'Sections::delete/$1', ['filter' => 'privilege:sections']);
+    $routes->get('sections/(:num)/teachers', 'Sections::sectionTeachers/$1', ['filter' => 'privilege:sections']);
+    $routes->post('sections/invite', 'Sections::invite', ['filter' => 'privilege:sections']);
+    $routes->post('sections/assignment/update/(:num)', 'Sections::updateTeacherAssignment/$1', ['filter' => 'privilege:sections']);
+    $routes->get('sections/assignment/delete/(:num)', 'Sections::deleteTeacherAssignment/$1', ['filter' => 'privilege:sections']);
+    $routes->get('users', 'Users::index', ['filter' => 'privilege:user_management,read']);
+    $routes->get('users/create', 'Users::create', ['filter' => 'privilege:user_management,create']);
+    $routes->post('users/store', 'Users::store', ['filter' => 'privilege:user_management,create']);
+    $routes->get('users/roles/create', 'Users::createRole', ['filter' => 'privilege:user_management']);
+    $routes->post('users/roles/store', 'Users::storeRole', ['filter' => 'privilege:user_management']);
+    $routes->get('users/roles/edit/(:num)', 'Users::editRole/$1', ['filter' => 'privilege:user_management']);
+    $routes->post('users/roles/update/(:num)', 'Users::updateRole/$1', ['filter' => 'privilege:user_management']);
+    $routes->get('users/roles/delete/(:num)', 'Users::deleteRole/$1', ['filter' => 'privilege:user_management']);
+    $routes->get('users/edit/(:num)', 'Users::edit/$1', ['filter' => 'privilege:user_management,update']);
+    $routes->post('users/update/(:num)', 'Users::update/$1', ['filter' => 'privilege:user_management,update']);
+    $routes->get('users/delete/(:num)', 'Users::delete/$1', ['filter' => 'privilege:user_management,delete']);
+    $routes->get('users/restore/(:num)', 'Users::restore/$1', ['filter' => 'privilege:user_management,update']);
+    $routes->get('roles', static fn () => redirect()->to(base_url('admin/users?section=roles')));
     // Backward-compatible legacy URL.
-    $routes->get('chat-logs', 'Chat::logs', ['filter' => ['role:ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:chat_logs']]);
+    $routes->get('chat-logs', 'Chat::logs', ['filter' => 'privilege:chat_logs']);
 });
 
 // Teacher: accept section invite, my sections, add students
@@ -110,17 +121,17 @@ $routes->group('teacher', ['filter' => 'auth'], static function (RouteCollection
 
 // Records module (restricted to GUIDANCE and ADMIN for now)
 $routes->group('records', ['filter' => 'auth'], static function (RouteCollection $routes): void {
-    $routes->get('/', 'Records::index', ['filter' => ['role:GUIDANCE,ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:records']]);
-    $routes->get('create', 'Records::create', ['filter' => ['role:GUIDANCE,ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:records']]);
-    $routes->post('store', 'Records::store', ['filter' => ['role:GUIDANCE,ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:records']]);
-    $routes->get('edit/(:num)', 'Records::edit/$1', ['filter' => ['role:GUIDANCE,ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:records']]);
-    $routes->post('update/(:num)', 'Records::update/$1', ['filter' => ['role:GUIDANCE,ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:records']]);
-    $routes->get('delete/(:num)', 'Records::delete/$1', ['filter' => ['role:GUIDANCE,ADMIN,SUPER_ADMIN,PRINCIPAL,VICE_PRINCIPAL,HEAD_TEACHER', 'privilege:records']]);
+    $routes->get('/', 'Records::index', ['filter' => 'privilege:records']);
+    $routes->get('create', 'Records::create', ['filter' => 'privilege:records']);
+    $routes->post('store', 'Records::store', ['filter' => 'privilege:records']);
+    $routes->get('edit/(:num)', 'Records::edit/$1', ['filter' => 'privilege:records']);
+    $routes->post('update/(:num)', 'Records::update/$1', ['filter' => 'privilege:records']);
+    $routes->get('delete/(:num)', 'Records::delete/$1', ['filter' => 'privilege:records']);
 });
 
 // Technical/system operations (Admin and Super Admin)
 // Use "sysadmin" prefix to avoid collision with project "/system" directory.
-$routes->group('sysadmin', ['filter' => ['auth', 'role:ADMIN,SUPER_ADMIN']], static function (RouteCollection $routes): void {
+$routes->group('sysadmin', ['filter' => 'auth'], static function (RouteCollection $routes): void {
     $routes->get('settings', 'SystemAdmin::settings', ['filter' => 'privilege:system_settings']);
     $routes->get('chatbot', 'SystemAdmin::chatbot', ['filter' => 'privilege:chatbot_management']);
     $routes->get('backup', 'SystemAdmin::backup', ['filter' => 'privilege:backup_restore']);

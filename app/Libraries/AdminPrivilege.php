@@ -22,13 +22,14 @@ class AdminPrivilege
     }
 
     /**
+     * Built-in defaults used before roles table exists or as seed source.
+     *
      * @return array<string, list<string>>
      */
-    public static function roleMap(): array
+    public static function defaultRoleMap(): array
     {
         return [
             'SUPER_ADMIN' => array_keys(self::labels()),
-            // ADMIN is the technical/system administrator with full feature scope.
             'ADMIN' => array_keys(self::labels()),
             'PRINCIPAL' => ['dashboard', 'announcements', 'records', 'chat_logs'],
             'VICE_PRINCIPAL' => ['dashboard', 'announcements', 'records', 'chat_logs'],
@@ -37,7 +38,24 @@ class AdminPrivilege
             'TEACHER' => ['dashboard', 'announcements', 'teacher_sections'],
             'GUIDANCE' => ['dashboard', 'announcements', 'records'],
             'STUDENT' => ['dashboard', 'announcements'],
+            'STAFF'   => array_keys(self::labels()),
         ];
+    }
+
+    /**
+     * Role slug => default privileges (from DB when available).
+     *
+     * @return array<string, list<string>>
+     */
+    public static function roleMap(): array
+    {
+        $map = [];
+        foreach (RoleRegistry::all() as $slug => $row) {
+            $parsed = json_decode((string) ($row['privileges'] ?? ''), true);
+            $map[$slug] = self::normalize(is_array($parsed) ? $parsed : []);
+        }
+
+        return $map !== [] ? $map : self::defaultRoleMap();
     }
 
     /**
@@ -57,6 +75,7 @@ class AdminPrivilege
             'chatbot_management' => 'Chatbot Management',
             'backup_restore' => 'Backup & Restore',
             'security_logs' => 'Security Logs',
+            'role_management' => 'Role Management',
         ];
     }
 
@@ -102,9 +121,26 @@ class AdminPrivilege
      */
     public static function allowedForRole(string $role): array
     {
+        return RoleRegistry::privilegesForRole($role);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function allowedForRoleStatic(string $role): array
+    {
         $normalizedRole = strtoupper(trim($role));
-        $map = self::roleMap();
+        $map = self::defaultRoleMap();
+
         return $map[$normalizedRole] ?? [];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function roleOptions(): array
+    {
+        return RoleRegistry::roleOptions();
     }
 
     /**

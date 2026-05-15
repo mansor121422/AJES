@@ -4,12 +4,14 @@ namespace App\Controllers;
 
 use App\Libraries\PasswordReuseGuard;
 use App\Libraries\AdminPrivilege;
+use App\Libraries\RoleRegistry;
 use App\Libraries\AuditLogger;
 use App\Libraries\ActivityLogger;
 use App\Libraries\SecureHash;
 use App\Libraries\TransactionManager;
 use App\Models\UserModel;
 use App\Models\SectionModel;
+use App\Models\RoleModel;
 use CodeIgniter\HTTP\RedirectResponse;
 
 class Users extends BaseController
@@ -18,16 +20,29 @@ class Users extends BaseController
 
     protected UserModel   $users;
     protected SectionModel $sections;
+    protected RoleModel $roleModel;
 
     public function __construct()
     {
-        $this->users    = new UserModel();
-        $this->sections = new SectionModel();
+        $this->users     = new UserModel();
+        $this->sections  = new SectionModel();
+        $this->roleModel = new RoleModel();
         helper(['url', 'form']);
     }
 
     public function index(): string
     {
+        $section = strtolower(trim((string) $this->request->getGet('section')));
+        if ($section === 'roles') {
+            return view('Admin/Users/index', [
+                'active_section' => 'roles',
+                'roles'          => $this->roleModel->orderBy('sort_order', 'ASC')->orderBy('name', 'ASC')->findAll(),
+                'privilege_labels' => AdminPrivilege::labels(),
+                'role'           => session()->get('role') ?? 'ADMIN',
+                'name'           => session()->get('name') ?? 'User',
+            ]);
+        }
+
         $showDeleted = (bool) $this->request->getGet('deleted');
         if ($showDeleted) {
             $list = $this->users->onlyDeleted()->orderBy('role')->orderBy('name')->findAll();
@@ -36,25 +51,83 @@ class Users extends BaseController
             $list = $this->users->orderBy('role')->orderBy('name')->findAll();
             $deletedCount = $this->users->onlyDeleted()->countAllResults();
         }
-        $data = [
-            'users'        => $list,
-            'show_deleted' => $showDeleted,
-            'deleted_count' => $deletedCount,
-            'role'         => session()->get('role') ?? 'ADMIN',
-            'name'         => session()->get('name') ?? 'User',
-        ];
-        return view('Admin/Users/index', $data);
+
+        return view('Admin/Users/index', [
+            'active_section' => 'users',
+            'users'          => $list,
+            'show_deleted'   => $showDeleted,
+            'deleted_count'  => $deletedCount,
+            'role'           => session()->get('role') ?? 'ADMIN',
+            'name'           => session()->get('name') ?? 'User',
+        ]);
     }
 
-    public function create(): string
+    public function createRole(): string
     {
-        $data = [
-            'role' => session()->get('role') ?? 'ADMIN',
-            'name' => session()->get('name') ?? 'User',
-            'privilege_labels' => AdminPrivilege::labels(),
-            'privilege_role_map' => AdminPrivilege::roleMap(),
-        ];
-        return view('Admin/Users/create', $data);
+        return view('Admin/Users/role_form', $this->roleFormData(null));
+    }
+
+    public function storeRole(): RedirectResponse
+    {
+        return $this->saveRole(null);
+    }
+
+    public function editRole(int $id): string|RedirectResponse
+    {
+        $row = $this->roleModel->find($id);
+        if (! $row) {
+            return redirect()->to(base_url('admin/users?section=roles'))->with('error', 'Role not found.');
+        }
+
+        return view('Admin/Users/role_form', $this->roleFormData($row));
+    }
+
+    public function updateRole(int $id): RedirectResponse
+    {
+        $row = $this->roleModel->find($id);
+        if (! $row) {
+            return redirect()->to(base_url('admin/users?section=roles'))->with('error', 'Role not found.');
+        }
+
+        return $this->saveRole($row);
+    }
+
+    public function deleteRole(int $id): RedirectResponse
+    {
+        $row = $this->roleModel->find($id);
+        if (! $row) {
+            return redirect()->to(base_url('admin/users?section=roles'))->with('error', 'Role not found.');
+        }
+        if ((int) ($row['is_system'] ?? 0) === 1) {
+            return redirect()->to(base_url('admin/users?section=roles'))->with('error', 'System roles cannot be deleted.');
+        }
+
+        $slug = strtoupper((string) ($row['slug'] ?? ''));
+        if ($this->users->where('role', $slug)->countAllResults() > 0) {
+            return redirect()->to(base_url('admin/users?section=roles'))->with('error', 'Cannot delete a role that is assigned to users.');
+        }
+
+        $this->roleModel->delete($id);
+        RoleRegistry::clearCache();
+
+        return redirect()->to(base_url('admin/users?section=roles'))->with('success', 'Role deleted.');
+    }
+
+    public function create(): string|RedirectResponse
+    {
+        $roleOptions = RoleRegistry::roleOptions();
+        if ($roleOptions === []) {
+            return redirect()->to(base_url('admin/users/roles/create'))
+                ->with('error', 'Create a role first, then you can add users.');
+        }
+
+        return view('Admin/Users/create', [
+            'role'                  => session()->get('role') ?? 'ADMIN',
+            'name'                  => session()->get('name') ?? 'User',
+            'role_options'          => $roleOptions,
+            'role_dashboard_types'  => $this->roleDashboardTypesMap(),
+            'sections'              => $this->sections->orderBy('grade_level')->orderBy('name')->findAll(),
+        ]);
     }
 
     public function store(): RedirectResponse
@@ -67,17 +140,17 @@ class Users extends BaseController
         $email    = trim((string) $this->request->getPost('email'));
         $username = trim((string) $this->request->getPost('username'));
         $password = self::DEFAULT_NEW_USER_PASSWORD;
-        $role     = trim((string) $this->request->getPost('role'));
+        $role = strtoupper(trim((string) $this->request->getPost('role')));
         $isActive  = (int) $this->request->getPost('is_active');
         $birthdate = trim((string) $this->request->getPost('birthdate'));
         $age       = $this->computeAgeFromBirthdate($birthdate);
+        $sectionId = $this->request->getPost('section_id');
 
         if ($firstName === '' || $surname === '' || $email === '' || $username === '' || $role === '') {
             return redirect()->back()->withInput()->with('error', 'First name, surname, email, username and role are required.');
         }
-        $allowedRoles = array_keys(AdminPrivilege::roleMap());
-        if (! in_array($role, $allowedRoles, true)) {
-            return redirect()->back()->withInput()->with('error', 'Please choose a valid role.');
+        if (! RoleRegistry::exists($role)) {
+            return redirect()->back()->withInput()->with('error', 'Please select a valid role.');
         }
         if (! preg_match('/^[a-zA-ZÑñ ]+$/', $firstName) || ($middleName !== '' && ! preg_match('/^[a-zA-ZÑñ ]+$/', $middleName)) || ! preg_match('/^[a-zA-ZÑñ ]+$/', $surname) || ($suffix !== '' && ! preg_match('/^[a-zA-ZÑñ. ]+$/', $suffix))) {
             return redirect()->back()->withInput()->with('error', 'First name, middle name, surname, and suffix: letters (including Ñ/ñ) and spaces only. Suffix may include dot.');
@@ -104,12 +177,15 @@ class Users extends BaseController
             'is_active'     => $isActive ? 1 : 0,
             'mfa_enabled'   => (int) $this->request->getPost('mfa_enabled'),
         ];
-        $selectedPrivileges = AdminPrivilege::normalizeForRole($role, $this->request->getPost('admin_privileges'));
-        if ($selectedPrivileges === []) {
-            return redirect()->back()->withInput()->with('error', 'Select at least one valid feature privilege for the selected role.');
+        $privilegesJson = $this->encodedPrivilegesForRole($role);
+        if ($privilegesJson === false) {
+            return redirect()->back()->withInput()->with('error', 'The selected role has no privileges. Edit the role and assign privileges first.');
         }
-        $data['admin_privileges'] = json_encode($selectedPrivileges, JSON_UNESCAPED_SLASHES);
-        if ($role === 'STUDENT') {
+        $data['admin_privileges'] = $privilegesJson;
+        if ($this->roleUsesTeacherFields($role)) {
+            $data['section_id'] = ($sectionId !== null && $sectionId !== '') ? (int) $sectionId : null;
+        }
+        if ($this->roleUsesStudentFields($role)) {
             $gradePick = trim((string) $this->request->getPost('grade_level'));
             if (! in_array($gradePick, ['1', '2', '3', '4', '5', '6'], true)) {
                 return redirect()->back()->withInput()->with('error', 'Choose a grade level from Grade 1 to Grade 6.');
@@ -122,6 +198,9 @@ class Users extends BaseController
             $data['address'] = trim((string) $this->request->getPost('address'));
             $data['guardian_name'] = trim((string) $this->request->getPost('guardian_name'));
             $data['guardian_contact'] = trim((string) $this->request->getPost('guardian_contact'));
+            if ($sectionId !== null && $sectionId !== '') {
+                $data['section_id'] = (int) $sectionId;
+            }
         }
         try {
             $newId = TransactionManager::run('USER_CREATE', function ($db) use ($data, $name, $role) {
@@ -153,10 +232,9 @@ class Users extends BaseController
             'sections'        => $sections,
             'role'            => $currentRole ?: 'ADMIN',
             'name'            => session()->get('name') ?? 'User',
-            'is_editing_self' => $is_editing_self,
-            'privilege_labels' => AdminPrivilege::labels(),
-            'privilege_role_map' => AdminPrivilege::roleMap(),
-            'assigned_privileges' => AdminPrivilege::normalize($user['admin_privileges'] ?? []),
+            'is_editing_self'      => $is_editing_self,
+            'role_options'         => RoleRegistry::roleOptions(),
+            'role_dashboard_types' => $this->roleDashboardTypesMap(),
         ];
         return view('Admin/Users/edit', $data);
     }
@@ -179,18 +257,23 @@ class Users extends BaseController
         $email    = trim((string) $this->request->getPost('email'));
         $username = trim((string) $this->request->getPost('username'));
         $password = (string) $this->request->getPost('password');
-        $role     = $is_editing_self ? ($user['role'] ?? 'ADMIN') : trim((string) $this->request->getPost('role'));
+        $existingRole = strtoupper((string) ($user['role'] ?? 'STAFF'));
+        $postedRole = strtoupper(trim((string) $this->request->getPost('role')));
+        if ($is_editing_self) {
+            $role = $existingRole !== '' ? $existingRole : 'ADMIN';
+        } else {
+            $role = ($postedRole !== '' && RoleRegistry::exists($postedRole)) ? $postedRole : $existingRole;
+        }
+        if ($role === '') {
+            $role = 'STAFF';
+        }
         $sectionId = $this->request->getPost('section_id');
         $isActive  = (int) $this->request->getPost('is_active');
         $birthdate = trim((string) $this->request->getPost('birthdate'));
         $age       = $this->computeAgeFromBirthdate($birthdate);
 
-        if ($firstName === '' || $surname === '' || $email === '' || $username === '' || $role === '') {
-            return redirect()->back()->withInput()->with('error', 'First name, surname, email, username and role are required.');
-        }
-        $allowedRoles = array_keys(AdminPrivilege::roleMap());
-        if (! in_array($role, $allowedRoles, true)) {
-            return redirect()->back()->withInput()->with('error', 'Please choose a valid role.');
+        if ($firstName === '' || $surname === '' || $email === '' || $username === '') {
+            return redirect()->back()->withInput()->with('error', 'First name, surname, email and username are required.');
         }
         if (! preg_match('/^[a-zA-ZÑñ ]+$/', $firstName) || ($middleName !== '' && ! preg_match('/^[a-zA-ZÑñ ]+$/', $middleName)) || ! preg_match('/^[a-zA-ZÑñ ]+$/', $surname) || ($suffix !== '' && ! preg_match('/^[a-zA-ZÑñ. ]+$/', $suffix))) {
             return redirect()->back()->withInput()->with('error', 'First name, middle name, surname, and suffix: letters (including Ñ/ñ) and spaces only. Suffix may include dot.');
@@ -218,12 +301,14 @@ class Users extends BaseController
             'is_active'   => $isActive ? 1 : 0,
             'mfa_enabled' => (int) $this->request->getPost('mfa_enabled'),
         ];
-        $selectedPrivileges = AdminPrivilege::normalizeForRole($role, $this->request->getPost('admin_privileges'));
-        if ($selectedPrivileges === []) {
-            return redirect()->back()->withInput()->with('error', 'Select at least one valid feature privilege for the selected role.');
+        if (! $is_editing_self) {
+            $privilegesJson = $this->encodedPrivilegesForRole($role);
+            if ($privilegesJson === false) {
+                return redirect()->back()->withInput()->with('error', 'The selected role has no privileges. Edit the role and assign privileges first.');
+            }
+            $data['admin_privileges'] = $privilegesJson;
         }
-        $data['admin_privileges'] = json_encode($selectedPrivileges, JSON_UNESCAPED_SLASHES);
-        if ($role === 'STUDENT') {
+        if ($this->roleUsesStudentFields($role)) {
             $data['student_id'] = trim((string) $this->request->getPost('student_id'));
             $data['gender'] = trim((string) $this->request->getPost('gender'));
             $data['grade_level'] = trim((string) $this->request->getPost('grade_level'));
@@ -244,9 +329,9 @@ class Users extends BaseController
             $data['password_history'] = PasswordReuseGuard::appendPreviousHash((string) ($user['password_hash'] ?? ''), $hist);
             $data['password_hash']    = SecureHash::make($password);
         }
-        if ($role === 'TEACHER') {
+        if ($this->roleUsesTeacherFields($role)) {
             $data['section_id'] = ($sectionId !== null && $sectionId !== '') ? (int) $sectionId : null;
-        } elseif ($role === 'STUDENT') {
+        } elseif ($this->roleUsesStudentFields($role)) {
             $existingSectionId = (int) ($user['section_id'] ?? 0);
             if ($existingSectionId > 0) {
                 $data['section_id'] = $existingSectionId;
@@ -283,6 +368,121 @@ class Users extends BaseController
         }
 
         return redirect()->to(base_url('admin/users'))->with('success', 'User updated.');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function roleFormData(?array $row): array
+    {
+        return [
+            'role_row'               => $row,
+            'privilege_labels'       => AdminPrivilege::labels(),
+            'assigned_privileges'    => AdminPrivilege::normalize($row['privileges'] ?? []),
+            'role'                   => session()->get('role') ?? 'ADMIN',
+            'name'                   => session()->get('name') ?? 'User',
+        ];
+    }
+
+    /**
+     * @param array<string, mixed>|null $existing
+     */
+    private function saveRole(?array $existing): RedirectResponse
+    {
+        $name = trim((string) $this->request->getPost('name'));
+        $isEdit = $existing !== null;
+
+        if ($name === '') {
+            return redirect()->back()->withInput()->with('error', 'Role name is required.');
+        }
+
+        $slug = $isEdit
+            ? strtoupper((string) ($existing['slug'] ?? ''))
+            : RoleModel::slugFromName($name);
+
+        if (! preg_match('/^[A-Z][A-Z0-9_]*$/', $slug)) {
+            return redirect()->back()->withInput()->with('error', 'Role code must be uppercase letters, numbers, and underscores.');
+        }
+
+        $dup = $this->roleModel->where('slug', $slug);
+        if ($isEdit) {
+            $dup = $dup->where('id !=', (int) $existing['id']);
+        }
+        if ($dup->first()) {
+            return redirect()->back()->withInput()->with('error', 'Role code already exists.');
+        }
+
+        $privileges = AdminPrivilege::normalize($this->request->getPost('privileges'));
+        if ($privileges === []) {
+            return redirect()->back()->withInput()->with('error', 'Select at least one privilege for this role.');
+        }
+
+        $data = [
+            'name'       => $name,
+            'privileges' => json_encode($privileges, JSON_UNESCAPED_SLASHES),
+        ];
+
+        if (! $isEdit) {
+            $data['slug'] = $slug;
+            $data['dashboard_type'] = 'generic';
+            $data['is_system'] = 0;
+            $maxRow = $this->roleModel->selectMax('sort_order', 'max_sort')->first();
+            $data['sort_order'] = ((int) ($maxRow['max_sort'] ?? 0)) + 1;
+            $this->roleModel->insert($data);
+        } else {
+            $this->roleModel->update((int) $existing['id'], $data);
+        }
+
+        RoleRegistry::clearCache();
+
+        if ($this->request->getPost('return_to') === 'create') {
+            return redirect()->to(base_url('admin/users/create'))
+                ->with('success', 'Role created. Select it below when adding the user.')
+                ->with('new_role_slug', $slug);
+        }
+
+        return redirect()->to(base_url('admin/users?section=roles'))
+            ->with('success', $isEdit ? 'Role updated.' : 'Role created.');
+    }
+
+    /**
+     * @return array<string, string> slug => dashboard_type
+     */
+    private function roleDashboardTypesMap(): array
+    {
+        $map = [];
+        foreach (RoleRegistry::all() as $slug => $row) {
+            $map[$slug] = RoleRegistry::dashboardType($slug);
+        }
+
+        return $map;
+    }
+
+    private function roleUsesStudentFields(string $role): bool
+    {
+        $slug = strtoupper(trim($role));
+
+        return $slug === 'STUDENT' || RoleRegistry::dashboardType($slug) === 'student';
+    }
+
+    private function roleUsesTeacherFields(string $role): bool
+    {
+        $slug = strtoupper(trim($role));
+
+        return $slug === 'TEACHER' || RoleRegistry::dashboardType($slug) === 'teacher';
+    }
+
+    /**
+     * @return string|false JSON string, false if role has no privileges
+     */
+    private function encodedPrivilegesForRole(string $roleSlug): string|false
+    {
+        $privileges = RoleRegistry::privilegesForRole($roleSlug);
+        if ($privileges === []) {
+            return false;
+        }
+
+        return json_encode($privileges, JSON_UNESCAPED_SLASHES);
     }
 
     private function computeAgeFromBirthdate(string $birthdate): ?int

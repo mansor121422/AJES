@@ -2,7 +2,9 @@
 
 namespace App\Controllers;
 
+use App\Libraries\RoleRegistry;
 use App\Models\AnnouncementModel;
+use CodeIgniter\HTTP\RedirectResponse;
 use App\Models\UserModel;
 use App\Models\SectionModel;
 use App\Models\MessageModel;
@@ -12,19 +14,35 @@ class Dashboard extends BaseController
 {
     public function index(): string
     {
-        $role = session()->get('role') ?? 'GUEST';
+        $role = strtoupper((string) (session()->get('role') ?? 'GUEST'));
 
         return match ($role) {
             'SUPER_ADMIN' => $this->admin(),
             'ADMIN'      => $this->admin(),
             'PRINCIPAL'  => view('Principal/dashboard'),
-            'VICE_PRINCIPAL', 'HEAD_TEACHER' => view('Principal/dashboard'),
+            'VICE_PRINCIPAL' => view('VicePrincipal/dashboard'),
+            'HEAD_TEACHER'   => view('HeadTeacher/dashboard'),
             'ANNOUNCER'  => view('Announcer/dashboard'),
             'TEACHER'    => $this->teacherDashboard(),
             'GUIDANCE'   => view('Guidance/dashboard'),
-            'PARENT'     => $this->student(), // Backward-compat for legacy accounts.
+            'PARENT'     => $this->student(),
             'STUDENT'    => view('Student/dashboard'),
-            default      => view('Auth/login'),
+            default      => $this->dashboardForRegistryType($role),
+        };
+    }
+
+    private function dashboardForRegistryType(string $role): string
+    {
+        return match (RoleRegistry::dashboardType($role)) {
+            'admin'          => $this->admin(),
+            'principal'      => view('Principal/dashboard'),
+            'vice_principal' => view('VicePrincipal/dashboard'),
+            'head_teacher'   => view('HeadTeacher/dashboard'),
+            'announcer'      => view('Announcer/dashboard'),
+            'teacher'        => $this->teacherDashboard(),
+            'guidance'       => view('Guidance/dashboard'),
+            'student'        => view('Student/dashboard'),
+            default          => view('Auth/login'),
         };
     }
 
@@ -190,9 +208,41 @@ class Dashboard extends BaseController
         return view('Principal/dashboard');
     }
 
-    public function vicePrincipal(): string
+    public function vicePrincipal(): string|RedirectResponse
     {
+        $redirect = $this->guardDashboardType('vice_principal');
+        if ($redirect !== null) {
+            return $redirect;
+        }
+
         return view('VicePrincipal/dashboard');
+    }
+
+    public function headTeacher(): string|RedirectResponse
+    {
+        $redirect = $this->guardDashboardType('head_teacher');
+        if ($redirect !== null) {
+            return $redirect;
+        }
+
+        return view('HeadTeacher/dashboard');
+    }
+
+    /**
+     * @return \CodeIgniter\HTTP\RedirectResponse|null
+     */
+    private function guardDashboardType(string $expectedType)
+    {
+        $role = strtoupper((string) (session()->get('role') ?? ''));
+        if ($role === 'SUPER_ADMIN') {
+            return null;
+        }
+        if (RoleRegistry::dashboardType($role) === $expectedType) {
+            return null;
+        }
+
+        return redirect()->to(RoleRegistry::dashboardUrl($role, session()->get('admin_privileges')))
+            ->with('error', 'That dashboard is not available for your role.');
     }
 
     public function announcer(): string
