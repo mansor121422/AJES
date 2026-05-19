@@ -1,7 +1,10 @@
 <?php
-$section           = $section ?? [];
-$studentsInSection = $studentsInSection ?? [];
-$addableStudents   = $addableStudents ?? [];
+$section            = $section ?? [];
+$studentsInSection  = $studentsInSection ?? [];
+$addableStudents    = $addableStudents ?? [];
+$studentCount       = (int) ($student_count ?? count($studentsInSection));
+$maxStudents        = (int) ($max_students ?? 30);
+$sectionHasCapacity = (bool) ($section_has_capacity ?? ($studentCount < $maxStudents));
 
 function formatStudentName(array $u): string {
     $s = trim($u['surname'] ?? '');
@@ -35,6 +38,13 @@ function formatStudentName(array $u): string {
     <?php endif; ?>
 
     <div class="card">
+        <p style="margin: 0; color: #558b2f; margin-bottom: 12px;">
+            <strong><?= $studentCount ?> / <?= $maxStudents ?></strong> students enrolled.
+            <?php if (! $sectionHasCapacity): ?>
+                This section is full (maximum <?= $maxStudents ?> students).
+            <?php endif; ?>
+        </p>
+        <?php if ($sectionHasCapacity): ?>
         <div class="card-title">Add student to section</div>
         <p style="margin-bottom: 12px; color: #558b2f;">Only <strong>active students with the same grade as this section</strong> and <strong>not yet assigned</strong> to any class appear here (for example, a Grade 2 section lists unassigned Grade 2 students only — Grade 3 students will not show).</p>
         <?php if (empty($addableStudents)): ?>
@@ -56,6 +66,7 @@ function formatStudentName(array $u): string {
                 </div>
                 <button type="submit" class="login-button" style="display: inline-flex; width: auto; padding: 10px 20px;">Add to section</button>
             </form>
+        <?php endif; ?>
         <?php endif; ?>
     </div>
 

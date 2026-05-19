@@ -2,27 +2,22 @@
 
 namespace App\Controllers;
 
-use App\Libraries\AuditLogger;
 use App\Libraries\ActivityLogger;
-use App\Libraries\SessionTracker;
+use App\Libraries\AuditLogger;
+use App\Libraries\DatabaseBackup;
 use App\Libraries\IntrusionDetector;
+use App\Libraries\SessionTracker;
+use App\Libraries\SystemSnapshot;
 use App\Libraries\TransactionManager;
+use CodeIgniter\HTTP\RedirectResponse;
 
 class SystemAdmin extends BaseController
 {
     public function settings(): string
     {
         $data = $this->pageData('settings');
-        $app = config('App');
-        $data['settings_data'] = [
-            'base_url' => (string) ($app->baseURL ?? ''),
-            'index_page' => (string) ($app->indexPage ?? ''),
-            'default_locale' => (string) ($app->defaultLocale ?? 'en'),
-            'timezone' => (string) ($app->appTimezone ?? 'UTC'),
-            'secure_requests' => (bool) ($app->forceGlobalSecureRequests ?? false),
-            'presence_timeout' => (int) ($app->presenceTimeoutSeconds ?? 300),
-            'presence_heartbeat' => (int) ($app->presenceHeartbeatSeconds ?? 60),
-        ];
+        $data['settings_data'] = SystemSnapshot::collect();
+
         return view('SystemAdmin/index', $data);
     }
 
@@ -48,41 +43,73 @@ class SystemAdmin extends BaseController
     public function backup(): string
     {
         $data = $this->pageData('backup');
-        $backupDir = WRITEPATH . 'backups';
-        if (! is_dir($backupDir)) {
-            @mkdir($backupDir, 0755, true);
-        }
-
-        $items = [];
-        $files = glob($backupDir . DIRECTORY_SEPARATOR . '*');
-        if (is_array($files)) {
-            rsort($files);
-            foreach (array_slice($files, 0, 15) as $path) {
-                if (! is_file($path)) {
-                    continue;
-                }
-                $items[] = [
-                    'name' => basename($path),
-                    'size' => $this->formatBytes((int) filesize($path)),
-                    'modified_at' => date('Y-m-d H:i:s', (int) filemtime($path)),
-                ];
-            }
-        }
+        $items = DatabaseBackup::listBackups(20);
 
         $data['backup_data'] = [
-            'backup_dir' => $backupDir,
+            'backup_dir' => DatabaseBackup::backupDirectory(),
             'file_count' => count($items),
-            'files' => $items,
-            'commands' => [
-                'backup_ps'       => 'powershell -ExecutionPolicy Bypass -File scripts/backup-db.ps1',
-                'backup_sh'       => './scripts/backup-db.sh',
-                'restore_ps'      => 'powershell -ExecutionPolicy Bypass -File scripts/restore-db.ps1 -DumpFile .\\writable\\backups\\ajesdb_TIMESTAMP.sql',
-                'restore_ps_safe' => 'powershell -ExecutionPolicy Bypass -File scripts/restore-db.ps1 -PreBackup -DumpFile .\\writable\\backups\\ajesdb_TIMESTAMP.sql',
-                'restore_sh'      => './scripts/restore-db.sh ./writable/backups/ajesdb_TIMESTAMP.sql',
-                'docs'            => 'See scripts/README.md; Lab write-up: docs/LAB4_SYSTEM_DEVELOPMENT.md',
-            ],
+            'files'      => $items,
+            'db_name'    => (string) (config('Database')->default['database'] ?? ''),
         ];
+
         return view('SystemAdmin/index', $data);
+    }
+
+    public function createBackup(): RedirectResponse
+    {
+        $result = DatabaseBackup::createBackup();
+        $userId = (int) (session()->get('user_id') ?? 0);
+
+        if ($result['ok']) {
+            AuditLogger::log('BACKUP_CREATE', $userId, 'backups', null, 'Created DB backup: ' . ($result['file'] ?? ''));
+            ActivityLogger::log('BACKUP_CREATE', 'sysadmin', 'Database backup: ' . ($result['file'] ?? ''));
+
+            return redirect()->to(base_url('sysadmin/backup'))->with('success', $result['message'] . ' File: ' . ($result['file'] ?? ''));
+        }
+
+        return redirect()->to(base_url('sysadmin/backup'))->with('error', $result['message']);
+    }
+
+    public function restoreBackup(): RedirectResponse
+    {
+        $filename  = trim((string) $this->request->getPost('dump_file'));
+        $confirm   = trim((string) $this->request->getPost('confirm'));
+        $preBackup = (bool) $this->request->getPost('pre_backup');
+
+        if ($confirm !== 'YES') {
+            return redirect()->to(base_url('sysadmin/backup'))->with('error', 'Restore cancelled. Type YES to confirm.');
+        }
+
+        if ($filename === '') {
+            return redirect()->to(base_url('sysadmin/backup'))->with('error', 'Select a backup file to restore.');
+        }
+
+        $result = DatabaseBackup::restoreBackup($filename, $preBackup);
+        $userId = (int) (session()->get('user_id') ?? 0);
+
+        if ($result['ok']) {
+            AuditLogger::log('BACKUP_RESTORE', $userId, 'backups', null, 'Restored DB from: ' . $filename);
+            ActivityLogger::log('BACKUP_RESTORE', 'sysadmin', 'Database restore: ' . $filename);
+
+            return redirect()->to(base_url('sysadmin/backup'))->with('success', $result['message']);
+        }
+
+        return redirect()->to(base_url('sysadmin/backup'))->with('error', $result['message']);
+    }
+
+    public function downloadBackup(string $file)
+    {
+        $safe = DatabaseBackup::safeFilename($file);
+        if ($safe === null) {
+            return redirect()->to(base_url('sysadmin/backup'))->with('error', 'Invalid backup file.');
+        }
+
+        $path = DatabaseBackup::backupDirectory() . DIRECTORY_SEPARATOR . $safe;
+        if (! is_file($path)) {
+            return redirect()->to(base_url('sysadmin/backup'))->with('error', 'Backup file not found.');
+        }
+
+        return $this->response->download($path, null)->setFileName($safe);
     }
 
     public function securityLogs(): string

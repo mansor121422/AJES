@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\DataEncryptor;
 use App\Libraries\PasswordReuseGuard;
 use App\Libraries\AdminPrivilege;
 use App\Libraries\RoleRegistry;
@@ -10,6 +11,8 @@ use App\Libraries\ActivityLogger;
 use App\Libraries\SecureHash;
 use App\Libraries\TransactionManager;
 use App\Models\UserModel;
+use App\Libraries\SectionEnrollment;
+use App\Libraries\StudentAgeRules;
 use App\Models\SectionModel;
 use App\Models\RoleModel;
 use CodeIgniter\HTTP\RedirectResponse;
@@ -126,7 +129,6 @@ class Users extends BaseController
             'name'                  => session()->get('name') ?? 'User',
             'role_options'          => $roleOptions,
             'role_dashboard_types'  => $this->roleDashboardTypesMap(),
-            'sections'              => $this->sections->orderBy('grade_level')->orderBy('name')->findAll(),
         ]);
     }
 
@@ -143,8 +145,7 @@ class Users extends BaseController
         $role = strtoupper(trim((string) $this->request->getPost('role')));
         $isActive  = (int) $this->request->getPost('is_active');
         $birthdate = trim((string) $this->request->getPost('birthdate'));
-        $age       = $this->computeAgeFromBirthdate($birthdate);
-        $sectionId = $this->request->getPost('section_id');
+        $age       = StudentAgeRules::computeAgeFromBirthdate($birthdate);
 
         if ($firstName === '' || $surname === '' || $email === '' || $username === '' || $role === '') {
             return redirect()->back()->withInput()->with('error', 'First name, surname, email, username and role are required.');
@@ -182,25 +183,32 @@ class Users extends BaseController
             return redirect()->back()->withInput()->with('error', 'The selected role has no privileges. Edit the role and assign privileges first.');
         }
         $data['admin_privileges'] = $privilegesJson;
-        if ($this->roleUsesTeacherFields($role)) {
-            $data['section_id'] = ($sectionId !== null && $sectionId !== '') ? (int) $sectionId : null;
-        }
         if ($this->roleUsesStudentFields($role)) {
             $gradePick = trim((string) $this->request->getPost('grade_level'));
             if (! in_array($gradePick, ['1', '2', '3', '4', '5', '6'], true)) {
                 return redirect()->back()->withInput()->with('error', 'Choose a grade level from Grade 1 to Grade 6.');
             }
-            $data['student_id'] = trim((string) $this->request->getPost('student_id'));
-            $data['gender'] = trim((string) $this->request->getPost('gender'));
+            $lrn = trim((string) $this->request->getPost('student_id'));
+            $gender = trim((string) $this->request->getPost('gender'));
+            if ($lrn === '') {
+                return redirect()->back()->withInput()->with('error', 'LRN is required for students.');
+            }
+            if ($gender === '') {
+                return redirect()->back()->withInput()->with('error', 'Gender is required for students.');
+            }
+            $ageError = StudentAgeRules::validate($gradePick, $birthdate);
+            if ($ageError !== null) {
+                return redirect()->back()->withInput()->with('error', $ageError);
+            }
+            $age = StudentAgeRules::computeAgeFromBirthdate($birthdate);
+            $data['student_id'] = $lrn;
+            $data['gender'] = $gender;
             $data['grade_level'] = $gradePick;
-            $data['birthdate'] = $birthdate !== '' ? $birthdate : null;
+            $data['birthdate'] = $birthdate;
             $data['age'] = $age;
             $data['address'] = trim((string) $this->request->getPost('address'));
             $data['guardian_name'] = trim((string) $this->request->getPost('guardian_name'));
             $data['guardian_contact'] = trim((string) $this->request->getPost('guardian_contact'));
-            if ($sectionId !== null && $sectionId !== '') {
-                $data['section_id'] = (int) $sectionId;
-            }
         }
         try {
             $newId = TransactionManager::run('USER_CREATE', function ($db) use ($data, $name, $role) {
@@ -223,6 +231,7 @@ class Users extends BaseController
         if (! $user) {
             return redirect()->to(base_url('admin/users'))->with('error', 'User not found.');
         }
+        $user = DataEncryptor::decryptUserRowForDisplay($user);
         $currentRole = session()->get('role') ?? '';
         $currentUserId = (int) session()->get('user_id');
         $is_editing_self = (in_array($currentRole, ['ADMIN', 'SUPER_ADMIN'], true) && $currentUserId === (int) $id);
@@ -270,7 +279,7 @@ class Users extends BaseController
         $sectionId = $this->request->getPost('section_id');
         $isActive  = (int) $this->request->getPost('is_active');
         $birthdate = trim((string) $this->request->getPost('birthdate'));
-        $age       = $this->computeAgeFromBirthdate($birthdate);
+        $age       = StudentAgeRules::computeAgeFromBirthdate($birthdate);
 
         if ($firstName === '' || $surname === '' || $email === '' || $username === '') {
             return redirect()->back()->withInput()->with('error', 'First name, surname, email and username are required.');
@@ -309,10 +318,27 @@ class Users extends BaseController
             $data['admin_privileges'] = $privilegesJson;
         }
         if ($this->roleUsesStudentFields($role)) {
-            $data['student_id'] = trim((string) $this->request->getPost('student_id'));
-            $data['gender'] = trim((string) $this->request->getPost('gender'));
-            $data['grade_level'] = trim((string) $this->request->getPost('grade_level'));
-            $data['birthdate'] = $birthdate !== '' ? $birthdate : null;
+            $gradePick = trim((string) $this->request->getPost('grade_level'));
+            if (! in_array($gradePick, ['1', '2', '3', '4', '5', '6'], true)) {
+                return redirect()->back()->withInput()->with('error', 'Choose a grade level from Grade 1 to Grade 6.');
+            }
+            $lrn = trim((string) $this->request->getPost('student_id'));
+            $gender = trim((string) $this->request->getPost('gender'));
+            if ($lrn === '') {
+                return redirect()->back()->withInput()->with('error', 'LRN is required for students.');
+            }
+            if ($gender === '') {
+                return redirect()->back()->withInput()->with('error', 'Gender is required for students.');
+            }
+            $ageError = StudentAgeRules::validate($gradePick, $birthdate);
+            if ($ageError !== null) {
+                return redirect()->back()->withInput()->with('error', $ageError);
+            }
+            $age = StudentAgeRules::computeAgeFromBirthdate($birthdate);
+            $data['student_id'] = $lrn;
+            $data['gender'] = $gender;
+            $data['grade_level'] = $gradePick;
+            $data['birthdate'] = $birthdate;
             $data['age'] = $age;
             $data['address'] = trim((string) $this->request->getPost('address'));
             $data['guardian_name'] = trim((string) $this->request->getPost('guardian_name'));
@@ -336,7 +362,11 @@ class Users extends BaseController
             if ($existingSectionId > 0) {
                 $data['section_id'] = $existingSectionId;
             } elseif ($sectionId !== null && $sectionId !== '') {
-                $data['section_id'] = (int) $sectionId;
+                $newSectionId = (int) $sectionId;
+                if (SectionEnrollment::isFull($newSectionId)) {
+                    return redirect()->back()->withInput()->with('error', SectionEnrollment::capacityMessage($newSectionId));
+                }
+                $data['section_id'] = $newSectionId;
             } else {
                 $data['section_id'] = null;
             }
@@ -483,23 +513,6 @@ class Users extends BaseController
         }
 
         return json_encode($privileges, JSON_UNESCAPED_SLASHES);
-    }
-
-    private function computeAgeFromBirthdate(string $birthdate): ?int
-    {
-        if ($birthdate === '') {
-            return null;
-        }
-        try {
-            $dob = new \DateTimeImmutable($birthdate);
-            $now = new \DateTimeImmutable('today');
-            if ($dob > $now) {
-                return null;
-            }
-            return (int) $dob->diff($now)->y;
-        } catch (\Throwable $e) {
-            return null;
-        }
     }
 
     public function delete(int $id): RedirectResponse

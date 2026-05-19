@@ -29,6 +29,26 @@ class App extends BaseConfig
      */
     public array $allowedHostnames = ['localhost', '127.0.0.1'];
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $fromEnv = trim((string) env('app.baseURL', ''));
+        if ($fromEnv !== '') {
+            $this->baseURL = str_ends_with($fromEnv, '/') ? $fromEnv : $fromEnv . '/';
+        }
+
+        $extra = trim((string) env('app.extraHosts', ''));
+        if ($extra !== '') {
+            foreach (preg_split('/\s*,\s*/', $extra) as $host) {
+                $host = trim($host);
+                if ($host !== '' && ! in_array($host, $this->allowedHostnames, true)) {
+                    $this->allowedHostnames[] = $host;
+                }
+            }
+        }
+    }
+
     /**
      * --------------------------------------------------------------------------
      * Index File

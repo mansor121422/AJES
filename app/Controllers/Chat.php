@@ -277,26 +277,54 @@ class Chat extends BaseController
 
         // AI Auto-Reply: Generate response if conditions are met
         $sender = $this->users->find($userId);
-        $senderRole = $sender['role'] ?? '';
-        $receiverRole = $receiver['role'] ?? '';
-        
+        $senderRole = strtoupper(trim((string) ($sender['role'] ?? '')));
+        $receiverRole = strtoupper(trim((string) ($receiver['role'] ?? '')));
+        $aiMessageId = 0;
+        $aiResponseText = '';
+
         if ($this->aiChatService->getConfig()->shouldTriggerResponse($senderRole, $receiverRole, $content) && $hasText) {
             try {
-                // Generate AI response
+                $sectionId   = (int) ($sender['section_id'] ?? 0);
+                $gradeLevel  = trim((string) ($sender['grade_level'] ?? ''));
+                $sectionName = '';
+                if ($sectionId > 0) {
+                    $secRow = $db->table('sections')
+                        ->select('name, grade_level')
+                        ->where('id', $sectionId)
+                        ->get()
+                        ->getRowArray();
+                    if ($secRow) {
+                        $sectionName = trim((string) ($secRow['name'] ?? ''));
+                        if ($gradeLevel === '') {
+                            $gradeLevel = trim((string) ($secRow['grade_level'] ?? ''));
+                        }
+                    }
+                }
+
                 $aiResponse = $this->aiChatService->generateResponse($contentCensored, [
+                    'sender_name'  => $senderName,
                     'student_name' => $senderName,
-                    'sender_role' => $senderRole,
+                    'sender_role'  => $senderRole,
+                    'section_id'   => $sectionId,
+                    'grade_level'  => $gradeLevel,
+                    'section_name' => $sectionName,
                 ]);
 
-                // Save AI response as a message from the principal (bot)
+                $aiCfg = $this->aiChatService->getConfig();
+                $aiBody = $aiResponse;
+                if ($aiCfg->showAIIndicator && trim($aiCfg->aiIndicatorText) !== '') {
+                    $aiBody = trim($aiCfg->aiIndicatorText) . "\n" . $aiResponse;
+                }
+
                 $this->messages->insert([
-                    'sender_id'        => $receiverId,
-                    'receiver_id'      => $userId,
-                    'content'          => $aiResponse,
-                    'is_bot'           => 1,
-                    'status'           => 'SENT',
+                    'sender_id'   => $receiverId,
+                    'receiver_id' => $userId,
+                    'content'     => $aiBody,
+                    'is_bot'      => 1,
+                    'status'      => 'SENT',
                 ]);
                 $aiMessageId = (int) $this->messages->getInsertID();
+                $aiResponseText = $aiBody;
 
                 // Create notification for the student about the AI response
                 if ($aiMessageId > 0) {
@@ -314,17 +342,26 @@ class Chat extends BaseController
                 }
 
                 log_message('info', 'AI Chat: Auto-reply generated for message #' . $messageId);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 log_message('error', 'AI Chat: Failed to generate auto-reply', [
                     'error' => $e->getMessage(),
-                    'message_id' => $messageId
+                    'message_id' => $messageId,
                 ]);
             }
         }
 
-        // API client (e.g. Android app): return JSON instead of redirect (avoids HTTP 303)
         if ($this->isApiRequest()) {
-            return $this->response->setStatusCode(200)->setJSON(['status' => 'success', 'message' => 'Message sent.']);
+            $payload = [
+                'status'     => 'success',
+                'message'    => 'Message sent.',
+                'message_id' => $messageId,
+            ];
+            if ($aiMessageId > 0) {
+                $payload['ai_reply'] = $aiResponseText;
+                $payload['ai_message_id'] = $aiMessageId;
+            }
+
+            return $this->response->setStatusCode(200)->setJSON($payload);
         }
         return redirect()->to(base_url('chat?with=' . $receiverId));
     }

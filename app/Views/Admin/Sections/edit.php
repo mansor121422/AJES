@@ -5,11 +5,14 @@ $depedSubjectsByGrade = $deped_subjects_by_grade ?? [];
 $slots = $schedule['slots'] ?? [];
 $dismissal = $schedule['dismissal_time'] ?? '15:30';
 $sectionAdviserId = (int) ($section_adviser_id ?? 0);
+$sectionAdviserStatus = strtolower((string) ($section_adviser_status ?? ''));
+$availableTeachers = $available_teachers ?? [];
+$selectedTeacherId = (string) old('teacher_id', (string) ($sectionAdviserId > 0 ? $sectionAdviserId : ''));
 $fmtRange = static function (string $s, string $e): string {
     $a = date('g:i A', strtotime($s));
     $b = date('g:i A', strtotime($e));
 
-    return $a . ' – ' . $b;
+    return $a . ' ? ' . $b;
 };
 $fmtTime = static function (string $t): string {
     return date('g:i A', strtotime($t));
@@ -67,14 +70,37 @@ if ($sectionAdviserId <= 0 && ! is_array($oldAdv)) {
                 <input type="text" id="grade_level" name="grade_level" required value="<?= esc($section['grade_level']) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
             </div>
 
-            <div class="form-group" style="margin-top: 20px;">
-                <label style="color: #1b5e20; display: block; margin-bottom: 6px;">Daily class schedule — eight subjects (50 minutes each)</label>
-                <div class="hint-text" style="margin-bottom: 8px;">Times are fixed. Subjects are pre-listed based on grade level.</div>
-                <?php if ($sectionAdviserId <= 0): ?>
-                    <p class="hint-text" style="color: #6d4c41;">No adviser on this section yet. Use <strong>Invite teachers</strong> to assign an adviser, then you can mark up to two slots here.</p>
-                <?php else: ?>
-                    <p id="edit-adviser-grade-rule-hint" class="hint-text">Mark adviser slots based on grade rule.</p>
+            <div class="form-group">
+                <label for="teacher_id" style="color: #1b5e20;">Change teacher (class adviser)</label>
+                <select id="teacher_id" name="teacher_id" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                    <option value="">-- No teacher --</option>
+                    <?php foreach ($availableTeachers as $teacher): ?>
+                        <?php $tid = (int) ($teacher['id'] ?? 0); ?>
+                        <option value="<?= $tid ?>" <?= $selectedTeacherId === (string) $tid ? 'selected' : '' ?>>
+                            <?= esc($teacher['name'] ?? $teacher['username'] ?? ('Teacher #' . $tid)) ?>
+                            <?php if ($tid === $sectionAdviserId && $sectionAdviserStatus === 'pending'): ?>
+                                (current - pending)
+                            <?php elseif ($tid === $sectionAdviserId): ?>
+                                (current)
+                            <?php endif; ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <div class="hint-text">Only teachers who are <strong>not already an adviser in another section</strong> are listed.</div>
+                <?php if ($sectionAdviserId > 0 && $sectionAdviserStatus === 'pending'): ?>
+                    <p class="hint-text" style="margin-top: 6px;">Current adviser has not accepted yet. Check <strong>Assign immediately</strong> below to activate without waiting.</p>
                 <?php endif; ?>
+                <label class="checkbox-row" style="margin-top: 10px;">
+                    <input type="checkbox" name="assign_now" value="1" <?= old('assign_now') === '1' || ($sectionAdviserStatus === 'accepted' && old('assign_now', null) === null) ? 'checked' : '' ?>>
+                    Assign immediately (skip invite - teacher sees the section right away)
+                </label>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label style="color: #1b5e20; display: block; margin-bottom: 6px;">Daily class schedule - eight subjects (50 minutes each)</label>
+                <div class="hint-text" style="margin-bottom: 8px;">Times are fixed. Subjects are pre-listed based on grade level.</div>
+                <p id="edit-adviser-slots-need-teacher" class="hint-text" style="display: none; color: #c62828;">Select a class adviser above first, then mark adviser slots.</p>
+                <p id="edit-adviser-grade-rule-hint" class="hint-text">Mark adviser slots based on grade rule.</p>
                 <table class="schedule-table">
                     <thead>
                         <tr>
@@ -88,12 +114,12 @@ if ($sectionAdviserId <= 0 && ! is_array($oldAdv)) {
                         <?php foreach ($slots as $slot): ?>
                             <?php if ($si === 2): ?>
                                 <tr class="schedule-break">
-                                    <td colspan="3"><strong>Recess</strong> — <?= $fmtRange('09:10', '09:30') ?></td>
+                                    <td colspan="3"><strong>Recess</strong> ? <?= $fmtRange('09:10', '09:30') ?></td>
                                 </tr>
                             <?php endif; ?>
                             <?php if ($si === 5): ?>
                                 <tr class="schedule-break">
-                                    <td colspan="3"><strong>Lunch break</strong> — <?= $fmtRange('12:00', '13:00') ?></td>
+                                    <td colspan="3"><strong>Lunch break</strong> ? <?= $fmtRange('12:00', '13:00') ?></td>
                                 </tr>
                             <?php endif; ?>
                             <?php
@@ -114,7 +140,7 @@ if ($sectionAdviserId <= 0 && ! is_array($oldAdv)) {
                                 </td>
                                 <td style="text-align: center;">
                                     <label class="checkbox-row" style="justify-content: center; margin: 0;">
-                                        <input type="checkbox" class="adviser-teach-cb" name="adviser_teaches[]" value="<?= $sn ?>" <?= in_array($sn, $adviserCheckedSlots, true) ? 'checked' : '' ?> <?= $sectionAdviserId <= 0 ? 'disabled' : '' ?>>
+                                        <input type="checkbox" class="adviser-teach-cb" name="adviser_teaches[]" value="<?= $sn ?>" <?= in_array($sn, $adviserCheckedSlots, true) ? 'checked' : '' ?> <?= $selectedTeacherId === '' ? 'disabled' : '' ?>>
                                         <span style="font-size: 0.85rem;">This slot</span>
                                     </label>
                                 </td>
@@ -122,7 +148,7 @@ if ($sectionAdviserId <= 0 && ! is_array($oldAdv)) {
                             <?php $si++; ?>
                         <?php endforeach; ?>
                         <tr class="schedule-dismiss">
-                            <td colspan="3"><strong>Dismissal</strong> — <?= esc($fmtTime($dismissal)) ?></td>
+                            <td colspan="3"><strong>Dismissal</strong> ? <?= esc($fmtTime($dismissal)) ?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -179,11 +205,30 @@ if ($sectionAdviserId <= 0 && ! is_array($oldAdv)) {
     })();
 
     (function() {
+        var teacherEl = document.getElementById('teacher_id');
         var boxes = document.querySelectorAll('.adviser-teach-cb');
         var gradeEl = document.getElementById('grade_level');
         var gradeHint = document.getElementById('edit-adviser-grade-rule-hint');
         var maxLabelEl = document.getElementById('edit-adviser-max-label');
+        var needTeacherHint = document.getElementById('edit-adviser-slots-need-teacher');
         if (!boxes.length) return;
+
+        function hasTeacher() {
+            return teacherEl && (teacherEl.value || '').trim() !== '';
+        }
+
+        function syncTeacherGate() {
+            var ok = hasTeacher();
+            if (needTeacherHint) {
+                needTeacherHint.style.display = ok ? 'none' : 'block';
+            }
+            boxes.forEach(function(cb) {
+                if (!ok) {
+                    cb.disabled = true;
+                    cb.checked = false;
+                }
+            });
+        }
 
         function isGradeAdviserOnly() {
             var raw = (gradeEl && gradeEl.value ? String(gradeEl.value) : '').trim();
@@ -194,11 +239,16 @@ if ($sectionAdviserId <= 0 && ! is_array($oldAdv)) {
         }
 
         function syncGradeRule() {
+            syncTeacherGate();
+            if (!hasTeacher()) {
+                return;
+            }
             var adviserOnly = isGradeAdviserOnly();
             boxes.forEach(function(cb) {
-                if (cb.disabled) return;
                 cb.disabled = adviserOnly;
-                if (adviserOnly) cb.checked = true;
+                if (adviserOnly) {
+                    cb.checked = true;
+                }
             });
             if (gradeHint) {
                 if (adviserOnly) {
@@ -229,6 +279,9 @@ if ($sectionAdviserId <= 0 && ! is_array($oldAdv)) {
         });
         if (gradeEl) {
             gradeEl.addEventListener('change', syncGradeRule);
+        }
+        if (teacherEl) {
+            teacherEl.addEventListener('change', syncGradeRule);
         }
         syncGradeRule();
     })();

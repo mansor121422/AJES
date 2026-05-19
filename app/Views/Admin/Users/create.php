@@ -81,21 +81,10 @@ $selectedRole = strtoupper((string) old('role', session()->getFlashdata('new_rol
                 <small style="color: #666;">Privileges come from the selected role. To change privileges, edit the role under Roles &amp; privileges.</small>
             </div>
 
-            <div id="section-group" style="display:none;">
-                <div class="form-group">
-                    <label for="section_id" style="color: #1b5e20;">Section</label>
-                    <select id="section_id" name="section_id" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
-                        <option value="">— None —</option>
-                        <?php foreach (($sections ?? []) as $s): ?>
-                            <option value="<?= (int) $s['id'] ?>" <?= (string) old('section_id') === (string) $s['id'] ? 'selected' : '' ?>><?= esc($s['grade_level'] . ' - ' . $s['name']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </div>
-
             <div id="student-fields" style="display:none;">
+                <p style="margin: 0 0 12px; color: #558b2f; font-size: 0.9rem;"><strong>Student profile</strong> — saved to Students Log (LRN, age, gender, guardian, address).</p>
                 <div class="form-group">
-                    <label for="student_id" style="color: #1b5e20;">Student ID / LRN</label>
+                    <label for="student_id" style="color: #1b5e20;">LRN (Learner Reference Number)</label>
                     <input type="text" id="student_id" name="student_id" value="<?= esc(old('student_id')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
                 </div>
                 <div class="form-group">
@@ -120,15 +109,21 @@ $selectedRole = strtoupper((string) old('role', session()->getFlashdata('new_rol
                     <input type="date" id="birthdate" name="birthdate" value="<?= esc(old('birthdate')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
                 </div>
                 <div class="form-group">
+                    <label for="age_display" style="color: #1b5e20;">Age</label>
+                    <input type="text" id="age_display" readonly value="<?= esc(old('age')) ?>" placeholder="Computed from birthdate" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px; background: #f1f8e9;">
+                    <input type="hidden" id="age" name="age" value="<?= esc(old('age')) ?>">
+                    <small id="age-grade-hint" style="display: block; margin-top: 6px; color: #558b2f; font-size: 0.85rem;">Select a grade to see the required age range.</small>
+                </div>
+                <div class="form-group">
                     <label for="address" style="color: #1b5e20;">Address</label>
                     <textarea id="address" name="address" rows="2" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;"><?= esc(old('address')) ?></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="guardian_name" style="color: #1b5e20;">Guardian Name</label>
+                    <label for="guardian_name" style="color: #1b5e20;">Guardian name</label>
                     <input type="text" id="guardian_name" name="guardian_name" value="<?= esc(old('guardian_name')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
                 </div>
                 <div class="form-group">
-                    <label for="guardian_contact" style="color: #1b5e20;">Guardian Contact</label>
+                    <label for="guardian_contact" style="color: #1b5e20;">Guardian contact</label>
                     <input type="text" id="guardian_contact" name="guardian_contact" value="<?= esc(old('guardian_contact')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
                 </div>
             </div>
@@ -151,7 +146,6 @@ $selectedRole = strtoupper((string) old('role', session()->getFlashdata('new_rol
     <script>
     (function() {
         var roleEl = document.getElementById('role');
-        var sectionGroup = document.getElementById('section-group');
         var studentFields = document.getElementById('student-fields');
         var gradeEl = document.getElementById('grade_level');
         var roleDashboardTypes = <?= json_encode($roleDashboardTypes, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
@@ -164,11 +158,16 @@ $selectedRole = strtoupper((string) old('role', session()->getFlashdata('new_rol
         function syncRoleFields() {
             var slug = roleEl ? roleEl.value : '';
             var dashType = dashboardTypeForRole(slug);
-            var isTeacher = dashType === 'teacher' || slug === 'TEACHER';
             var isStudent = dashType === 'student' || slug === 'STUDENT';
-            if (sectionGroup) sectionGroup.style.display = (isTeacher || isStudent) ? 'block' : 'none';
             if (studentFields) studentFields.style.display = isStudent ? 'block' : 'none';
-            if (gradeEl) gradeEl.required = isStudent;
+            var gradeSelect = document.getElementById('grade_level');
+            if (gradeSelect) gradeSelect.required = isStudent;
+            var lrnEl = document.getElementById('student_id');
+            var genderEl = document.getElementById('gender');
+            if (lrnEl) lrnEl.required = isStudent;
+            if (genderEl) genderEl.required = isStudent;
+            var birthElReq = document.getElementById('birthdate');
+            if (birthElReq) birthElReq.required = isStudent;
         }
 
         if (roleEl) {
@@ -176,6 +175,8 @@ $selectedRole = strtoupper((string) old('role', session()->getFlashdata('new_rol
             syncRoleFields();
         }
     })();
+
+    <?php include APPPATH . 'Views/Admin/Users/_student_age_script.php'; ?>
     </script>
 
     </main>

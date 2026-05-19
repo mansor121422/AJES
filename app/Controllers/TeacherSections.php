@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\SectionEnrollment;
 use App\Models\TeacherSectionModel;
 use App\Models\UserModel;
 use App\Models\SectionModel;
@@ -236,11 +237,16 @@ class TeacherSections extends BaseController
             return redirect()->to(base_url('teacher/sections'))->with('error', 'Only the adviser can manage students for this section.');
         }
 
-        $studentsInSection = $this->users->where('role', 'STUDENT')->where('section_id', $sectionId)->findAll();
+        $studentsInSection = $this->users
+            ->whereIn('role', SectionEnrollment::studentRoleSlugs())
+            ->where('section_id', $sectionId)
+            ->findAll();
+        $studentCount       = count($studentsInSection);
+        $sectionHasCapacity = ! SectionEnrollment::isFull($sectionId);
 
         $sectionGradeDigit = $this->normalizeGradeToDigit($section['grade_level'] ?? '');
         // Unassigned students whose grade matches this section only (e.g. Grade 2 section → Grade 2 students only).
-        $candidates = $this->users->where('role', 'STUDENT')
+        $candidates = $this->users->whereIn('role', SectionEnrollment::studentRoleSlugs())
             ->where('is_active', 1)
             ->groupStart()
                 ->where('section_id', null)
@@ -252,18 +258,23 @@ class TeacherSections extends BaseController
             ->findAll();
 
         $addableStudents = [];
-        foreach ($candidates as $row) {
-            if ($sectionGradeDigit !== '' && $this->normalizeGradeToDigit($row['grade_level'] ?? '') === $sectionGradeDigit) {
-                $addableStudents[] = $row;
+        if ($sectionHasCapacity) {
+            foreach ($candidates as $row) {
+                if ($sectionGradeDigit !== '' && $this->normalizeGradeToDigit($row['grade_level'] ?? '') === $sectionGradeDigit) {
+                    $addableStudents[] = $row;
+                }
             }
         }
 
         $data = [
-            'section'           => $section,
-            'studentsInSection' => $studentsInSection,
-            'addableStudents'   => $addableStudents,
-            'role'              => session()->get('role') ?? 'TEACHER',
-            'name'              => session()->get('name') ?? 'User',
+            'section'              => $section,
+            'studentsInSection'    => $studentsInSection,
+            'addableStudents'      => $addableStudents,
+            'student_count'        => $studentCount,
+            'max_students'         => SectionEnrollment::MAX_STUDENTS,
+            'section_has_capacity' => $sectionHasCapacity,
+            'role'                 => session()->get('role') ?? 'TEACHER',
+            'name'                 => session()->get('name') ?? 'User',
         ];
         return view('Teacher/Sections/section_students', $data);
     }
@@ -292,9 +303,12 @@ class TeacherSections extends BaseController
         if (! $sectionRow) {
             return redirect()->back()->with('error', 'Section not found.');
         }
-        $student = $this->users->where('role', 'STUDENT')->find($studentId);
-        if (! $student) {
+        $student = $this->users->find($studentId);
+        if (! $student || ! SectionEnrollment::isStudentUser($student)) {
             return redirect()->back()->with('error', 'Student not found.');
+        }
+        if (SectionEnrollment::isFull($sectionId)) {
+            return redirect()->back()->with('error', SectionEnrollment::capacityMessage($sectionId));
         }
         $sg = $this->normalizeGradeToDigit($sectionRow['grade_level'] ?? '');
         $ug = $this->normalizeGradeToDigit($student['grade_level'] ?? '');
@@ -304,6 +318,9 @@ class TeacherSections extends BaseController
         $currentSectionId = (int) ($student['section_id'] ?? 0);
         if ($currentSectionId > 0 && $currentSectionId !== $sectionId) {
             return redirect()->back()->with('error', 'This student is already enrolled in another section. They cannot be added here.');
+        }
+        if ($currentSectionId === $sectionId) {
+            return redirect()->back()->with('error', 'This student is already in this section.');
         }
         $this->users->update($studentId, ['section_id' => $sectionId]);
         return redirect()->back()->with('success', 'Student added to section.');

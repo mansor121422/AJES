@@ -83,7 +83,7 @@ class AIChatService
                 ]
             ],
             'temperature' => $this->config->temperature,
-            'max_tokens' => 300,
+            'max_tokens' => 450,
             'top_p' => 1,
             'stream' => false,
         ]);
@@ -146,15 +146,21 @@ class AIChatService
     protected function buildSystemPrompt(array $context = []): string
     {
         $prompt = $this->config->systemPrompt;
-        
-        // Add context-specific information
-        if (isset($context['student_name'])) {
-            $prompt .= "\n\nCurrent student name: " . $context['student_name'];
+
+        $prompt .= "\n\n" . AjesKnowledge::contextBlock($context);
+
+        if (isset($context['sender_name']) && $context['sender_name'] !== '') {
+            $prompt .= "\n\nUser chatting: " . $context['sender_name'];
+        } elseif (isset($context['student_name']) && $context['student_name'] !== '') {
+            $prompt .= "\n\nUser chatting: " . $context['student_name'];
         }
-        
-        // Add current date/time context
+
+        if (isset($context['sender_role']) && $context['sender_role'] !== '') {
+            $prompt .= ' (role: ' . $context['sender_role'] . ')';
+        }
+
         $prompt .= "\n\nCurrent date: " . date('F j, Y');
-        
+
         return $prompt;
     }
 
@@ -166,10 +172,9 @@ class AIChatService
     protected function getFallbackResponse(): string
     {
         $fallbacks = [
-            "Thank you for your message. The principal will review your inquiry and respond as soon as possible.",
-            "Your message has been received. Please allow some time for the principal to respond to your question.",
-            "We appreciate you reaching out. The principal will get back to you regarding your inquiry.",
-            "Thank you for contacting us. Your message is important and will be answered shortly."
+            'Salamat sa mensahe. Para sa tanong tungkol sa AJES, makipag-ugnayan sa Principal o Guidance office sa chat, o subukang muli maya-maya.',
+            'Thank you for your message. AjesAI is temporarily unavailable — please check Announcements in AJES Crier or contact the school office.',
+            'Natanggap ang mensahe mo. Para sa opisyal na sagot tungkol sa paaralan, hintayin ang Principal/Guidance o tingnan ang mga anunsyo sa AJES.',
         ];
         
         return $fallbacks[array_rand($fallbacks)];

@@ -25,7 +25,7 @@ switch ($role) {
         if ($canFeature('dashboard')) {
             array_unshift($menuItems, ['url' => 'dashboard/admin', 'label' => 'Dashboard Home', 'icon' => '📊']);
         }
-        if ($canFeature('sections')) {
+        if ($canFeature('sections') || in_array($role, ['ADMIN', 'SUPER_ADMIN'], true)) {
             $menuItems[] = ['url' => 'admin/sections', 'label' => 'Sections', 'icon' => '📂'];
         }
         if ($canFeature('announcements')) {
@@ -36,6 +36,9 @@ switch ($role) {
         }
         if ($canFeature('chat_logs')) {
             $menuItems[] = ['url' => 'chatlogs', 'label' => 'Chat Logs', 'icon' => '📋'];
+        }
+        if ($canFeature('student_log') || in_array($role, ['ADMIN', 'SUPER_ADMIN'], true)) {
+            $menuItems[] = ['url' => 'admin/students-log', 'label' => 'Students Log', 'icon' => '🎓'];
         }
         if ($canFeature('user_management')) {
             $menuItems[] = ['url' => 'admin/users', 'label' => 'User Management', 'icon' => '👥'];
@@ -60,7 +63,7 @@ switch ($role) {
         if ($canFeature('dashboard')) {
             array_unshift($menuItems, ['url' => 'dashboard/admin', 'label' => 'Dashboard Home', 'icon' => '📊']);
         }
-        if ($canFeature('sections')) {
+        if ($canFeature('sections') || in_array($role, ['ADMIN', 'SUPER_ADMIN'], true)) {
             $menuItems[] = ['url' => 'admin/sections', 'label' => 'Sections', 'icon' => '📂'];
         }
         if ($canFeature('announcements')) {
@@ -71,6 +74,9 @@ switch ($role) {
         }
         if ($canFeature('records')) {
             $menuItems[] = ['url' => 'records', 'label' => 'Records', 'icon' => '📁'];
+        }
+        if ($canFeature('student_log') || in_array($role, ['ADMIN', 'SUPER_ADMIN'], true)) {
+            $menuItems[] = ['url' => 'admin/students-log', 'label' => 'Students Log', 'icon' => '🎓'];
         }
         if ($canFeature('user_management')) {
             $menuItems[] = ['url' => 'admin/users', 'label' => 'User Management', 'icon' => '👥'];
@@ -194,7 +200,7 @@ switch ($role) {
         if ($canFeature('announcements')) {
             $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
         }
-        if ($canFeature('sections')) {
+        if ($canFeature('sections') || in_array($role, ['ADMIN', 'SUPER_ADMIN'], true)) {
             $menuItems[] = ['url' => 'admin/sections', 'label' => 'Sections', 'icon' => '📂'];
         }
         if ($canFeature('records')) {
@@ -202,6 +208,9 @@ switch ($role) {
         }
         if ($canFeature('chat_logs')) {
             $menuItems[] = ['url' => 'chatlogs', 'label' => 'Chat Monitoring', 'icon' => '📋'];
+        }
+        if ($canFeature('student_log') || in_array($role, ['ADMIN', 'SUPER_ADMIN'], true)) {
+            $menuItems[] = ['url' => 'admin/students-log', 'label' => 'Students Log', 'icon' => '🎓'];
         }
         if ($canFeature('user_management')) {
             $menuItems[] = ['url' => 'admin/users', 'label' => 'User Management', 'icon' => '👥'];

@@ -85,9 +85,13 @@ class DataEncryptor
     public static function encryptFields(array $data, array $fields): array
     {
         foreach ($fields as $f) {
-            if (isset($data[$f]) && is_string($data[$f]) && $data[$f] !== '') {
-                $data[$f] = self::encrypt($data[$f]);
+            if (! isset($data[$f]) || ! is_string($data[$f]) || $data[$f] === '') {
+                continue;
             }
+            if (str_starts_with($data[$f], 'ENC:')) {
+                continue;
+            }
+            $data[$f] = self::encrypt($data[$f]);
         }
 
         return $data;
@@ -118,5 +122,37 @@ class DataEncryptor
     public static function sensitiveUserFields(): array
     {
         return ['guardian_name', 'guardian_contact', 'contact_number', 'address'];
+    }
+
+    /**
+     * Decrypt a stored value for display; never returns raw ENC: blobs to the UI.
+     */
+    public static function decryptForDisplay(?string $value): string
+    {
+        if ($value === null || trim($value) === '') {
+            return '';
+        }
+
+        $plain = self::decrypt($value);
+        if (! is_string($plain) || str_starts_with($plain, 'ENC:')) {
+            return '';
+        }
+
+        return trim($plain);
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    public static function decryptUserRowForDisplay(array $row): array
+    {
+        foreach (self::sensitiveUserFields() as $field) {
+            if (isset($row[$field]) && is_string($row[$field])) {
+                $row[$field] = self::decryptForDisplay($row[$field]);
+            }
+        }
+
+        return $row;
     }
 }

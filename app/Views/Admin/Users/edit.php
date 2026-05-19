@@ -142,8 +142,9 @@ $roleDisplayName = RoleRegistry::displayName($userRoleSlug);
             </div>
 
             <div id="student-fields" style="display:none;">
+                <p style="margin: 0 0 12px; color: #558b2f; font-size: 0.9rem;"><strong>Student profile</strong> — shown in Students Log.</p>
                 <div class="form-group">
-                    <label for="student_id" style="color: #1b5e20;">Student ID / LRN</label>
+                    <label for="student_id" style="color: #1b5e20;">LRN (Learner Reference Number)</label>
                     <input type="text" id="student_id" name="student_id" value="<?= esc(old('student_id', $user['student_id'] ?? '')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
                 </div>
                 <div class="form-group">
@@ -155,12 +156,23 @@ $roleDisplayName = RoleRegistry::displayName($userRoleSlug);
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="grade_level" style="color: #1b5e20;">Grade Level</label>
-                    <input type="text" id="grade_level" name="grade_level" value="<?= esc(old('grade_level', $user['grade_level'] ?? '')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                    <label for="grade_level" style="color: #1b5e20;">Grade level</label>
+                    <select id="grade_level" name="grade_level" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                        <option value="">Select grade</option>
+                        <?php for ($g = 1; $g <= 6; $g++): ?>
+                            <option value="<?= $g ?>" <?= (string) old('grade_level', $user['grade_level'] ?? '') === (string) $g ? 'selected' : '' ?>>Grade <?= $g ?></option>
+                        <?php endfor; ?>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="birthdate" style="color: #1b5e20;">Birthdate</label>
                     <input type="date" id="birthdate" name="birthdate" value="<?= esc(old('birthdate', $user['birthdate'] ?? '')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
+                </div>
+                <div class="form-group">
+                    <label for="age_display" style="color: #1b5e20;">Age</label>
+                    <input type="text" id="age_display" readonly value="<?= esc(old('age', $user['age'] ?? '')) ?>" placeholder="Computed from birthdate" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px; background: #f1f8e9;">
+                    <input type="hidden" id="age" name="age" value="<?= esc(old('age', $user['age'] ?? '')) ?>">
+                    <small id="age-grade-hint" style="display: block; margin-top: 6px; color: #558b2f; font-size: 0.85rem;">Select a grade to see the required age range.</small>
                 </div>
                 <div class="form-group">
                     <label for="address" style="color: #1b5e20;">Address</label>
@@ -214,6 +226,14 @@ $roleDisplayName = RoleRegistry::displayName($userRoleSlug);
             var isStudent = dashType === 'student' || slug === 'STUDENT';
             if (sectionGroup) sectionGroup.style.display = (isTeacher || isStudent) ? 'block' : 'none';
             if (studentFields) studentFields.style.display = isStudent ? 'block' : 'none';
+            var lrnEl = document.getElementById('student_id');
+            var genderEl = document.getElementById('gender');
+            var gradeSelect = document.getElementById('grade_level');
+            if (lrnEl) lrnEl.required = isStudent;
+            if (genderEl) genderEl.required = isStudent;
+            if (gradeSelect) gradeSelect.required = isStudent;
+            var birthElReq = document.getElementById('birthdate');
+            if (birthElReq) birthElReq.required = isStudent;
         }
 
         if (roleEl && roleEl.tagName === 'SELECT') {
@@ -221,6 +241,8 @@ $roleDisplayName = RoleRegistry::displayName($userRoleSlug);
         }
         syncRoleFields();
     })();
+
+    <?php include APPPATH . 'Views/Admin/Users/_student_age_script.php'; ?>
     </script>
 
     </main>

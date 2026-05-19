@@ -106,11 +106,11 @@ class UserModel extends Model
         if (isset($eventData['data']) && is_array($eventData['data'])) {
             if (isset($eventData['data'][0]) && is_array($eventData['data'][0])) {
                 foreach ($eventData['data'] as &$row) {
-                    $row = DataEncryptor::decryptFields($row, $fields);
+                    $row = DataEncryptor::decryptUserRowForDisplay($row);
                 }
                 unset($row);
             } else {
-                $eventData['data'] = DataEncryptor::decryptFields($eventData['data'], $fields);
+                $eventData['data'] = DataEncryptor::decryptUserRowForDisplay($eventData['data']);
             }
         }
 

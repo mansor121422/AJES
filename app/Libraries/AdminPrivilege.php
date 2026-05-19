@@ -17,6 +17,7 @@ class AdminPrivilege
             'announcements',
             'records',
             'user_management',
+            'student_log',
             'chat_logs',
         ];
     }
@@ -70,6 +71,7 @@ class AdminPrivilege
             'teacher_sections' => 'Teacher Sections',
             'records' => 'Records',
             'user_management' => 'User Management',
+            'student_log' => 'Students Log',
             'chat_logs' => 'Chat Logs',
             'system_settings' => 'System Settings',
             'chatbot_management' => 'Chatbot Management',
@@ -192,6 +194,10 @@ class AdminPrivilege
         $action  = '';
         if (str_contains($required, ':')) {
             [$feature, $action] = explode(':', $required, 2);
+        }
+
+        if (in_array($normalizedRole, ['ADMIN', 'SUPER_ADMIN'], true) && in_array($feature, ['sections', 'student_log'], true)) {
+            return true;
         }
 
         $granted = self::effectiveForRole($normalizedRole, $assignedPrivileges);

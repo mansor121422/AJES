@@ -23,7 +23,7 @@ $sections = $sections ?? [];
 
     <div class="card">
         <div class="card-title">All sections</div>
-        <p style="margin-bottom: 12px; color: #558b2f;">Create sections and invite teachers. Teachers must accept before they can add students.</p>
+        <p style="margin-bottom: 12px; color: #558b2f;">Create sections, enroll students (maximum <?= \App\Libraries\SectionEnrollment::MAX_STUDENTS ?> per section), and invite teachers.</p>
         <a href="<?= base_url('admin/sections/create') ?>" class="login-button" style="display: inline-flex; width: auto; padding: 10px 20px; text-decoration: none; margin-bottom: 16px;">Create section</a>
         <table class="recent-table">
             <thead>
@@ -31,21 +31,30 @@ $sections = $sections ?? [];
                     <th>ID</th>
                     <th>Name</th>
                     <th>Grade level</th>
+                    <th>Teacher</th>
                     <th>School day (times)</th>
+                    <th>Students</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($sections)): ?>
-                    <tr><td colspan="5">No sections yet.</td></tr>
+                    <tr><td colspan="7">No sections yet.</td></tr>
                 <?php else: ?>
                     <?php foreach ($sections as $s): ?>
                         <tr>
                             <td><?= esc($s['id']) ?></td>
                             <td><?= esc($s['name']) ?></td>
                             <td><?= esc($s['grade_level']) ?></td>
+                            <td><?= esc($s['adviser_name'] ?? '—') ?></td>
                             <td style="font-size: 0.85rem; color: #555;"><?= esc($s['schedule_time_summary'] ?? '—') ?></td>
                             <td>
+                                <?php $sc = (int) ($s['student_count'] ?? 0); ?>
+                                <a href="<?= base_url('admin/sections/' . $s['id'] . '/students') ?>" class="link-details"><?= $sc ?> / <?= \App\Libraries\SectionEnrollment::MAX_STUDENTS ?></a>
+                            </td>
+                            <td>
+                                <a href="<?= base_url('admin/sections/' . $s['id'] . '/students') ?>" class="link-details">View students</a>
+                                &nbsp;|&nbsp;
                                 <a href="<?= base_url('admin/sections/' . $s['id'] . '/teachers') ?>" class="link-details">Invite teachers</a>
                                 &nbsp;|&nbsp;
                                 <a href="<?= base_url('admin/sections/edit/' . $s['id']) ?>" class="link-details">Edit</a>

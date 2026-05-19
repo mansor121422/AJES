@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\SectionEnrollment;
 use App\Models\SectionModel;
 use App\Models\UserModel;
 use App\Models\TeacherSectionModel;
@@ -23,9 +24,13 @@ class Sections extends BaseController
 
     public function index(): string
     {
-        $list = $this->sections->orderBy('grade_level')->orderBy('name')->findAll();
+        $list              = $this->sections->orderBy('grade_level')->orderBy('name')->findAll();
+        $adviserBySection  = $this->adviserDisplayBySectionId();
         foreach ($list as &$secRow) {
+            $sectionId = (int) ($secRow['id'] ?? 0);
             $secRow['schedule_time_summary'] = $this->compactScheduleTimesSummary($secRow['class_schedule'] ?? null);
+            $secRow['student_count']         = SectionEnrollment::countStudentsInSection($sectionId);
+            $secRow['adviser_name']          = $adviserBySection[$sectionId] ?? '—';
         }
         unset($secRow);
 
@@ -145,13 +150,17 @@ class Sections extends BaseController
         if (! $section) {
             return redirect()->to(base_url('admin/sections'))->with('error', 'Section not found.');
         }
+        $adviserRow = $this->findSectionAdviserAssignment($id);
+
         $data = [
-            'section'            => $section,
-            'schedule'           => $this->parseClassSchedule($section['class_schedule'] ?? null),
-            'section_adviser_id' => $this->resolveSectionAdviserTeacherId($id),
+            'section'                 => $section,
+            'schedule'                => $this->parseClassSchedule($section['class_schedule'] ?? null),
+            'section_adviser_id'      => (int) ($adviserRow['teacher_id'] ?? 0),
+            'section_adviser_status'  => (string) ($adviserRow['status'] ?? ''),
+            'available_teachers'      => $this->availableAdviserTeachersForSection($id),
             'deped_subjects_by_grade' => $this->depedSubjectsByGrade(),
-            'role'               => session()->get('role') ?? 'ADMIN',
-            'name'               => session()->get('name') ?? 'User',
+            'role'                    => session()->get('role') ?? 'ADMIN',
+            'name'                    => session()->get('name') ?? 'User',
         ];
         return view('Admin/Sections/edit', $data);
     }
@@ -168,7 +177,15 @@ class Sections extends BaseController
             return redirect()->back()->withInput()->with('error', 'Section name and grade level are required.');
         }
 
-        $adviserId = $this->resolveSectionAdviserTeacherId($id);
+        $adviserRow = $this->findSectionAdviserAssignment($id);
+        $newTeacherId = (int) $this->request->getPost('teacher_id');
+        $assignNow    = (int) $this->request->getPost('assign_now') === 1;
+        $teacherErr   = $this->applySectionAdviserChange($id, $newTeacherId, $assignNow, $adviserRow);
+        if ($teacherErr !== null) {
+            return redirect()->back()->withInput()->with('error', $teacherErr);
+        }
+
+        $adviserId = $newTeacherId > 0 ? $newTeacherId : $this->resolveSectionAdviserTeacherId($id);
         [$adviserSlots, $adviserErr] = $this->adviserTeachesSlotsFromRequest($adviserId);
         if ($adviserErr !== null) {
             return redirect()->back()->withInput()->with('error', $adviserErr);
@@ -203,6 +220,91 @@ class Sections extends BaseController
         }
         $this->sections->delete($id);
         return redirect()->to(base_url('admin/sections'))->with('success', 'Section deleted.');
+    }
+
+    public function sectionStudents(int $id): string|RedirectResponse
+    {
+        $section = $this->sections->find($id);
+        if (! $section) {
+            return redirect()->to(base_url('admin/sections'))->with('error', 'Section not found.');
+        }
+
+        $sectionId           = (int) $section['id'];
+        $studentsInSection   = $this->studentsInSection($sectionId);
+        $studentCount        = count($studentsInSection);
+        $sectionGradeDigit   = $this->normalizeGradeToDigit($section['grade_level'] ?? '');
+        $addableStudents     = [];
+        $sectionHasCapacity  = ! SectionEnrollment::isFull($sectionId);
+
+        if ($sectionHasCapacity) {
+            $candidates = $this->users
+                ->whereIn('role', SectionEnrollment::studentRoleSlugs())
+                ->where('is_active', 1)
+                ->groupStart()
+                    ->where('section_id', null)
+                    ->orWhere('section_id', 0)
+                ->groupEnd()
+                ->orderBy('surname', 'ASC')
+                ->orderBy('first_name', 'ASC')
+                ->orderBy('name', 'ASC')
+                ->findAll();
+
+            foreach ($candidates as $row) {
+                if ($sectionGradeDigit !== '' && $this->normalizeGradeToDigit($row['grade_level'] ?? '') === $sectionGradeDigit) {
+                    $addableStudents[] = $row;
+                }
+            }
+        }
+
+        return view('Admin/Sections/section_students', [
+            'section'            => $section,
+            'studentsInSection'  => $studentsInSection,
+            'addableStudents'    => $addableStudents,
+            'student_count'      => $studentCount,
+            'max_students'       => SectionEnrollment::MAX_STUDENTS,
+            'section_has_capacity' => $sectionHasCapacity,
+            'role'               => session()->get('role') ?? 'ADMIN',
+            'name'               => session()->get('name') ?? 'User',
+        ]);
+    }
+
+    public function addStudent(): RedirectResponse
+    {
+        $sectionId = (int) $this->request->getPost('section_id');
+        $studentId = (int) $this->request->getPost('student_id');
+
+        if ($sectionId <= 0 || $studentId <= 0) {
+            return redirect()->back()->with('error', 'Section and student are required.');
+        }
+
+        $err = $this->enrollStudentInSection($sectionId, $studentId);
+        if ($err !== null) {
+            return redirect()->back()->with('error', $err);
+        }
+
+        return redirect()->back()->with('success', 'Student enrolled in section.');
+    }
+
+    public function removeStudent(): RedirectResponse
+    {
+        $sectionId = (int) $this->request->getPost('section_id');
+        $studentId = (int) $this->request->getPost('student_id');
+
+        if ($sectionId <= 0 || $studentId <= 0) {
+            return redirect()->back()->with('error', 'Section and student are required.');
+        }
+
+        $student = $this->users->find($studentId);
+        if (! $student || ! SectionEnrollment::isStudentUser($student)) {
+            return redirect()->back()->with('error', 'Student not found.');
+        }
+        if ((int) ($student['section_id'] ?? 0) !== $sectionId) {
+            return redirect()->back()->with('error', 'This student is not enrolled in this section.');
+        }
+
+        $this->users->update($studentId, ['section_id' => null]);
+
+        return redirect()->back()->with('success', 'Student removed from section.');
     }
 
     /** Invite a subject teacher to a section (admin). Adviser is not invited from here. */
@@ -570,18 +672,133 @@ class Sections extends BaseController
         return null;
     }
 
-    private function resolveSectionAdviserTeacherId(int $sectionId): int
+    private function findSectionAdviserAssignment(int $sectionId): ?array
     {
         $row = $this->teacherSections
             ->where('section_id', $sectionId)
             ->where('assignment_role', 'ADVISER')
             ->groupStart()
-            ->where('status', 'accepted')
-            ->orWhere('status', 'pending')
+                ->where('status', 'accepted')
+                ->orWhere('status', 'pending')
             ->groupEnd()
             ->first();
 
+        return $row ?: null;
+    }
+
+    private function resolveSectionAdviserTeacherId(int $sectionId): int
+    {
+        $row = $this->findSectionAdviserAssignment($sectionId);
+
         return (int) ($row['teacher_id'] ?? 0);
+    }
+
+    /**
+     * Active teachers with no adviser section elsewhere; includes this section’s current adviser.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function availableAdviserTeachersForSection(int $sectionId): array
+    {
+        $teachers   = $this->users
+            ->where('role', 'TEACHER')
+            ->where('is_active', 1)
+            ->orderBy('name', 'ASC')
+            ->findAll();
+        $adviserRow = $this->findSectionAdviserAssignment($sectionId);
+        $excludeId  = $adviserRow ? (int) ($adviserRow['id'] ?? 0) : 0;
+
+        $available = [];
+        foreach ($teachers as $teacher) {
+            $tid = (int) ($teacher['id'] ?? 0);
+            if ($tid <= 0) {
+                continue;
+            }
+            if (! $this->hasExistingAdviserAssignment($tid, $excludeId > 0 ? $excludeId : null)) {
+                $available[] = $teacher;
+            }
+        }
+
+        return $available;
+    }
+
+    private function applySectionAdviserChange(int $sectionId, int $newTeacherId, bool $assignNow, ?array $existingRow): ?string
+    {
+        $currentTeacherId = (int) ($existingRow['teacher_id'] ?? 0);
+
+        if ($newTeacherId === $currentTeacherId) {
+            if ($existingRow !== null && $assignNow && strtolower((string) ($existingRow['status'] ?? '')) === 'pending') {
+                $this->teacherSections->update((int) $existingRow['id'], ['status' => 'accepted']);
+            }
+
+            return null;
+        }
+
+        if ($existingRow !== null) {
+            $this->teacherSections->delete((int) $existingRow['id']);
+        }
+
+        if ($newTeacherId <= 0) {
+            return null;
+        }
+
+        $teacher = $this->users
+            ->where('id', $newTeacherId)
+            ->where('role', 'TEACHER')
+            ->where('is_active', 1)
+            ->first();
+        if (! $teacher) {
+            return 'Selected teacher was not found or is not active.';
+        }
+        if ($this->hasExistingAdviserAssignment($newTeacherId)) {
+            return 'This teacher is already an adviser in another section and cannot be assigned here.';
+        }
+
+        $this->teacherSections->insert([
+            'section_id'       => $sectionId,
+            'teacher_id'       => $newTeacherId,
+            'assignment_role'  => 'ADVISER',
+            'subject_name'     => null,
+            'status'           => $assignNow ? 'accepted' : 'pending',
+        ]);
+
+        return null;
+    }
+
+    /**
+     * @return array<int, string> section_id => adviser display label
+     */
+    private function adviserDisplayBySectionId(): array
+    {
+        $db   = \Config\Database::connect();
+        $rows = $db->table('teacher_sections ts')
+            ->select('ts.section_id, ts.status, users.name AS teacher_name')
+            ->join('users', 'users.id = ts.teacher_id', 'inner')
+            ->where('ts.assignment_role', 'ADVISER')
+            ->groupStart()
+                ->where('ts.status', 'accepted')
+                ->orWhere('ts.status', 'pending')
+            ->groupEnd()
+            ->get()
+            ->getResultArray();
+
+        $out = [];
+        foreach ($rows as $row) {
+            $sectionId = (int) ($row['section_id'] ?? 0);
+            if ($sectionId <= 0 || isset($out[$sectionId])) {
+                continue;
+            }
+            $name = trim((string) ($row['teacher_name'] ?? ''));
+            if ($name === '') {
+                $name = '—';
+            }
+            if (strtolower((string) ($row['status'] ?? '')) === 'pending') {
+                $name .= ' (pending)';
+            }
+            $out[$sectionId] = $name;
+        }
+
+        return $out;
     }
 
     private function scheduleSubjectKey(string $subject): string
@@ -1054,5 +1271,73 @@ class Sections extends BaseController
         }
 
         return false;
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function studentsInSection(int $sectionId): array
+    {
+        return $this->users
+            ->where('section_id', $sectionId)
+            ->whereIn('role', SectionEnrollment::studentRoleSlugs())
+            ->orderBy('surname', 'ASC')
+            ->orderBy('first_name', 'ASC')
+            ->orderBy('name', 'ASC')
+            ->findAll();
+    }
+
+    private function enrollStudentInSection(int $sectionId, int $studentId): ?string
+    {
+        $section = $this->sections->find($sectionId);
+        if (! $section) {
+            return 'Section not found.';
+        }
+        if (SectionEnrollment::isFull($sectionId)) {
+            return SectionEnrollment::capacityMessage($sectionId);
+        }
+
+        $student = $this->users->find($studentId);
+        if (! $student || ! SectionEnrollment::isStudentUser($student)) {
+            return 'Student not found.';
+        }
+
+        $sg = $this->normalizeGradeToDigit($section['grade_level'] ?? '');
+        $ug = $this->normalizeGradeToDigit($student['grade_level'] ?? '');
+        if ($sg === '' || $ug === '' || $sg !== $ug) {
+            return 'This student’s grade does not match this section.';
+        }
+
+        $currentSectionId = (int) ($student['section_id'] ?? 0);
+        if ($currentSectionId > 0 && $currentSectionId !== $sectionId) {
+            return 'This student is already enrolled in another section.';
+        }
+        if ($currentSectionId === $sectionId) {
+            return 'This student is already in this section.';
+        }
+
+        $this->users->update($studentId, ['section_id' => $sectionId]);
+
+        return null;
+    }
+
+    private function normalizeGradeToDigit(?string $grade): string
+    {
+        $g = trim((string) $grade);
+        if ($g === '') {
+            return '';
+        }
+        if (preg_match('/^([1-6])$/', $g, $m)) {
+            return $m[1];
+        }
+        if (preg_match('/grade\s*([1-6])/i', $g, $m)) {
+            return $m[1];
+        }
+        if (preg_match('/^(\d+)$/', $g, $m)) {
+            $n = (int) $m[1];
+            if ($n >= 1 && $n <= 6) {
+                return (string) $n;
+            }
+        }
+
+        return '';
     }
 }

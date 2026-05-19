@@ -59,17 +59,15 @@ $title = $titles[$tab] ?? 'System Panel';
         <div class="card-title">Admin System Control</div>
         <p style="margin-bottom: 12px; color: #558b2f;">Welcome, <?= esc($name) ?>. This panel centralizes technical and system administration tasks.</p>
 
+        <?php if (session()->getFlashdata('success')): ?>
+            <div class="message success" style="margin-bottom: 12px;"><?= esc(session()->getFlashdata('success')) ?></div>
+        <?php endif; ?>
+        <?php if (session()->getFlashdata('error')): ?>
+            <div class="message" style="margin-bottom: 12px;"><?= esc(session()->getFlashdata('error')) ?></div>
+        <?php endif; ?>
+
         <?php if ($tab === 'settings'): ?>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
-                <div><strong>Base URL</strong><br><span><?= esc((string) ($settingsData['base_url'] ?? '')) ?></span></div>
-                <div><strong>Index Page</strong><br><span><?= esc((string) ($settingsData['index_page'] ?? '')) ?></span></div>
-                <div><strong>Default Locale</strong><br><span><?= esc((string) ($settingsData['default_locale'] ?? '')) ?></span></div>
-                <div><strong>Timezone</strong><br><span><?= esc((string) ($settingsData['timezone'] ?? '')) ?></span></div>
-                <div><strong>Force Secure Requests</strong><br><span><?= ! empty($settingsData['secure_requests']) ? 'Enabled' : 'Disabled' ?></span></div>
-                <div><strong>Presence Timeout</strong><br><span><?= esc((string) ($settingsData['presence_timeout'] ?? 0)) ?> seconds</span></div>
-                <div><strong>Presence Heartbeat</strong><br><span><?= esc((string) ($settingsData['presence_heartbeat'] ?? 0)) ?> seconds</span></div>
-            </div>
-            <p style="margin-top:12px;color:#558b2f;">Source: `app/Config/App.php`</p>
+            <?php include APPPATH . 'Views/SystemAdmin/_settings_tab.php'; ?>
         <?php elseif ($tab === 'chatbot'): ?>
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
                 <div><strong>Enabled</strong><br><span><?= ! empty($chatbotData['enabled']) ? 'Yes' : 'No' ?></span></div>
@@ -83,33 +81,63 @@ $title = $titles[$tab] ?? 'System Panel';
             <p style="margin-top:12px;"><strong>Trigger Roles:</strong> <?= esc(implode(', ', (array) ($chatbotData['trigger_roles'] ?? []))) ?></p>
             <p><strong>Receiver Roles:</strong> <?= esc(implode(', ', (array) ($chatbotData['receiver_roles'] ?? []))) ?></p>
             <p><strong>Trigger Mentions:</strong> <?= esc(implode(', ', (array) ($chatbotData['mentions'] ?? []))) ?></p>
-            <p style="margin-top:12px;color:#558b2f;">Source: `app/Config/AIChat.php` and environment vars.</p>
+            <p style="margin-top:12px;color:#558b2f;">AjesAI replies when a <strong>student</strong> messages Principal/Guidance (or types <code>@ajesai</code>). Answers use live AJES announcements and sections only.</p>
         <?php elseif ($tab === 'backup'): ?>
-            <p><strong>Backup Directory:</strong> <?= esc((string) ($backupData['backup_dir'] ?? '')) ?></p>
-            <p><strong>Detected Backup Files:</strong> <?= esc((string) ($backupData['file_count'] ?? 0)) ?></p>
-            <?php $cmds = (array) ($backupData['commands'] ?? []); ?>
-            <?php if ($cmds !== []): ?>
-                <p style="margin-top:10px;"><strong>Repository scripts (Lab 4):</strong></p>
-                <ul style="margin:8px 0 0 18px; color:#333;">
-                    <?php foreach ($cmds as $label => $line): ?>
-                        <li style="margin-bottom:6px;"><strong><?= esc((string) $label) ?>:</strong><br><code style="word-break:break-all;"><?= esc((string) $line) ?></code></li>
-                    <?php endforeach; ?>
-                </ul>
-            <?php endif; ?>
+            <p><strong>Database:</strong> <?= esc((string) ($backupData['db_name'] ?? '')) ?></p>
+            <p><strong>Backup folder:</strong> <code style="word-break:break-all;"><?= esc((string) ($backupData['backup_dir'] ?? '')) ?></code></p>
+            <p><strong>SQL backups:</strong> <?= esc((string) ($backupData['file_count'] ?? 0)) ?></p>
+
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin:16px 0;">
+                <form method="post" action="<?= base_url('sysadmin/backup/create') ?>" style="margin:0;">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="login-button" style="display:inline-flex; width:auto; padding:10px 22px;">Create backup now</button>
+                </form>
+            </div>
+            <p style="color:#558b2f; font-size:0.9rem; margin:0 0 14px;">Creates a full MySQL dump (<code>ajesdb_YYYYMMDD_HHMMSS.sql</code>) with all tables and data.</p>
+
             <?php $files = (array) ($backupData['files'] ?? []); ?>
-            <?php if ($files !== []): ?>
-                <table class="recent-table" style="margin-top:12px;">
-                    <thead><tr><th>File</th><th>Size</th><th>Modified</th></tr></thead>
+            <?php if ($files === []): ?>
+                <p style="color:#666;">No SQL backups yet. Click <strong>Create backup now</strong> to generate one.</p>
+            <?php else: ?>
+                <table class="recent-table" style="margin-top:8px;">
+                    <thead><tr><th>File</th><th>Size</th><th>Modified</th><th></th></tr></thead>
                     <tbody>
                         <?php foreach ($files as $f): ?>
                             <tr>
-                                <td><?= esc((string) ($f['name'] ?? '')) ?></td>
+                                <td><code><?= esc((string) ($f['name'] ?? '')) ?></code></td>
                                 <td><?= esc((string) ($f['size'] ?? '')) ?></td>
                                 <td><?= esc((string) ($f['modified_at'] ?? '')) ?></td>
+                                <td>
+                                    <a href="<?= base_url('sysadmin/backup/download/' . rawurlencode((string) ($f['name'] ?? ''))) ?>" style="color:#2e7d32; font-weight:600;">Download</a>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+
+                <div style="margin-top:20px; padding:16px; background:#fff8e1; border:1px solid #ffe082; border-radius:8px;">
+                    <h3 style="margin:0 0 10px; color:#e65100; font-size:1rem;">Restore database</h3>
+                    <p style="margin:0 0 12px; color:#555; font-size:0.9rem;">This replaces all current data in the database with the selected backup. A safety backup is taken first if checked.</p>
+                    <form method="post" action="<?= base_url('sysadmin/backup/restore') ?>">
+                        <?= csrf_field() ?>
+                        <div style="margin-bottom:10px;">
+                            <label for="dump_file" style="display:block; font-weight:600; color:#1b5e20; margin-bottom:6px;">Backup file</label>
+                            <select id="dump_file" name="dump_file" required style="width:100%; max-width:420px; padding:10px; border:1px solid #c8e6c9; border-radius:8px;">
+                                <?php foreach ($files as $f): ?>
+                                    <option value="<?= esc((string) ($f['name'] ?? '')) ?>"><?= esc((string) ($f['name'] ?? '')) ?> (<?= esc((string) ($f['size'] ?? '')) ?>)</option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <label style="display:block; margin-bottom:10px;">
+                            <input type="checkbox" name="pre_backup" value="1" checked> Take a safety backup before restore
+                        </label>
+                        <div style="margin-bottom:10px;">
+                            <label for="confirm" style="display:block; font-weight:600; color:#c62828; margin-bottom:6px;">Type <strong>YES</strong> to confirm</label>
+                            <input type="text" id="confirm" name="confirm" placeholder="YES" autocomplete="off" style="width:120px; padding:10px; border:1px solid #ef9a9a; border-radius:8px;">
+                        </div>
+                        <button type="submit" class="login-button" style="display:inline-flex; width:auto; padding:10px 22px; background:#c62828;" onclick="return confirm('Restore will overwrite the live database. Continue?');">Restore from backup</button>
+                    </form>
+                </div>
             <?php endif; ?>
 
         <?php elseif ($tab === 'security-logs'): ?>
