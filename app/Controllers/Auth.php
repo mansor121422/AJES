@@ -89,7 +89,11 @@ class Auth extends BaseController
         if (! empty($user['mfa_enabled'])) {
             $session->regenerate();
             $session->set('mfa_pending_user_id', (int) $user['id']);
-            $this->generateAndSendMfaCode($user);
+            [$sent, $reason] = $this->generateAndSendMfaCode($user);
+            if (! $sent) {
+                $session->remove('mfa_pending_user_id');
+                return redirect()->back()->withInput()->with('error', $this->mfaEmailErrorMessage($reason));
+            }
             return redirect()->to(base_url('auth/mfa'));
         }
 
@@ -97,9 +101,12 @@ class Auth extends BaseController
     }
 
     /**
-     * Generate a 6-digit OTP, store it, and send via email (dev fallback shows code on screen).
+     * Generate a 6-digit OTP, store it, and send via email.
      */
-    private function generateAndSendMfaCode(array $user): void
+    /**
+     * @return array{0: bool, 1: string} [sent, failure reason key]
+     */
+    private function generateAndSendMfaCode(array $user): array
     {
         $code    = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $expires = date('Y-m-d H:i:s', time() + 300); // 5 minutes
@@ -109,10 +116,15 @@ class Auth extends BaseController
             'mfa_expires_at' => $expires,
         ]);
 
-        $email = $user['email'] ?? '';
+        $email = trim((string) ($user['email'] ?? ''));
         if ($email === '') {
-            session()->setFlashdata('dev_mfa_code', $code);
-            return;
+            log_message('error', 'MFA email skipped: user has no email address (user_id=' . (int) $user['id'] . ')');
+            return [false, 'no_email'];
+        }
+
+        if (! $this->isEmailConfigured()) {
+            log_message('error', 'MFA email skipped: SMTP not configured in .env');
+            return [false, 'not_configured'];
         }
 
         $logoUrl = rtrim(config('App')->baseURL, '/') . 'public/assets/images/ajes-logo.png';
@@ -133,10 +145,14 @@ class Auth extends BaseController
 
         try {
             $emailService = service('email');
+            $emailService->clear(true);
             $from = (string) env('EMAIL_FROM', (string) env('SMTP_USER', ''));
-            if ($from !== '') {
-                $emailService->setFrom($from, (string) env('EMAIL_FROM_NAME', 'AJES CRIER'));
+            $fromName = (string) env('EMAIL_FROM_NAME', 'AJES CRIER');
+            if ($from === '') {
+                log_message('error', 'MFA email skipped: EMAIL_FROM and SMTP_USER are empty');
+                return [false, 'not_configured'];
             }
+            $emailService->setFrom($from, $fromName);
             $emailService->setTo($email);
             $emailService->setSubject('AJES Login Verification Code');
             $emailService->setMailType('html');
@@ -144,12 +160,45 @@ class Auth extends BaseController
             $sent = $emailService->send();
 
             if (! $sent) {
-                session()->setFlashdata('dev_mfa_code', $code);
+                $debug = strip_tags($emailService->printDebugger([]));
+                log_message('error', 'MFA email failed: ' . $debug);
+                if ($this->isSmtpAuthFailure($debug)) {
+                    return [false, 'smtp_auth'];
+                }
+                return [false, 'smtp_other'];
             }
+
+            return [true, ''];
         } catch (\Throwable $e) {
             log_message('error', 'MFA email failed: ' . $e->getMessage());
-            session()->setFlashdata('dev_mfa_code', $code);
+            if ($this->isSmtpAuthFailure($e->getMessage())) {
+                return [false, 'smtp_auth'];
+            }
+            return [false, 'smtp_other'];
         }
+    }
+
+    private function isSmtpAuthFailure(string $message): bool
+    {
+        return stripos($message, '535') !== false
+            || stripos($message, 'BadCredentials') !== false
+            || stripos($message, 'Username and Password not accepted') !== false
+            || stripos($message, 'authentication failed') !== false;
+    }
+
+    private function isEmailConfigured(): bool
+    {
+        return env('SMTP_HOST', '') !== '' && (string) env('SMTP_USER', '') !== '' && (string) env('SMTP_PASS', '') !== '';
+    }
+
+    private function mfaEmailErrorMessage(string $reason = ''): string
+    {
+        return match ($reason) {
+            'no_email' => 'Your account has no email address on file. Ask an admin to add your email, then try again.',
+            'not_configured' => 'Email is not configured. Set SMTP_HOST, SMTP_USER, SMTP_PASS, and EMAIL_FROM in .env.',
+            'smtp_auth' => 'Gmail rejected the app password (invalid or expired). Create a new App Password at https://myaccount.google.com/apppasswords, update SMTP_PASS in .env (no quotes), then log in again.',
+            default => 'Verification code could not be sent by email. Check writable/logs for details.',
+        };
     }
 
     /**
@@ -219,10 +268,13 @@ class Auth extends BaseController
 
         $user = $this->users->find($userId);
         if ($user) {
-            $this->generateAndSendMfaCode($user);
+            [$sent, $reason] = $this->generateAndSendMfaCode($user);
+            if (! $sent) {
+                return redirect()->to(base_url('auth/mfa'))->with('error', $this->mfaEmailErrorMessage($reason));
+            }
         }
 
-        return redirect()->to(base_url('auth/mfa'))->with('success', 'A new code has been sent.');
+        return redirect()->to(base_url('auth/mfa'))->with('success', 'A new code has been sent to your email.');
     }
 
     /**

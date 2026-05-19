@@ -8,7 +8,6 @@
     <?php
         $flashError   = session()->getFlashdata('error');
         $flashSuccess = session()->getFlashdata('success');
-        $devCode      = session()->getFlashdata('dev_mfa_code');
     ?>
     <style>
         body.mfa-page {
@@ -86,7 +85,6 @@
         }
         .mfa-alert.error { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
         .mfa-alert.success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
-        .mfa-alert.dev { background: #fff8e1; color: #1b5e20; border: 1px solid #ffe082; font-family: monospace; font-size: 1.3rem; letter-spacing: 0.3em; }
         .mfa-resend {
             margin-top: 16px;
             font-size: 0.85rem;
@@ -111,9 +109,6 @@
         <?php endif; ?>
         <?php if ($flashSuccess): ?>
             <div class="mfa-alert success"><?= esc($flashSuccess) ?></div>
-        <?php endif; ?>
-        <?php if ($devCode): ?>
-            <div class="mfa-alert dev">DEV CODE: <?= esc($devCode) ?></div>
         <?php endif; ?>
 
         <form action="<?= base_url('auth/mfa/verify') ?>" method="post" id="mfa-form">

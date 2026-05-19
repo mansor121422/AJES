@@ -12,9 +12,9 @@ class App extends BaseConfig
      * --------------------------------------------------------------------------
      *
      * URL to your CodeIgniter root. Use a fixed value here; override in .env with
-     * app.baseURL when needed (e.g. http://192.168.1.139/AJES/ for LAN + mobile app).
+     * app.baseURL when needed (e.g. http://10.20.26.161/AJES/ for LAN + mobile app).
      */
-    public string $baseURL = 'http://192.168.1.139/AJES/';
+    public string $baseURL = 'http://10.20.26.161/AJES/';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.

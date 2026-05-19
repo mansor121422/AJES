@@ -45,6 +45,10 @@ class AuthFilter implements FilterInterface
         if (preg_match('/Bearer\s+(.+)$/i', $header, $m)) {
             $token = trim($m[1]);
         }
+        // Some Apache setups strip Authorization; Android also sends X-Bearer-Token.
+        if ($token === '') {
+            $token = trim($request->getHeaderLine('X-Bearer-Token'));
+        }
 
         if ($token !== '') {
             // Try JWT first
