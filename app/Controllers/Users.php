@@ -11,8 +11,10 @@ use App\Libraries\ActivityLogger;
 use App\Libraries\SecureHash;
 use App\Libraries\TransactionManager;
 use App\Models\UserModel;
+use App\Libraries\AcademicYearManager;
 use App\Libraries\SectionEnrollment;
 use App\Libraries\StudentAgeRules;
+use App\Libraries\StudentEnrollmentType;
 use App\Models\SectionModel;
 use App\Models\RoleModel;
 use CodeIgniter\HTTP\RedirectResponse;
@@ -209,6 +211,10 @@ class Users extends BaseController
             $data['address'] = trim((string) $this->request->getPost('address'));
             $data['guardian_name'] = trim((string) $this->request->getPost('guardian_name'));
             $data['guardian_contact'] = trim((string) $this->request->getPost('guardian_contact'));
+            $enrollmentError = $this->applyStudentEnrollmentFields($data);
+            if ($enrollmentError !== null) {
+                return redirect()->back()->withInput()->with('error', $enrollmentError);
+            }
         }
         try {
             $newId = TransactionManager::run('USER_CREATE', function ($db) use ($data, $name, $role) {
@@ -220,6 +226,10 @@ class Users extends BaseController
             }, 'users');
         } catch (\Throwable $e) {
             return redirect()->back()->withInput()->with('error', 'Failed to create user: ' . $e->getMessage());
+        }
+
+        if (isset($newId) && SectionEnrollment::isStudentUser(['role' => $role])) {
+            AcademicYearManager::syncStudentEnrollment((int) $newId);
         }
 
         return redirect()->to(base_url('admin/users'))->with('success', 'User created.');
@@ -235,7 +245,15 @@ class Users extends BaseController
         $currentRole = session()->get('role') ?? '';
         $currentUserId = (int) session()->get('user_id');
         $is_editing_self = (in_array($currentRole, ['ADMIN', 'SUPER_ADMIN'], true) && $currentUserId === (int) $id);
-        $sections = $this->sections->orderBy('grade_level')->orderBy('name')->findAll();
+        $ayId = AcademicYearManager::ensureActiveYear();
+        $sections = $this->sections
+            ->groupStart()
+                ->where('academic_year_id', $ayId)
+                ->orWhere('academic_year_id', null)
+            ->groupEnd()
+            ->orderBy('grade_level')
+            ->orderBy('name')
+            ->findAll();
         $data = [
             'user'            => $user,
             'sections'        => $sections,
@@ -343,6 +361,10 @@ class Users extends BaseController
             $data['address'] = trim((string) $this->request->getPost('address'));
             $data['guardian_name'] = trim((string) $this->request->getPost('guardian_name'));
             $data['guardian_contact'] = trim((string) $this->request->getPost('guardian_contact'));
+            $enrollmentError = $this->applyStudentEnrollmentFields($data);
+            if ($enrollmentError !== null) {
+                return redirect()->back()->withInput()->with('error', $enrollmentError);
+            }
         }
         if ($password !== '') {
             if (strlen($password) < 6) {
@@ -395,6 +417,10 @@ class Users extends BaseController
         if ($password !== '' && $currentUserId === (int) $id) {
             session()->destroy();
             return redirect()->to(base_url('/?password_changed=1'));
+        }
+
+        if (SectionEnrollment::isStudentUser(array_merge($user, ['role' => $role]))) {
+            AcademicYearManager::syncStudentEnrollment($id);
         }
 
         return redirect()->to(base_url('admin/users'))->with('success', 'User updated.');
@@ -486,6 +512,31 @@ class Users extends BaseController
         }
 
         return $map;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function applyStudentEnrollmentFields(array &$data): ?string
+    {
+        $type = strtolower(trim((string) $this->request->getPost('student_type')));
+        if (! StudentEnrollmentType::isValid($type)) {
+            return 'Please select student type: New student, Transferee, or Old student (returning).';
+        }
+
+        $data['student_type'] = $type;
+
+        $previousSchool = trim((string) $this->request->getPost('previous_school'));
+        if (StudentEnrollmentType::requiresPreviousSchool($type)) {
+            if ($previousSchool === '') {
+                return 'Previous school is required for new students and transferees.';
+            }
+            $data['previous_school'] = $previousSchool;
+        } else {
+            $data['previous_school'] = null;
+        }
+
+        return null;
     }
 
     private function roleUsesStudentFields(string $role): bool

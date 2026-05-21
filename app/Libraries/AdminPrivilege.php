@@ -19,6 +19,7 @@ class AdminPrivilege
             'user_management',
             'student_log',
             'chat_logs',
+            'academic_years',
         ];
     }
 
@@ -32,7 +33,7 @@ class AdminPrivilege
         return [
             'SUPER_ADMIN' => array_keys(self::labels()),
             'ADMIN' => array_keys(self::labels()),
-            'PRINCIPAL' => ['dashboard', 'announcements', 'records', 'chat_logs'],
+            'PRINCIPAL' => ['dashboard', 'announcements', 'records', 'chat_logs', 'academic_years', 'sections'],
             'VICE_PRINCIPAL' => ['dashboard', 'announcements', 'records', 'chat_logs'],
             'HEAD_TEACHER' => ['dashboard', 'announcements', 'records', 'chat_logs'],
             'ANNOUNCER' => ['dashboard', 'announcements'],
@@ -78,6 +79,7 @@ class AdminPrivilege
             'backup_restore' => 'Backup & Restore',
             'security_logs' => 'Security Logs',
             'role_management' => 'Role Management',
+            'academic_years' => 'Academic Years',
         ];
     }
 
@@ -152,6 +154,9 @@ class AdminPrivilege
     public static function normalizeForRole(string $role, mixed $value): array
     {
         $clean = self::normalize($value);
+        if (in_array(strtoupper(trim($role)), ['ADMIN', 'SUPER_ADMIN'], true)) {
+            return $clean;
+        }
         $allowed = self::allowedForRole($role);
         if ($allowed === []) {
             return [];
@@ -196,7 +201,7 @@ class AdminPrivilege
             [$feature, $action] = explode(':', $required, 2);
         }
 
-        if (in_array($normalizedRole, ['ADMIN', 'SUPER_ADMIN'], true) && in_array($feature, ['sections', 'student_log'], true)) {
+        if (in_array($normalizedRole, ['ADMIN', 'SUPER_ADMIN'], true) && in_array($feature, ['sections', 'student_log', 'academic_years'], true)) {
             return true;
         }
 
@@ -265,6 +270,8 @@ class AdminPrivilege
             if ($isHistoricalFullAdmin) {
                 $granted = array_values(array_unique(array_merge($granted, self::allowedForRole($normalizedRole))));
             }
+            // Auto-include any newly shipped admin modules (e.g. academic_years).
+            $granted = array_values(array_unique(array_merge($granted, array_keys(self::labels()))));
         }
 
         return self::normalizeForRole($normalizedRole, $granted);

@@ -139,12 +139,26 @@ class SystemAdmin extends BaseController
             }
         }
 
+        $perPage = 10;
+        $page = max(1, (int) ($this->request->getGet('page') ?? 1));
+        $offset = ($page - 1) * $perPage;
+        $auditTotal = AuditLogger::count();
+        $auditTotalPages = max(1, (int) ceil($auditTotal / $perPage));
+        if ($page > $auditTotalPages) {
+            $page = $auditTotalPages;
+            $offset = ($page - 1) * $perPage;
+        }
+
         $data['security_data'] = [
             'log_dir' => $logDir,
             'files' => $items,
             'error_count' => $errorCount,
             'warning_count' => $warningCount,
-            'audit_logs' => AuditLogger::recent(50),
+            'audit_logs' => AuditLogger::paginated($perPage, $offset),
+            'audit_page' => $page,
+            'audit_per_page' => $perPage,
+            'audit_total' => $auditTotal,
+            'audit_total_pages' => $auditTotalPages,
         ];
         return view('SystemAdmin/index', $data);
     }

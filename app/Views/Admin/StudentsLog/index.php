@@ -191,8 +191,12 @@ $dash = static function (?string $value): string {
 
     <div class="card" style="margin-bottom: 18px;">
         <p class="students-log-intro">
-            Registered students with LRN, age, gender, guardian details, and section assignment.
+            Registered students with LRN, age, gender, guardian details, and section assignment
+            <?php if (! empty($active_year['label'])): ?>
+                for <strong><?= esc((string) $active_year['label']) ?></strong>
+            <?php endif; ?>.
             Guardian phone numbers are stored securely and shown here after decryption.
+            <a href="<?= base_url('admin/academic-years') ?>" class="link-details">Academic years &amp; history</a>
         </p>
     </div>
 
@@ -248,8 +252,9 @@ $dash = static function (?string $value): string {
                         <tr>
                             <th>Student</th>
                             <th>LRN</th>
-                            <th>Profile</th>
+                            <th>Grade</th>
                             <th>Section</th>
+                            <th>Profile</th>
                             <th>Guardian</th>
                             <th>Contact</th>
                             <th>Address</th>
@@ -262,15 +267,22 @@ $dash = static function (?string $value): string {
                             <tr>
                                 <td>
                                     <div class="students-log-name"><?= esc($s['display_name'] ?? '') ?></div>
-                                    <div class="students-log-meta">ID #<?= esc($s['id']) ?></div>
+                                    <div class="students-log-meta">
+                                        ID #<?= esc($s['id']) ?>
+                                        · <a href="<?= base_url('admin/academic-years/student/' . (int) ($s['id'] ?? 0)) ?>" class="link-details">AY history</a>
+                                    </div>
                                 </td>
                                 <td class="students-log-lrn"><?= $dash($s['student_id'] ?? '') ?></td>
+                                <td style="white-space:nowrap; font-weight:600; color:#1b5e20;"><?= esc($s['grade_label'] ?? '—') ?></td>
+                                <td style="white-space:nowrap;"><?= esc($s['section_label'] ?? '—') ?></td>
                                 <td>
                                     <div><?= $dash($s['gender'] ?? '') ?> &middot; Age <?= $dash((string) ($s['age'] ?? '')) ?></div>
                                     <div class="students-log-meta"><?= esc($s['birthdate_display'] ?? '—') ?></div>
-                                    <div class="students-log-meta">Grade <?= $dash($s['grade_level'] ?? '') ?></div>
+                                    <div class="students-log-meta"><?= esc($s['student_type_label'] ?? '—') ?></div>
+                                    <?php if (! empty($s['previous_school_display']) && $s['previous_school_display'] !== '—'): ?>
+                                        <div class="students-log-meta">Prev. school: <?= esc($s['previous_school_display']) ?></div>
+                                    <?php endif; ?>
                                 </td>
-                                <td><?= esc($s['section_label'] ?? '—') ?></td>
                                 <td><?= esc($s['guardian_name_display'] ?? '—') ?></td>
                                 <td class="students-log-contact"><?= esc($s['guardian_contact_display'] ?? '—') ?></td>
                                 <td class="students-log-address" title="<?= esc($s['address_display'] ?? '') ?>"><?= esc($s['address_display'] ?? '—') ?></td>

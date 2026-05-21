@@ -23,6 +23,8 @@ class UserModel extends Model
         'gender',
         'grade_level',
         'student_id',
+        'student_type',
+        'previous_school',
         'birthdate',
         'age',
         'address',

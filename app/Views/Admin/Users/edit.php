@@ -143,6 +143,11 @@ $roleDisplayName = RoleRegistry::displayName($userRoleSlug);
 
             <div id="student-fields" style="display:none;">
                 <p style="margin: 0 0 12px; color: #558b2f; font-size: 0.9rem;"><strong>Student profile</strong> — shown in Students Log.</p>
+                <?php
+                $studentType = old('student_type', $user['student_type'] ?? '');
+                $previousSchool = old('previous_school', $user['previous_school'] ?? '');
+                include APPPATH . 'Views/Admin/Users/_student_type_fields.php';
+                ?>
                 <div class="form-group">
                     <label for="student_id" style="color: #1b5e20;">LRN (Learner Reference Number)</label>
                     <input type="text" id="student_id" name="student_id" value="<?= esc(old('student_id', $user['student_id'] ?? '')) ?>" style="width: 100%; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px;">
@@ -234,6 +239,9 @@ $roleDisplayName = RoleRegistry::displayName($userRoleSlug);
             if (gradeSelect) gradeSelect.required = isStudent;
             var birthElReq = document.getElementById('birthdate');
             if (birthElReq) birthElReq.required = isStudent;
+            var typeEl = document.getElementById('student_type');
+            if (typeEl) typeEl.required = isStudent;
+            if (typeof syncStudentTypeFields === 'function') syncStudentTypeFields();
         }
 
         if (roleEl && roleEl.tagName === 'SELECT') {
@@ -242,6 +250,7 @@ $roleDisplayName = RoleRegistry::displayName($userRoleSlug);
         syncRoleFields();
     })();
 
+    <?php include APPPATH . 'Views/Admin/Users/_student_type_script.php'; ?>
     <?php include APPPATH . 'Views/Admin/Users/_student_age_script.php'; ?>
     </script>
 

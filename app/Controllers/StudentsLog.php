@@ -2,8 +2,11 @@
 
 namespace App\Controllers;
 
+use App\Libraries\AcademicYearManager;
 use App\Libraries\DataEncryptor;
+use App\Libraries\GradeLevel;
 use App\Libraries\SectionEnrollment;
+use App\Libraries\StudentEnrollmentType;
 use App\Models\SectionModel;
 use App\Models\UserModel;
 
@@ -52,6 +55,8 @@ class StudentsLog extends BaseController
                     (string) ($row['email'] ?? ''),
                     (string) ($row['guardian_name'] ?? ''),
                     (string) ($row['guardian_contact'] ?? ''),
+                    (string) ($row['student_type_label'] ?? ''),
+                    (string) ($row['previous_school'] ?? ''),
                 ]));
 
                 return str_contains($haystack, $needle);
@@ -71,6 +76,7 @@ class StudentsLog extends BaseController
             'grade'        => $grade,
             'total_count'  => count($prepared),
             'active_count' => $activeCount,
+            'active_year'  => AcademicYearManager::getActive(),
             'role'         => session()->get('role') ?? 'ADMIN',
             'name'         => session()->get('name') ?? 'User',
         ]);
@@ -80,21 +86,19 @@ class StudentsLog extends BaseController
     private function sectionLabelsById(): array
     {
         $out = [];
-        foreach ($this->sections->orderBy('grade_level')->orderBy('name')->findAll() as $section) {
+        $ayId = AcademicYearManager::ensureActiveYear();
+        $sectionRows = $this->sections
+            ->groupStart()
+                ->where('academic_year_id', $ayId)
+                ->orWhere('academic_year_id', null)
+            ->groupEnd()
+            ->orderBy('grade_level')
+            ->orderBy('name')
+            ->findAll();
+        foreach ($sectionRows as $section) {
             $id   = (int) ($section['id'] ?? 0);
             $name = trim((string) ($section['name'] ?? ''));
-            $gl   = trim((string) ($section['grade_level'] ?? ''));
-            if ($name === '') {
-                $out[$id] = 'Section #' . $id;
-                continue;
-            }
-            if (stripos($name, 'grade') !== false) {
-                $out[$id] = $name;
-            } elseif ($gl !== '') {
-                $out[$id] = 'Grade ' . $gl . ' - ' . $name;
-            } else {
-                $out[$id] = $name;
-            }
+            $out[$id] = $name !== '' ? $name : ('Section #' . $id);
         }
 
         return $out;
@@ -110,10 +114,15 @@ class StudentsLog extends BaseController
         $student = DataEncryptor::decryptUserRowForDisplay($student);
 
         $student['display_name'] = UserModel::fullName($student);
-        $sectionId               = (int) ($student['section_id'] ?? 0);
-        $student['section_label'] = $sectionId > 0
-            ? ($sectionById[$sectionId] ?? 'Section #' . $sectionId)
+
+        $gradeDigit = GradeLevel::normalize($student['grade_level'] ?? '');
+        $student['grade_label'] = $gradeDigit !== ''
+            ? GradeLevel::label($gradeDigit)
             : '—';
+
+        $sectionId = (int) ($student['section_id'] ?? 0);
+        $rawName   = $sectionId > 0 ? trim((string) ($sectionById[$sectionId] ?? '')) : '';
+        $student['section_label'] = self::formatSectionLabel($rawName, $gradeDigit);
 
         $birthdate = trim((string) ($student['birthdate'] ?? ''));
         if ($birthdate !== '') {
@@ -127,6 +136,32 @@ class StudentsLog extends BaseController
         $student['guardian_contact_display'] = trim((string) ($student['guardian_contact'] ?? '')) ?: '—';
         $student['address_display']          = trim((string) ($student['address'] ?? '')) ?: '—';
 
+        $typeSlug = strtolower(trim((string) ($student['student_type'] ?? '')));
+        $student['student_type_label'] = StudentEnrollmentType::label($typeSlug) ?: '—';
+        $student['previous_school_display'] = trim((string) ($student['previous_school'] ?? '')) ?: '—';
+
         return $student;
+    }
+
+    /**
+     * Section name only — blank when unassigned or placeholder (e.g. "Section #1").
+     */
+    private static function formatSectionLabel(string $sectionName, string $gradeDigit): string
+    {
+        $name = trim($sectionName);
+        if ($name === '') {
+            return '—';
+        }
+        if (preg_match('/^section\s*#\d+$/i', $name)) {
+            return '—';
+        }
+        if (preg_match('/^grade\s*([1-6])\s*[-–]\s*(.+)$/iu', $name, $m)) {
+            $name = trim((string) ($m[2] ?? ''));
+            if ($name === '') {
+                return '—';
+            }
+        }
+
+        return $name;
     }
 }

@@ -145,9 +145,19 @@ $title = $titles[$tab] ?? 'System Panel';
             <p><strong>Detected Log Files:</strong> <?= esc((string) $logCount) ?></p>
             <p><strong>Error Entries:</strong> <?= esc((string) ($securityData['error_count'] ?? 0)) ?> &nbsp; | &nbsp; <strong>Warning Entries:</strong> <?= esc((string) ($securityData['warning_count'] ?? 0)) ?></p>
 
-            <?php $auditLogs = (array) ($securityData['audit_logs'] ?? []); ?>
+            <?php
+                $auditLogs = (array) ($securityData['audit_logs'] ?? []);
+                $auditPage = (int) ($securityData['audit_page'] ?? 1);
+                $auditPerPage = (int) ($securityData['audit_per_page'] ?? 10);
+                $auditTotal = (int) ($securityData['audit_total'] ?? 0);
+                $auditTotalPages = (int) ($securityData['audit_total_pages'] ?? 1);
+            ?>
             <?php if ($auditLogs !== []): ?>
                 <h3 style="margin-top:18px; color:#1b5e20;">Audit Trail</h3>
+                <p style="margin:6px 0 10px; color:#558b2f; font-size:0.9rem;">
+                    Showing <?= esc((string) count($auditLogs)) ?> of <?= esc((string) $auditTotal) ?> entries
+                    (Page <?= esc((string) $auditPage) ?> of <?= esc((string) $auditTotalPages) ?>, <?= esc((string) $auditPerPage) ?> per page).
+                </p>
                 <div style="overflow-x:auto;">
                 <table class="recent-table" style="margin-top:8px; width:100%;">
                     <thead><tr><th>Time</th><th>Action</th><th>User</th><th>IP</th><th>Details</th></tr></thead>
@@ -165,6 +175,9 @@ $title = $titles[$tab] ?? 'System Panel';
                                     'PASSWORD_RESET' => '#6a1b9a',
                                     'ROLE_CHANGED'   => '#ef6c00',
                                     'SECURITY_ALERT' => '#d50000',
+                                    'ACADEMIC_YEAR_ACTIVATED' => '#00695c',
+                                    'ACADEMIC_YEAR_DEACTIVATED' => '#9e9e9e',
+                                    'ACADEMIC_YEAR_CLOSED' => '#4a148c',
                                     'MFA_SUCCESS'    => '#00695c',
                                     'MFA_FAILED'     => '#c62828',
                                 ];
@@ -182,6 +195,27 @@ $title = $titles[$tab] ?? 'System Panel';
                     </tbody>
                 </table>
                 </div>
+                <?php if ($auditTotalPages > 1): ?>
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:12px;">
+                        <?php if ($auditPage > 1): ?>
+                            <a href="<?= base_url('sysadmin/security-logs?page=' . ($auditPage - 1)) ?>" class="link-details">Previous</a>
+                        <?php endif; ?>
+                        <?php
+                            $start = max(1, $auditPage - 2);
+                            $end = min($auditTotalPages, $auditPage + 2);
+                            for ($p = $start; $p <= $end; $p++):
+                        ?>
+                            <?php if ($p === $auditPage): ?>
+                                <span style="padding:4px 8px; border-radius:6px; background:#2e7d32; color:#fff; font-weight:600;"><?= esc((string) $p) ?></span>
+                            <?php else: ?>
+                                <a href="<?= base_url('sysadmin/security-logs?page=' . $p) ?>" class="link-details"><?= esc((string) $p) ?></a>
+                            <?php endif; ?>
+                        <?php endfor; ?>
+                        <?php if ($auditPage < $auditTotalPages): ?>
+                            <a href="<?= base_url('sysadmin/security-logs?page=' . ($auditPage + 1)) ?>" class="link-details">Next</a>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
             <?php else: ?>
                 <p style="margin-top:14px; color:#888;">No audit log entries yet. Entries appear after logins, user changes, and other security events.</p>
             <?php endif; ?>

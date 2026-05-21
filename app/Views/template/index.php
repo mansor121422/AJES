@@ -28,6 +28,9 @@ switch ($role) {
         if ($canFeature('sections') || in_array($role, ['ADMIN', 'SUPER_ADMIN'], true)) {
             $menuItems[] = ['url' => 'admin/sections', 'label' => 'Sections', 'icon' => '📂'];
         }
+        if ($canFeature('academic_years') || in_array($role, ['ADMIN', 'SUPER_ADMIN'], true)) {
+            $menuItems[] = ['url' => 'admin/academic-years', 'label' => 'Academic Years', 'icon' => '📅'];
+        }
         if ($canFeature('announcements')) {
             $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
         }
@@ -65,6 +68,9 @@ switch ($role) {
         }
         if ($canFeature('sections') || in_array($role, ['ADMIN', 'SUPER_ADMIN'], true)) {
             $menuItems[] = ['url' => 'admin/sections', 'label' => 'Sections', 'icon' => '📂'];
+        }
+        if ($canFeature('academic_years') || in_array($role, ['ADMIN', 'SUPER_ADMIN'], true)) {
+            $menuItems[] = ['url' => 'admin/academic-years', 'label' => 'Academic Years', 'icon' => '📅'];
         }
         if ($canFeature('announcements')) {
             $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];
@@ -118,6 +124,12 @@ switch ($role) {
     case 'PRINCIPAL':
         if ($canFeature('dashboard')) {
             $menuItems[] = ['url' => 'dashboard/principal', 'label' => 'Dashboard Home', 'icon' => '📊'];
+        }
+        if ($canFeature('academic_years')) {
+            $menuItems[] = ['url' => 'admin/academic-years', 'label' => 'Academic Years', 'icon' => '📅'];
+        }
+        if ($canFeature('sections')) {
+            $menuItems[] = ['url' => 'admin/sections', 'label' => 'Sections', 'icon' => '📂'];
         }
         if ($canFeature('announcements')) {
             $menuItems[] = ['url' => 'announcements', 'label' => 'Announcements', 'icon' => '📢'];

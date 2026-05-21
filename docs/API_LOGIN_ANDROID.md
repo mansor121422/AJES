@@ -5,7 +5,9 @@ The backend exposes a REST login endpoint for the AJESCHAT Android app. The **we
 ## Endpoint
 
 - **URL:** `POST /api/login`  
-  Full URL example: `http://localhost/AJES/api/login` or `https://your-domain.com/AJES/api/login`
+  Full URL example (local XAMPP): `http://localhost/AJES/index.php/api/login`  
+  InfinityFree (with `api/.htaccess`): `https://your-site.infinityfreeapp.com/api/login`  
+  InfinityFree (without rewrite): set `ajes.baseUrl=https://your-site.infinityfreeapp.com/index.php/`
 
 - **Content-Type:** `application/json` (or `application/x-www-form-urlencoded`)
 
@@ -65,7 +67,8 @@ Routes protected with the `api_token` filter will validate this token and set th
 
 ## Android integration summary
 
-1. On login screen: POST to `/api/login` with `username` and `password` (JSON).
+1. On login screen: POST to `/api/login` with `username` and `password` (JSON).  
+   **InfinityFree:** `local.properties` → `ajes.baseUrl=https://YOURSITE.infinityfreeapp.com/index.php/` (note trailing slash and `index.php`).
 2. If `status` is `success`, save `data.token`, `data.user_id`, `data.name`, `data.role` (e.g. in SharedPreferences).
 3. For every subsequent request to the API, add header:  
    `Authorization: Bearer <saved_token>`

@@ -47,6 +47,19 @@ class App extends BaseConfig
                 }
             }
         }
+
+        $parsedHost = parse_url($this->baseURL, PHP_URL_HOST);
+        if (is_string($parsedHost) && $parsedHost !== '' && ! in_array($parsedHost, $this->allowedHostnames, true)) {
+            $this->allowedHostnames[] = $parsedHost;
+        }
+
+        $indexPageEnv = env('app.indexPage');
+        if ($indexPageEnv !== null && $indexPageEnv !== false && trim((string) $indexPageEnv) !== '') {
+            $this->indexPage = trim((string) $indexPageEnv);
+        } elseif (filter_var(env('FORCE_INDEX_PAGE', ''), FILTER_VALIDATE_BOOLEAN)) {
+            // InfinityFree: set FORCE_INDEX_PAGE = true in .env when /chat URLs return 404.
+            $this->indexPage = 'index.php';
+        }
     }
 
     /**

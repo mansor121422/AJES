@@ -22,8 +22,11 @@ $sections = $sections ?? [];
     <?php endif; ?>
 
     <div class="card">
-        <div class="card-title">All sections</div>
-        <p style="margin-bottom: 12px; color: #558b2f;">Create sections, enroll students (maximum <?= \App\Libraries\SectionEnrollment::MAX_STUDENTS ?> per section), and invite teachers.</p>
+        <div class="card-title">All sections<?php if (! empty($active_year['label'])): ?> — <?= esc((string) $active_year['label']) ?><?php endif; ?></div>
+        <p style="margin-bottom: 12px; color: #558b2f;">
+            Create sections for the active academic year, enroll students (maximum <?= \App\Libraries\SectionEnrollment::MAX_STUDENTS ?> per section), and invite teachers.
+            <a href="<?= base_url('admin/academic-years') ?>" class="link-details">Academic years</a>
+        </p>
         <a href="<?= base_url('admin/sections/create') ?>" class="login-button" style="display: inline-flex; width: auto; padding: 10px 20px; text-decoration: none; margin-bottom: 16px;">Create section</a>
         <table class="recent-table">
             <thead>

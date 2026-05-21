@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Libraries\AcademicYearManager;
 use CodeIgniter\Model;
 
 class TeacherSectionModel extends Model
@@ -17,23 +18,42 @@ class TeacherSectionModel extends Model
 
     public function getInvitesForTeacher(int $teacherId): array
     {
-        return $this->db->table($this->table)
+        $builder = $this->db->table($this->table)
             ->select('teacher_sections.*, sections.name as section_name, sections.grade_level, sections.class_schedule')
             ->join('sections', 'sections.id = teacher_sections.section_id')
             ->where('teacher_sections.teacher_id', $teacherId)
-            ->where('teacher_sections.status', 'pending')
-            ->get()
-            ->getResultArray();
+            ->where('teacher_sections.status', 'pending');
+
+        $this->scopeActiveAcademicYear($builder);
+
+        return $builder->get()->getResultArray();
     }
 
     public function getAcceptedSectionsForTeacher(int $teacherId): array
     {
-        return $this->db->table($this->table)
+        $builder = $this->db->table($this->table)
             ->select('teacher_sections.*, sections.name as section_name, sections.grade_level, sections.class_schedule')
             ->join('sections', 'sections.id = teacher_sections.section_id')
             ->where('teacher_sections.teacher_id', $teacherId)
-            ->where('teacher_sections.status', 'accepted')
-            ->get()
-            ->getResultArray();
+            ->where('teacher_sections.status', 'accepted');
+
+        $this->scopeActiveAcademicYear($builder);
+
+        return $builder->get()->getResultArray();
+    }
+
+    /**
+     * @param \CodeIgniter\Database\BaseBuilder $builder
+     */
+    private function scopeActiveAcademicYear($builder): void
+    {
+        $ayId = AcademicYearManager::getActiveId();
+        if ($ayId <= 0) {
+            return;
+        }
+        $builder->groupStart()
+            ->where('sections.academic_year_id', $ayId)
+            ->orWhere('sections.academic_year_id', null)
+        ->groupEnd();
     }
 }

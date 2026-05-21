@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\AcademicYearManager;
 use App\Libraries\SectionEnrollment;
 use App\Models\SectionModel;
 use App\Models\UserModel;
@@ -24,7 +25,16 @@ class Sections extends BaseController
 
     public function index(): string
     {
-        $list              = $this->sections->orderBy('grade_level')->orderBy('name')->findAll();
+        $ayId = AcademicYearManager::ensureActiveYear();
+        $list = $this->sections
+            ->groupStart()
+                ->where('academic_year_id', $ayId)
+                ->orWhere('academic_year_id', null)
+            ->groupEnd()
+            ->orderBy('grade_level')
+            ->orderBy('name')
+            ->findAll();
+        $activeYear = AcademicYearManager::getActive();
         $adviserBySection  = $this->adviserDisplayBySectionId();
         foreach ($list as &$secRow) {
             $sectionId = (int) ($secRow['id'] ?? 0);
@@ -35,9 +45,10 @@ class Sections extends BaseController
         unset($secRow);
 
         $data = [
-            'sections' => $list,
-            'role'     => session()->get('role') ?? 'ADMIN',
-            'name'     => session()->get('name') ?? 'User',
+            'sections'    => $list,
+            'active_year' => $activeYear,
+            'role'        => session()->get('role') ?? 'ADMIN',
+            'name'        => session()->get('name') ?? 'User',
         ];
         return view('Admin/Sections/index', $data);
     }
@@ -106,9 +117,10 @@ class Sections extends BaseController
         }
 
         $this->sections->insert([
-            'name'           => $name,
-            'grade_level'    => $gradeLevel,
-            'class_schedule' => $classSchedule,
+            'name'             => $name,
+            'grade_level'      => $gradeLevel,
+            'academic_year_id' => AcademicYearManager::ensureActiveYear(),
+            'class_schedule'   => $classSchedule,
         ]);
         $sectionId = (int) $this->sections->getInsertID();
 
@@ -303,6 +315,7 @@ class Sections extends BaseController
         }
 
         $this->users->update($studentId, ['section_id' => null]);
+        AcademicYearManager::syncStudentEnrollment($studentId);
 
         return redirect()->back()->with('success', 'Student removed from section.');
     }
@@ -1146,7 +1159,14 @@ class Sections extends BaseController
     {
         $name       = trim($name);
         $gradeLevel = trim($gradeLevel);
-        $rows       = $this->sections->where('grade_level', $gradeLevel)->findAll();
+        $ayId = AcademicYearManager::ensureActiveYear();
+        $rows = $this->sections
+            ->where('grade_level', $gradeLevel)
+            ->groupStart()
+                ->where('academic_year_id', $ayId)
+                ->orWhere('academic_year_id', null)
+            ->groupEnd()
+            ->findAll();
         foreach ($rows as $r) {
             $rid = (int) ($r['id'] ?? 0);
             if ($excludeId !== null && $rid === $excludeId) {
@@ -1315,6 +1335,7 @@ class Sections extends BaseController
         }
 
         $this->users->update($studentId, ['section_id' => $sectionId]);
+        AcademicYearManager::syncStudentEnrollment($studentId);
 
         return null;
     }

@@ -1,0 +1,10 @@
+# InfinityFree: route /api/* to CodeIgniter when root mod_rewrite does not catch API paths.
+<IfModule mod_rewrite.c>
+	Options +FollowSymlinks
+	RewriteEngine On
+	RewriteBase /api/
+
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule ^(.*)$ /index.php/api/$1 [L,QSA]
+</IfModule>

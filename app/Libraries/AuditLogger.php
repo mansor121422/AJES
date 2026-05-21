@@ -105,13 +105,32 @@ class AuditLogger
      */
     public static function recent(int $limit = 50): array
     {
+        return self::paginated($limit, 0);
+    }
+
+    public static function count(): int
+    {
+        try {
+            $db = \Config\Database::connect();
+            return (int) $db->table('logs')->countAllResults();
+        } catch (\Throwable $e) {
+            log_message('error', 'AuditLogger::count: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public static function paginated(int $perPage = 10, int $offset = 0): array
+    {
         try {
             $db = \Config\Database::connect();
             $rows = $db->table('logs')
                 ->select('logs.*, users.name as user_name, users.username')
                 ->join('users', 'users.id = logs.user_id', 'left')
                 ->orderBy('logs.created_at', 'DESC')
-                ->limit($limit)
+                ->limit($perPage, $offset)
                 ->get()
                 ->getResultArray();
 
@@ -124,7 +143,7 @@ class AuditLogger
 
             return $rows;
         } catch (\Throwable $e) {
-            log_message('error', 'AuditLogger::recent: ' . $e->getMessage());
+            log_message('error', 'AuditLogger::paginated: ' . $e->getMessage());
             return [];
         }
     }
